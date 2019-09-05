@@ -19,11 +19,14 @@ steps:
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
 
+- task: NuGetCommand@2
+  displayName: 'NuGet restore'
+  inputs:
+    restoreSolution: '$(Build.SourcesDirectory)\Forge.sln'
+
 - task: VSBuild@1
   displayName: 'Build .NET sln'
   inputs:
     solution: '$(Build.SourcesDirectory)\Forge.sln'
-
     platform: 'Any CPU'
-
     configuration: Release
