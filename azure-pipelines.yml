@@ -40,3 +40,4 @@ steps:
   inputs:
     command: pack
     packagesToPack: '**/*.csproj'
+    configuration: 'Release'
