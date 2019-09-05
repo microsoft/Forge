@@ -30,3 +30,8 @@ steps:
     solution: '$(Build.SourcesDirectory)\Forge.sln'
     platform: 'Any CPU'
     configuration: Release
+
+- task: VSTest@2
+  inputs:
+    testAssemblyVer2: | 
+      $(Build.SourcesDirectory)\Forge.TreeWalker.UnitTests\obj\Release\Forge.TreeWalker.UnitTests.dll
