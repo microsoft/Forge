@@ -7,7 +7,8 @@ trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: Hosted VS2017
+  timeoutInMinutes: 10
 
 steps:
 - script: echo Hello, world!
