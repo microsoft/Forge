@@ -35,3 +35,8 @@ steps:
   inputs:
     testAssemblyVer2: | 
       $(Build.SourcesDirectory)\Forge.TreeWalker.UnitTests\obj\Release\Forge.TreeWalker.UnitTests.dll
+
+- task: NuGetCommand@2
+  inputs:
+    command: pack
+    packagesToPack: '**/*.csproj'
