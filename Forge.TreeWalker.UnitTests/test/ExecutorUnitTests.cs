@@ -119,7 +119,7 @@ namespace Forge.TreeWalker.UnitTests
             List<Type> dependencies = new List<Type>();
             dependencies.Add(typeof(ExternalTestType));
             ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, dependencies);
-            string expression = "UserContext.Foo == ExternalTestType.TestEnum";
+            string expression = "UserContext.Foo.ToString() == ExternalTestType.TestEnum.ToString()";
             Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate a true expression.");
         }
 
@@ -170,7 +170,7 @@ namespace Forge.TreeWalker.UnitTests
             dependencies.Add(typeof(ExternalTestType));
 
             ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, dependencies);
-            string expression = "UserContext.Foo == ExternalTestType.TestEnum && UserContext.Bar == TestType.Test";
+            string expression = "UserContext.Foo.ToString() == ExternalTestType.TestEnum.ToString() && UserContext.Bar.ToString() == TestType.Test.ToString()";
             Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate a true expression.");
         }
 
