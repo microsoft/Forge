@@ -11,14 +11,6 @@ pool:
   timeoutInMinutes: 10
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
-
 - task: NuGetCommand@2
   displayName: 'NuGet restore'
   inputs:
@@ -32,12 +24,22 @@ steps:
     configuration: Release
 
 - task: VSTest@2
+  displayName: 'Run Tests'
   inputs:
     testAssemblyVer2: | 
       $(Build.SourcesDirectory)\Forge.TreeWalker.UnitTests\obj\Release\Forge.TreeWalker.UnitTests.dll
+    runInParallel: True
 
 - task: NuGetCommand@2
+  displayName: 'NuGet pack'
   inputs:
     command: pack
     packagesToPack: '**/*.csproj'
     configuration: 'Release'
+
+- task: NuGetCommand@2
+  displayName: 'NuGet push'
+  inputs:
+    command: push
+    publishVstsFeed: 'ForgeArtifacts'
+    allowPackageConflicts: true
