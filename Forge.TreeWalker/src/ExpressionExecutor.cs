@@ -126,11 +126,11 @@ namespace Forge.TreeWalker
         }
 
         /// <summary>
-        /// Internal method used for testing if ScriptCache contains the expression key.
+        /// Used for testing if ScriptCache contains the expression key.
         /// </summary>
         /// <param name="expression">The expression key.</param>
         /// <returns>True if the expression key exists, otherwise false.</returns>
-        internal bool ScriptCacheContainsKey(string expression)
+        public bool ScriptCacheContainsKey(string expression)
         {
             return this.scriptCache.ContainsKey(expression);
         }
