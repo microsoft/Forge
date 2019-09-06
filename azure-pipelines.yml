@@ -36,6 +36,7 @@ steps:
     command: pack
     packagesToPack: '**/*.csproj'
     configuration: 'Release'
+    versioningScheme: 'byBuildNumber'
 
 - task: NuGetCommand@2
   displayName: 'NuGet push AzureArtifacts'
@@ -43,3 +44,4 @@ steps:
     command: push
     publishVstsFeed: 'ForgeArtifacts'
     allowPackageConflicts: true
+    versioningScheme: 'byBuildNumber'
