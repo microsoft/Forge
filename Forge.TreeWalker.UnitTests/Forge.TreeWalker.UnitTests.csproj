@@ -64,10 +64,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Forge.DataContracts\Forge.DataContracts.csproj">
-      <Project>{c49a8494-13e5-4214-8434-708ba280c5b1}</Project>
-      <Name>Forge.DataContracts</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Forge.TreeWalker\Forge.TreeWalker.csproj">
       <Project>{00fc1c22-6ae9-4f60-8a3e-05885ba34c9c}</Project>
       <Name>Forge.TreeWalker</Name>

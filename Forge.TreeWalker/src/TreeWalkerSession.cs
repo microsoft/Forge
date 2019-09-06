@@ -371,7 +371,7 @@ namespace Forge.TreeWalker
         /// <exception cref="OperationCanceledException">If the cancellation token was triggered.</exception>
         /// <exception cref="Exception">If an unexpected exception was thrown.</exception>
         /// <returns>The key of the next child to visit, or <c>null</c> if no match was found.</returns>
-        internal async Task<string> VisitNode(string treeNodeKey)
+        public async Task<string> VisitNode(string treeNodeKey)
         {
             TreeNode treeNode = this.Schema.Tree[treeNodeKey];
 

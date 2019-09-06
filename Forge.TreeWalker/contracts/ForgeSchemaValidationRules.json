@@ -1,0 +1,193 @@
+{
+  "type": "object",
+  "definitions": {
+    "TreeDefinition": {
+      "type": "object",
+      "patternProperties": {
+        ".*?": {
+          "$ref": "#/definitions/TreeNodeDefinition"
+        }
+      }
+    },
+    "TreeNodeDefinition": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/SelectionTypeNodeDefinition"
+        },
+        {
+          "$ref": "#/definitions/ActionTypeNodeDefinition"
+        },
+        {
+          "$ref": "#/definitions/LeafTypeNodeDefinition"
+        }
+      ]
+    },
+    "SelectionTypeNodeDefinition": {
+      "type": "object",
+      "properties": {
+        "Type": {
+          "type": "string",
+          "enum": [ "Selection" ]
+        },
+        "ChildSelector": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ChildSelectorDefinition"
+          },
+          "minItems": 1
+        },
+        "Properties": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "required": [ "Type" ]
+    },
+    "ActionTypeNodeDefinition": {
+      "type": "object",
+      "properties": {
+        "Type": {
+          "type": "string",
+          "enum": [ "Action" ]
+        },
+        "Timeout": {
+          "type": [ "number", "string" ]
+        },
+        "Actions": {
+          "patternProperties": {
+            ".*?": {
+              "$ref": "#/definitions/ActionDefinition"
+            }
+          },
+          "minProperties": 1
+        },
+        "ChildSelector": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ChildSelectorDefinition"
+          },
+          "minItems": 1
+        },
+        "Properties": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "required": [ "Type", "Actions" ]
+    },
+    "LeafTypeNodeDefinition": {
+      "type": "object",
+      "properties": {
+        "Type": {
+          "type": "string",
+          "enum": [ "Leaf" ]
+        },
+        "Actions": {
+          "patternProperties": {
+            ".*?": {
+              "$ref": "#/definitions/LeafNodeSummaryActionDefinition"
+            }
+          },
+          "minProperties": 1,
+          "maxProperties": 1
+        },
+        "Properties": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "required": [ "Type" ]
+    },
+    "ChildSelectorDefinition": {
+      "type": "object",
+      "properties": {
+        "Label": {
+          "type": "string"
+        },
+        "ShouldSelect": {
+          "type": "string"
+        },
+        "Child": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [ "Label", "Child" ]
+    },
+    "RetryPolicy": {
+      "type": "object",
+      "properties": {
+        "Type": {
+          "type": "string",
+          "enum": [ "None", "FixedInterval", "ExponentialBackoff" ]
+        },
+        "MinBackoffMs": {
+          "type": "number"
+        },
+        "MaxBackoffMs": {
+          "type": "number"
+        }
+      },
+      "required": [ "Type" ]
+    },
+    "ActionDefinition": {
+      "type": "object",
+      "properties": {
+        "Action": {
+          "type": "string"
+        },
+        "Input": {
+          "type": "object"
+        },
+        "Properties": {
+          "type": "object"
+        },
+        "Timeout": {
+          "type": [ "number", "string" ]
+        },
+        "ContinuationOnTimeout": {
+          "type": "boolean"
+        },
+        "RetryPolicy": {
+          "$ref": "#/definitions/RetryPolicy"
+        },
+        "ContinuationOnRetryExhaustion": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "required": [ "Action" ]
+    },
+    "LeafNodeSummaryActionDefinition": {
+      "type": "object",
+      "properties": {
+        "Action": {
+          "enum": [ "LeafNodeSummaryAction" ]
+        },
+        "Input": {
+          "type": [ "object", "string" ],
+          "properties": {
+            "Status": {
+              "type": "string"
+            },
+            "StatusCode": {
+              "type": [ "number", "string" ]
+            },
+            "Output": {
+              "type": [ "object", "string" ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "required": [ "Action", "Input" ]
+    }
+  },
+  "properties": {
+    "Tree": {
+      "$ref": "#/definitions/TreeDefinition"
+    }
+  },
+  "additionalProperties": false
+}

@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forge.TreeWalker", "Forge.TreeWalker\Forge.TreeWalker.csproj", "{00FC1C22-6AE9-4F60-8A3E-05885BA34C9C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forge.DataContracts", "Forge.DataContracts\Forge.DataContracts.csproj", "{C49A8494-13E5-4214-8434-708BA280C5B1}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forge.TreeWalker.UnitTests", "Forge.TreeWalker.UnitTests\Forge.TreeWalker.UnitTests.csproj", "{A33AF1FF-1291-4CB1-A733-3243E1FE967E}"
 EndProject
 Global
@@ -19,10 +17,6 @@ Global
 		{00FC1C22-6AE9-4F60-8A3E-05885BA34C9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00FC1C22-6AE9-4F60-8A3E-05885BA34C9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00FC1C22-6AE9-4F60-8A3E-05885BA34C9C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C49A8494-13E5-4214-8434-708BA280C5B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C49A8494-13E5-4214-8434-708BA280C5B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C49A8494-13E5-4214-8434-708BA280C5B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C49A8494-13E5-4214-8434-708BA280C5B1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A33AF1FF-1291-4CB1-A733-3243E1FE967E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A33AF1FF-1291-4CB1-A733-3243E1FE967E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A33AF1FF-1291-4CB1-A733-3243E1FE967E}.Release|Any CPU.ActiveCfg = Release|Any CPU
