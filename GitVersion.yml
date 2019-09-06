@@ -1,7 +1,9 @@
 mode: Mainline
 next-version: 1.0.0
 branches:
-  master: {}
+  feature:
+    tag: alpha
+  master:
+    tag: ''
 ignore:
   sha: []
-merge-message-formats: {}
