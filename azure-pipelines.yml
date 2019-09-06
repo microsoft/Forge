@@ -38,7 +38,7 @@ steps:
     configuration: 'Release'
 
 - task: NuGetCommand@2
-  displayName: 'NuGet push'
+  displayName: 'NuGet push AzureArtifacts'
   inputs:
     command: push
     publishVstsFeed: 'ForgeArtifacts'
