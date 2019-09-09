@@ -85,13 +85,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-	<None Include="contracts\ForgeSchemaValidationRules.json" />
+    <None Include="contracts\ForgeSchemaValidationRules.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="contracts\ForgeSchemaValidationRules.json">
       <Pack>true</Pack>
-	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
   </ItemGroup>
