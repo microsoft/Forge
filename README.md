@@ -1,7 +1,3 @@
-[![Build Status](https://dev.azure.com/ForgePipeline/Forge/_apis/build/status/Microsoft.Forge?branchName=master)](https://dev.azure.com/ForgePipeline/Forge/_build/latest?definitionId=1&branchName=master)
-
-[Forge.TreeWalker NuGet link](https://www.nuget.org/packages/Forge.TreeWalker/)
-
 ## What is Forge?
 Forge is a config-driven decision tree, designed to execute your logical workflows in a dynamic way.
 
