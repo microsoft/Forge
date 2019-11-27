@@ -13,17 +13,18 @@ namespace Forge.TreeWalker.UnitTests
     {
         public const string TardigradeScenario = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Selection"",
                         ""ChildSelector"":
                         [
                             {
+                                ""Label"": ""Node"",
                                 ""ShouldSelect"": ""C#|UserContext.ResourceType == \""Node\"""",
                                 ""Child"": ""Node""
                             },
                             {
+                                ""Label"": ""Label"",
                                 ""ShouldSelect"": ""C#|UserContext.ResourceType == \""Container\"""",
                                 ""Child"": ""Container""
                             }
@@ -44,6 +45,7 @@ namespace Forge.TreeWalker.UnitTests
                         ""ChildSelector"":
                         [
                             {
+                                ""Label"": ""Label"",
                                 ""ShouldSelect"": ""C#|Session.GetLastActionResponse().Status == \""Success\"""",
                                 ""Child"": ""Tardigrade""
                             }
@@ -60,6 +62,7 @@ namespace Forge.TreeWalker.UnitTests
                         ""ChildSelector"":
                         [
                             {
+                                ""Label"": ""Label"",
                                 ""ShouldSelect"": ""C#|Session.GetLastActionResponse().Status == \""Success\"""",
                                 ""Child"": ""Tardigrade_Success""
                             }
@@ -220,6 +223,7 @@ namespace Forge.TreeWalker.UnitTests
                         ""ChildSelector"":
                         [
                             {
+                                ""Label"": ""Label"",
                                 ""ShouldSelect"": ""C#|false"",
                                 ""Child"": ""LeafNode""
                             }
@@ -250,7 +254,8 @@ namespace Forge.TreeWalker.UnitTests
                                     ""NestedObject"":
                                     {
                                         ""Name"": ""C#|string.Format(\""{0}_{1}\"", \""MyName\"", UserContext.Name)"",
-                                        ""Value"": ""MyValue""
+                                        ""Value"": ""MyValue"",
+                                        ""IntPropertyInObject"": ""C#<Int64>|UserContext.GetCount()""
                                     },
                                     ""ObjectArray"":
                                     [
@@ -263,10 +268,22 @@ namespace Forge.TreeWalker.UnitTests
                                             ""Value"": ""SecondValue""
                                         }
                                     ],
-                                    ""StringArray"": [""value1"", ""value2""],
-                                    ""LongArray"": [1, 3, 2],
+                                    ""StringArray"": [""C#|UserContext.Name"", ""value2""],
+                                    ""LongArray"": [""C#<Int64>|(long)UserContext.GetCount()"", 3, 2],
                                     ""BoolDelegate"": ""C#|(Func<bool>)(() => {return UserContext.GetCount() == 1;})"",
-                                    ""BoolDelegateAsync"": ""C#|(Func<Task<bool>>)(async() => { return await UserContext.GetCountAsync() == 2; })""
+                                    ""BoolDelegateAsync"": ""C#|(Func<Task<bool>>)(async() => { return await UserContext.GetCountAsync() == 2; })"",
+                                    ""StringDictionary"": {
+                                        ""TestKey1"": ""C#|UserContext.Name"",
+                                        ""TestKey2"": ""TestValue2""
+                                    },
+                                    ""DynamicObject"": {
+                                        ""DynamicPropertyString"": ""TestValue1"",
+                                        ""DynamicPropertyInt"": 10,
+                                        ""DynamicPropertyExpression"": ""C#|UserContext.Name"",
+                                        ""DynamicPropertyNestedObject"": {
+                                            ""NestedPropertyOne"": ""NestedValue1""
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -383,6 +400,7 @@ namespace Forge.TreeWalker.UnitTests
                         ""ChildSelector"":
                         [
                             {
+                                ""Label"": ""Label"",
                                 ""Child"": ""LeafNodeSummaryTest""
                             }
                         ]
@@ -414,6 +432,238 @@ namespace Forge.TreeWalker.UnitTests
                                 ""Input"":
                                 {
                                     ""Status"": ""External|StatusResult""
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ";
+
+        public const string SubroutineAction_GetLastActionResponse = @"
+            {
+                ""ParentTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Subroutine"",
+                            ""Actions"": {
+                                ""Root_Subroutine"": {
+                                    ""Action"": ""SubroutineAction"",
+                                    ""Input"":
+                                    {
+                                        ""TreeName"": ""SubroutineTree"",
+                                        ""TreeInput"": {
+                                            ""TestStatusCode"": 10
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                ""SubroutineTree"": {
+                    ""RootTreeNodeKey"": ""StartingNode"",
+                    ""Tree"": {
+                        ""StartingNode"": {
+                            ""Type"": ""Leaf"",
+                            ""Actions"": {
+                                ""Root_LeafNodeSummaryAction"": {
+                                    ""Action"": ""LeafNodeSummaryAction"",
+                                    ""Input"":
+                                    {
+                                        ""Status"": ""Success"",
+                                        ""StatusCode"": ""C#|(int)TreeInput.TestStatusCode""
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ";
+
+        public const string SubroutineAction_NoActions = @"
+            {
+                ""RootTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Subroutine"",
+                            ""Actions"": {
+                                ""Root_Subroutine"": {
+                                    ""Action"": ""SubroutineAction"",
+                                    ""Input"":
+                                    {
+                                        ""TreeName"": ""SubroutineTree"",
+                                        ""TreeInput"": ""TestValue""
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                ""SubroutineTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Leaf""
+                        }
+                    }
+                }
+            }
+        ";
+
+        public const string SubroutineAction_ParallelSubroutineActions = @"
+            {
+                ""RootTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Subroutine"",
+                            ""Actions"": {
+                                ""Root_Subroutine_One"": {
+                                    ""Action"": ""SubroutineAction"",
+                                    ""Input"":
+                                    {
+                                        ""TreeName"": ""SubroutineTree"",
+                                        ""TreeInput"": ""TestValueOne""
+                                    }
+                                },
+                                ""Root_Subroutine_Two"": {
+                                    ""Action"": ""SubroutineAction"",
+                                    ""Input"":
+                                    {
+                                        ""TreeName"": ""SubroutineTree"",
+                                        ""TreeInput"": ""TestValueTwo""
+                                    }
+                                },
+                                ""Root_CollectDiagnosticsAction"": {
+                                    ""Action"": ""CollectDiagnosticsAction"",
+                                    ""Input"":
+                                    {
+                                        ""Command"": ""TheCommand""
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                ""SubroutineTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Leaf"",
+                            ""Actions"": {
+                                ""Root_LeafNodeSummaryAction"": {
+                                    ""Action"": ""LeafNodeSummaryAction"",
+                                    ""Input"":
+                                    {
+                                        ""Status"": ""C#|(string)TreeInput"",
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ";
+
+        public const string SubroutineAction_FailsOnActionTreeNodeType = @"
+            {
+                ""RootTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Action"",
+                            ""Actions"": {
+                                ""Root_Subroutine"": {
+                                    ""Action"": ""SubroutineAction"",
+                                    ""Input"":
+                                    {
+                                        ""TreeName"": ""SubroutineTree"",
+                                        ""TreeInput"": ""TestValue""
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                ""SubroutineTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Leaf""
+                        }
+                    }
+                }
+            }
+        ";
+
+        public const string SubroutineAction_FailsOnNoSubroutineAction = @"
+            {
+                ""RootTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Subroutine""
+                        }
+                    }
+                }
+            }
+        ";
+
+        public const string CycleSchema = @"
+            {
+                ""Tree"": {
+                    ""Root"": {
+                        ""Type"": ""Action"",
+                        ""Actions"": {
+                            ""Root_RevisitAction"": {
+                                ""Action"": ""RevisitAction""
+                            }
+                        },
+                        ""ChildSelector"":
+                        [
+                            {
+                                ""Label"": ""Label"",
+                                ""ShouldSelect"": ""C#|(int)Session.GetLastActionResponse().Output < 3"",
+                                ""Child"": ""Root""
+                            }
+                        ]
+                    }
+                }
+            }
+        ";
+
+        public const string Cycle_SubroutineActionUsesDifferentSessionId = @"
+            {
+                ""RootTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Subroutine"",
+                            ""Actions"": {
+                                ""Root_Subroutine"": {
+                                    ""Action"": ""SubroutineAction"",
+                                    ""Input"":
+                                    {
+                                        ""TreeName"": ""SubroutineTree""
+                                    }
+                                },
+                                ""Root_RevisitAction"": {
+                                    ""Action"": ""RevisitAction""
+                                }
+                            },
+                            ""ChildSelector"":
+                            [
+                                {
+                                    ""Label"": ""Label"",
+                                    ""ShouldSelect"": ""C#|(int)Session.GetOutput(\""Root_RevisitAction\"").Output < 3"",
+                                    ""Child"": ""Root""
+                                }
+                            ]
+                        }
+                    }
+                },
+                ""SubroutineTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Action"",
+                                ""Actions"": {
+                                ""Root_ReturnSessionIdAction"": {
+                                    ""Action"": ""ReturnSessionIdAction""
                                 }
                             }
                         }

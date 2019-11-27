@@ -10,19 +10,17 @@
 namespace Forge.TreeWalker
 {
     using System;
-    using System.Collections.Concurrent;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Reflection;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.CodeAnalysis.Scripting;
 
     using Forge.Attributes;
     using Forge.DataContracts;
     using Forge.TreeWalker.ForgeExceptions;
-
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
@@ -55,6 +53,18 @@ namespace Forge.TreeWalker
         /// Key: <SessionId>_<TreeActionKey>_Int
         /// </summary>
         public static string IntermediatesSuffix = "_Int";
+
+        /// <summary>
+        /// The TreeInput suffix appended to the end of the key in forgeState that maps to this tree walking session's TreeInput object.
+        /// </summary>
+        public static string TreeInputSuffix = "TI";
+
+        /// <summary>
+        /// The PreviousActionResponse suffix appended to the end of the key in forgeState that maps to a previously persisted ActionResponse.
+        /// When a TreeNodeKey in a tree walking session was previously successfully visited, the ActionResponses get wiped and persisted to PreviousActionResponse.
+        /// GetPreviousActionResponse method is available in ActionContext.
+        /// </summary>
+        public static string PreviousActionResponseSuffix = "_PAR";
 
         /// <summary>
         /// The name of the native LeafNodeSummaryAction.
@@ -115,14 +125,24 @@ namespace Forge.TreeWalker
         private Dictionary<string, ActionDefinition> actionsMap;
 
         /// <summary>
+        /// Volatile flag to determine if we are visiting a node normally, or upon rehydration.
+        /// True indicates we are visiting a node normally. We check for revisit/cycle behavior in this case.
+        /// False indicates we are rehydrating or visiting first node in this session. We should skip the revisit/cycle behavior in this case.
+        /// </summary>
+        private bool hasSessionRehydrated;
+
+        /// <summary>
         /// Instantiates a tree walker session with the required parameters.
         /// </summary>
         /// <param name="parameters">The parameters object contains the required and optional properties used by the TreeWalkerSession.</param>
         public TreeWalkerSession(TreeWalkerParameters parameters)
         {
-            if (parameters == null) throw new ArgumentNullException("parameters");
+            this.Parameters = parameters ?? throw new ArgumentNullException("parameters");
 
-            this.Parameters = parameters;
+            if (string.IsNullOrWhiteSpace(parameters.TreeName))
+            {
+                this.Parameters.TreeName = "RootTree";
+            }
 
             // Initialize properties from required TreeWalkerParameters properties.
             this.Schema = JsonConvert.DeserializeObject<ForgeTree>(parameters.JsonSchema);
@@ -130,8 +150,17 @@ namespace Forge.TreeWalker
 
             // Initialize properties from optional TreeWalkerParameters properties.
             GetActionsMapFromAssembly(parameters.ForgeActionsAssembly, out this.actionsMap);
-            parameters.ExternalExecutors = parameters.ExternalExecutors ?? new Dictionary<string, Func<string, CancellationToken, Task<object>>>();
-            this.expressionExecutor = new ExpressionExecutor(this as ITreeSession, parameters.UserContext, parameters.Dependencies, parameters.ScriptCache);
+            this.Parameters.ExternalExecutors = parameters.ExternalExecutors ?? new Dictionary<string, Func<string, CancellationToken, Task<object>>>();
+            
+            // TODO: Consider using a factory pattern to construct asynchronously.
+            this.Parameters.TreeInput = this.GetOrCommitTreeInput(parameters.TreeInput).GetAwaiter().GetResult();
+
+            this.expressionExecutor = new ExpressionExecutor(this as ITreeSession, parameters.UserContext, parameters.Dependencies, parameters.ScriptCache, this.Parameters.TreeInput);
+
+            if (parameters.RootSessionId == Guid.Empty)
+            {
+                this.Parameters.RootSessionId = parameters.SessionId;
+            }
 
             this.Status = "Initialized";
         }
@@ -262,7 +291,7 @@ namespace Forge.TreeWalker
                 // Call the callbacks before/after visiting each node.
                 do
                 {
-                    await this.CommitCurrentTreeNode(current).ConfigureAwait(false);
+                    await this.CommitCurrentTreeNode(current, this.Schema.Tree[current]).ConfigureAwait(false);
                     if (this.walkTreeCts.Token.IsCancellationRequested)
                     {
                         this.Status = "Cancelled";
@@ -274,7 +303,9 @@ namespace Forge.TreeWalker
                         current,
                         await this.EvaluateDynamicProperty(this.Schema.Tree[current].Properties, null),
                         this.Parameters.UserContext,
-                        this.walkTreeCts.Token).ConfigureAwait(false);
+                        this.walkTreeCts.Token,
+                        this.Parameters.TreeName,
+                        this.Parameters.RootSessionId).ConfigureAwait(false);
 
                     try
                     {
@@ -289,7 +320,9 @@ namespace Forge.TreeWalker
                             current,
                             await this.EvaluateDynamicProperty(this.Schema.Tree[current].Properties, null),
                             this.Parameters.UserContext,
-                            this.walkTreeCts.Token).ConfigureAwait(false);
+                            this.walkTreeCts.Token,
+                            this.Parameters.TreeName,
+                            this.Parameters.RootSessionId).ConfigureAwait(false);
                     }
 
                     current = next;
@@ -385,6 +418,12 @@ namespace Forge.TreeWalker
                     // Leaf type can't have ChildSelector so we return here.
                     return null;
                 }
+                case TreeNodeType.Subroutine:
+                {
+                    // Exceptions are thrown here if the actions hit a timeout, were cancelled, or failed.
+                    await this.PerformSubroutineTypeBehavior(treeNode, treeNodeKey).ConfigureAwait(false);
+                    break;
+                }
                 case TreeNodeType.Action:
                 {
                     // Exceptions are thrown here if the actions hit a timeout, were cancelled, or failed.
@@ -460,11 +499,45 @@ namespace Forge.TreeWalker
         }
 
         /// <summary>
+        /// Performs Subroutine TreeNodeType behavior.
+        /// </summary>
+        /// <param name="treeNode">The TreeNode containing actions to execute.</param>
+        /// <param name="treeNodeKey">The TreeNode's key where the actions are taking place.</param>
+        /// <exception cref="ArgumentException">If the pre-checks fail.</exception>
+        internal async Task PerformSubroutineTypeBehavior(TreeNode treeNode, string treeNodeKey)
+        {
+            // Perform pre-checks.
+            if (treeNode.Actions == null)
+            {
+                throw new ArgumentException("Subroutine TreeNodeTypes must contain at least one SubroutineAction. TreeNodeKey: " + treeNodeKey);
+            }
+
+            bool preCheck_ContainsAtLeastOneSubroutineAction = false;
+
+            foreach (TreeAction treeAction in treeNode.Actions.Values)
+            {
+                if (treeAction.Action == nameof(SubroutineAction))
+                {
+                    preCheck_ContainsAtLeastOneSubroutineAction = true;
+                    break;
+                }
+            }
+
+            if (!preCheck_ContainsAtLeastOneSubroutineAction)
+            {
+                throw new ArgumentException("Subroutine TreeNodeTypes must contain at least one SubroutineAction. TreeNodeKey: " + treeNodeKey);
+            }
+
+            await this.PerformActionTypeBehavior(treeNode, treeNodeKey).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Executes the actions for the given tree node.
         /// Returns without throwing exception if all actions were completed successfully.
         /// </summary>
         /// <param name="treeNode">The TreeNode containing actions to execute.</param>
         /// <param name="treeNodeKey">The TreeNode's key where the actions are taking place.</param>
+        /// <exception cref="ArgumentException">If the pre-checks fail.</exception>
         /// <exception cref="TimeoutException">If the node-level timeout was hit.</exception>
         /// <exception cref="ActionTimeoutException">If the action-level timeout was hit.</exception>
         /// <exception cref="OperationCanceledException">If the cancellation token was triggered.</exception>
@@ -472,9 +545,26 @@ namespace Forge.TreeWalker
         {
             List<Task> actionTasks = new List<Task>();
 
+            // Perform pre-checks.
+            bool preCheck_ContainsNoSubroutineActions = true;
+
             if (treeNode.Actions == null)
             {
-                return;
+                throw new ArgumentException("Action TreeNodeTypes must contain at least one Action. TreeNodeKey: " + treeNodeKey);
+            }
+
+            foreach (TreeAction treeAction in treeNode.Actions.Values)
+            {
+                if (treeAction.Action == nameof(SubroutineAction))
+                {
+                    preCheck_ContainsNoSubroutineActions = false;
+                    break;
+                }
+            }
+
+            if (treeNode.Type != TreeNodeType.Subroutine && !preCheck_ContainsNoSubroutineActions)
+            {
+                throw new ArgumentException("Action TreeNodeTypes must contain zero SubroutineActions. TreeNodeKey: " + treeNodeKey);
             }
 
             // Start new parallel tasks for each action on this node.
@@ -485,12 +575,7 @@ namespace Forge.TreeWalker
 
                 if (await this.GetOutputAsync(treeActionKey).ConfigureAwait(false) != null)
                 {
-                    // Handle rehydration case. Commit LastTreeAction if it was not committed. Do not execute actions for which we have already received a response.
-                    if (await this.GetLastTreeAction().ConfigureAwait(false) == null)
-                    {
-                        await this.CommitLastTreeAction(treeActionKey).ConfigureAwait(false);
-                    }
-
+                    // Handle rehydration case. Do not execute actions for which we have a persisted response.
                     continue;
                 }
 
@@ -708,11 +793,23 @@ namespace Forge.TreeWalker
                 await this.EvaluateDynamicProperty(treeAction.Properties, null).ConfigureAwait(false),
                 this.Parameters.UserContext,
                 token,
-                this.Parameters.ForgeState
+                this.Parameters.ForgeState,
+                this.Parameters.TreeName,
+                this.Parameters.RootSessionId
             );
 
             // Instantiate the BaseAction-derived ActionType class and invoke the RunAction method on it.
-            var actionObject = Activator.CreateInstance(actionDefinition.ActionType);
+            object actionObject;
+            if (actionDefinition.ActionType == typeof(SubroutineAction))
+            {
+                // Special initializer is used for the native SubroutineAction.
+                actionObject = Activator.CreateInstance(actionDefinition.ActionType, this.Parameters);
+            }
+            else
+            {
+                actionObject = Activator.CreateInstance(actionDefinition.ActionType);
+            }
+
             MethodInfo method = typeof(BaseAction).GetMethod("RunAction");
             Task<ActionResponse> runActionTask = (Task<ActionResponse>) method.Invoke(actionObject, new object[] { actionContext });
 
@@ -779,11 +876,19 @@ namespace Forge.TreeWalker
                 {
                     return null;
                 }
-                else if (schemaObj is string && schemaObj.StartsWith(RoslynLeadingText))
+
+                if (knownType != null && knownType == typeof(object))
+                {
+                    // Nullify the knownType instead of using object type. This allows us to dynamically create JObjects from the schema.
+                    knownType = null;
+                }
+
+                if (schemaObj is string && schemaObj.StartsWith(RoslynLeadingText))
                 {
                     // Case when schema property is a Roslyn expression.
                     // Evaluate it as either the knownType if it exists, the <type> embeded in the RoslynRegex, or a string by default, in that order.
                     Match result = RoslynRegex.Match(schemaObj);
+
                     if (result.Success)
                     {
                         string typeStr = string.IsNullOrWhiteSpace(result.Groups[2].Value) ? "String" : result.Groups[2].Value;
@@ -816,20 +921,28 @@ namespace Forge.TreeWalker
                 }
                 else if (schemaObj is JObject)
                 {
-                    // Case when schema object has properties (i.e. is a dictionary).
+                    // Case when schema object has properties (i.e. is an object or a dictionary).
                     // Instantiate and use the knownType if given, then evaluate each property using recursion.
                     dynamic knownObj = Activator.CreateInstance(knownType ?? typeof(object));
-
                     IDictionary<string, dynamic> propertyValues = schemaObj.ToObject<IDictionary<string, dynamic>>();
+
                     foreach (string key in new List<string>(propertyValues.Keys))
                     {
-                        if (knownType != null)
+                        if (knownObj is IDictionary && knownType.IsGenericType && knownType.GetGenericTypeDefinition().IsAssignableFrom(typeof(Dictionary<,>)))
                         {
+                            // Case when schema object is explicitly defined as an IDictionary knownType.
+                            var prop = knownType.GetProperty("Item");
+                            prop.SetValue(knownObj, await this.EvaluateDynamicProperty(propertyValues[key], prop.PropertyType).ConfigureAwait(false), new[] { key });
+                        }
+                        else if (knownType != null)
+                        {
+                            // Case when schema object is a knownType object.
                             var prop = knownType.GetProperty(key);
                             prop.SetValue(knownObj, await this.EvaluateDynamicProperty(propertyValues[key], prop.PropertyType).ConfigureAwait(false));
                         }
                         else
                         {
+                            // Case when schema object is a dynamic JObject object.
                             propertyValues[key] = await this.EvaluateDynamicProperty(propertyValues[key], null).ConfigureAwait(false);
                         }
                     }
@@ -846,11 +959,11 @@ namespace Forge.TreeWalker
                     {
                         if (knownType != null)
                         {
-                            knownObj.SetValue(await this.EvaluateDynamicProperty(schemaObj[i], knownType.GetElementType()).ConfigureAwait(false), i);
+                            knownObj.SetValue(await this.EvaluateDynamicProperty(schemaObj[i].ToObject<object>(), knownType.GetElementType()).ConfigureAwait(false), i);
                         }
                         else
                         {
-                            schemaObj[i] = await this.EvaluateDynamicProperty(schemaObj[i], null).ConfigureAwait(false);
+                            schemaObj[i] = await this.EvaluateDynamicProperty(schemaObj[i].ToObject<object>(), null).ConfigureAwait(false);
                         }
                     }
 
@@ -884,46 +997,108 @@ namespace Forge.TreeWalker
         }
 
         /// <summary>
-        /// Commits the ActionResponse to the forgeState.
+        /// Commits the ActionResponse to the forgeState, as well as the last TreeActionKey.
         /// This allows the ActionResponses to be dynamically referenced in the ForgeTree through ITreeSession interface.
         /// </summary>
         /// <param name="treeActionKey">The TreeAction's key of the action that was executed.</param>
         /// <param name="actionResponse">The action response object returned from the action.</param>
         private async Task CommitActionResponse(string treeActionKey, ActionResponse actionResponse)
         {
-            await this.Parameters.ForgeState.Set<ActionResponse>(treeActionKey + ActionResponseSuffix, actionResponse).ConfigureAwait(false);
-            await this.CommitLastTreeAction(treeActionKey).ConfigureAwait(false);
+            List<KeyValuePair<string, object>> itemsToPersist = new List<KeyValuePair<string, object>>();
+
+            itemsToPersist.Add(new KeyValuePair<string, object>(treeActionKey + ActionResponseSuffix, actionResponse));
+            itemsToPersist.Add(new KeyValuePair<string, object>(LastTreeActionSuffix, treeActionKey));
+
+            await this.Parameters.ForgeState.SetRange(itemsToPersist);
         }
 
         /// <summary>
         /// Commits the current tree node to the forgeState.
-        /// The wrapper class has access to this state, allowing it to rehydrate/retry on failures if desired.
+        /// The caller has access to this state, allowing it to rehydrate/retry on failures if desired.
+        /// If we are revisiting a node that has been previously completed and we aren't rehydrating, clear the ActionResponses and Intermediates, and persist PreviousActionResponses.
         /// </summary>
-        /// <param name="treeNodeKey">The TreeNode's key that tree walker is currently walking.</param>
-        private Task CommitCurrentTreeNode(string treeNodeKey)
+        /// <param name="treeNodeKey">The TreeNode's key that tree walker is about to visit.</param>
+        /// <param name="treeNode">The TreeNode that tree walker is about to visit.</param>
+        private async Task CommitCurrentTreeNode(string treeNodeKey, TreeNode treeNode)
         {
-            // TODO: Consider adding a "nodeStep" to save if we already completed the BeforeVisitNode step and should skip straight to VisitNode.
-            return this.Parameters.ForgeState.Set<string>(CurrentTreeNodeSuffix, treeNodeKey);
+            List<KeyValuePair<string, object>> itemsToPersist = new List<KeyValuePair<string, object>>();
+
+            // Handle revisit/cycle case if this node has been previously completed and we aren't rehydrating.
+            if (treeNode.Actions != null && this.hasSessionRehydrated)
+            {
+                // Check if all actions already have an action response.
+                foreach (KeyValuePair<string, TreeAction> kvp in treeNode.Actions)
+                {
+                    string treeActionKey = kvp.Key;
+                    TreeAction treeAction = kvp.Value;
+                    ActionResponse actionResponse = await this.GetOutputAsync(treeActionKey).ConfigureAwait(false);
+
+                    if (actionResponse == null)
+                    {
+                        // If this session has rehydrated and actionResponse is null, then this must be the first time visiting this TreeNode.
+                        itemsToPersist.Clear();
+                        break;
+                    }
+
+                    // If this session has rehydrated and actionResponses exist, then this TreeNode was previously visited.
+                    // Clear the ActionResponse and Intermediates, and persist PreviousActionResponse.
+                    itemsToPersist.Add(new KeyValuePair<string, object>(treeActionKey + ActionResponseSuffix, null));
+                    itemsToPersist.Add(new KeyValuePair<string, object>(treeActionKey + IntermediatesSuffix, null));
+                    itemsToPersist.Add(new KeyValuePair<string, object>(treeActionKey + PreviousActionResponseSuffix, actionResponse));
+                }
+            }
+
+            itemsToPersist.Add(new KeyValuePair<string, object>(CurrentTreeNodeSuffix, treeNodeKey));
+
+            await this.Parameters.ForgeState.SetRange(itemsToPersist);
+            this.hasSessionRehydrated = true;
         }
 
         /// <summary>
-        /// Commits the last tree action to the forgeState.
+        /// Gets the previously committed TreeInput if it exists, otherwise persists the incoming TreeInput.
         /// </summary>
-        /// <param name="treeActionKey">The TreeAction's key of the last action that was committed.</param>
-        private Task CommitLastTreeAction(string treeActionKey)
+        /// <param name="treeInput">The dynamic TreeInput object for this tree walking session.</param>
+        /// <returns>The TreeInput object.</returns>
+        private async Task<object> GetOrCommitTreeInput(object treeInput)
         {
-            return this.Parameters.ForgeState.Set<string>(LastTreeActionSuffix, treeActionKey);
+            // Attempt to get a previously persisted TreeInput object in the rehydration case.
+            try
+            {
+                return await this.Parameters.ForgeState.GetValue<object>(TreeInputSuffix).ConfigureAwait(false);
+            }
+            catch
+            {
+                if (treeInput == null)
+                {
+                    return null;
+                }
+            }
+
+            // Persist the given TreeInput and return it.
+            try
+            {
+                await this.Parameters.ForgeState.Set<object>(TreeInputSuffix, treeInput).ConfigureAwait(false);
+                return treeInput;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>
         /// Initializes the actionsMap from the given assembly.
         /// This map is generated using reflection to find all the classes with the applied ForgeActionAttribute from the given Assembly.
+        /// Native ForgeActions are also added to the actionsMap, including SubroutineAction.
         /// </summary>
         /// <param name="forgeActionsAssembly">The Assembly containing ForgeActionAttribute tagged classes.</param>
         /// <param name="actionsMap">The map of string ActionNames to ActionDefinitions.</param>
         public static void GetActionsMapFromAssembly(Assembly forgeActionsAssembly, out Dictionary<string, ActionDefinition> actionsMap)
         {
             actionsMap = new Dictionary<string, ActionDefinition>();
+
+            // Add native ForgeActions: SubroutineAction.
+            actionsMap.Add(nameof(SubroutineAction), new ActionDefinition() { ActionType = typeof(SubroutineAction), InputType = typeof(SubroutineInput) });
 
             if (forgeActionsAssembly == null)
             {

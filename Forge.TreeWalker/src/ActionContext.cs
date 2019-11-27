@@ -10,7 +10,6 @@
 namespace Forge.TreeWalker
 {
     using System;
-    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -60,6 +59,16 @@ namespace Forge.TreeWalker
         public CancellationToken Token { get; private set; }
 
         /// <summary>
+        /// The name of the ForgeTree in the JsonSchema.
+        /// </summary>
+        public string TreeName { get; private set; }
+
+        /// <summary>
+        /// The unique identifier for the root/parent tree walking session.
+        /// </summary>
+        public Guid RootSessionId { get; private set; }
+
+        /// <summary>
         /// The forgeState dictionary that holds information relevant to Forge and Actions.
         /// </summary>
         private IForgeDictionary forgeState;
@@ -76,6 +85,8 @@ namespace Forge.TreeWalker
         /// <param name="userContext">The user context for this Action.</param>
         /// <param name="token">The cancellation token.</param>
         /// <param name="forgeState">The forge state dictionary.</param>
+        /// <param name="treeName">The name of the ForgeTree in the JsonSchema.</param>
+        /// <param name="rootSessionId">The unique identifier for the root/parent tree walking session.</param>
         public ActionContext(
             Guid sessionId,
             string treeNodeKey,
@@ -85,7 +96,9 @@ namespace Forge.TreeWalker
             object properties,
             object userContext,
             CancellationToken token,
-            IForgeDictionary forgeState)
+            IForgeDictionary forgeState,
+            string treeName,
+            Guid rootSessionId)
         {
             if (sessionId == null) throw new ArgumentNullException("sessionId");
             if (string.IsNullOrWhiteSpace(treeNodeKey)) throw new ArgumentNullException("treeNodeKey");
@@ -93,6 +106,8 @@ namespace Forge.TreeWalker
             if (userContext == null) throw new ArgumentNullException("userContext");
             if (token == null) throw new ArgumentNullException("token");
             if (forgeState == null) throw new ArgumentNullException("forgeState");
+            if (string.IsNullOrWhiteSpace(treeName)) throw new ArgumentNullException("treeName");
+            if (rootSessionId == null) throw new ArgumentNullException("rootSessionId");
 
             this.SessionId = sessionId;
             this.TreeNodeKey = treeNodeKey;
@@ -103,6 +118,8 @@ namespace Forge.TreeWalker
             this.UserContext = userContext;
             this.Token = token;
             this.forgeState = forgeState;
+            this.TreeName = treeName;
+            this.RootSessionId = rootSessionId;
         }
 
         /// <summary>
@@ -128,6 +145,23 @@ namespace Forge.TreeWalker
             catch
             {
                 return default(T);
+            }
+        }
+
+        /// <summary>
+        /// Gets the previously persisted ActionResponse data from the forgeState for this TreeActionKey.
+        /// If this TreeNodeKey in this tree walking session was previously successfully visited, the ActionResponses get wiped and persisted to PreviousActionResponse.
+        /// </summary>
+        /// <returns>The previously persisted ActionResponse if this TreeNodeKey/Session is being revisited, otherwise null.</returns>
+        public async Task<ActionResponse> GetPreviousActionResponse()
+        {
+            try
+            {
+                return await this.forgeState.GetValue<ActionResponse>(this.TreeActionKey + TreeWalkerSession.PreviousActionResponseSuffix).ConfigureAwait(false);
+            }
+            catch
+            {
+                return null;
             }
         }
     }

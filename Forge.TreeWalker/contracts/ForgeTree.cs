@@ -9,7 +9,6 @@
 
 namespace Forge.DataContracts
 {
-    using System;
     using System.Collections.Generic;
     using System.Runtime.Serialization;
 
@@ -25,6 +24,12 @@ namespace Forge.DataContracts
         /// </summary>
         [DataMember]
         public Dictionary<string, TreeNode> Tree { get; set; }
+
+        /// <summary>
+        /// The root TreeNodeKey that should be visited first when walking the tree.
+        /// </summary>
+        [DataMember]
+        public string RootTreeNodeKey { get; set; } = "Root";
     }
 
     /// <summary>
@@ -247,6 +252,13 @@ namespace Forge.DataContracts
         /// This represents an end state in tree.
         /// </summary>
         [EnumMember]
-        Leaf = 3
+        Leaf = 3,
+
+        /// <summary>
+        /// Subroutine type node.
+        /// This node contains at least one SubroutineAction.
+        /// </summary>
+        [EnumMember]
+        Subroutine = 4
     }
 }

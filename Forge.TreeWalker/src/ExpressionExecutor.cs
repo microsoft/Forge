@@ -49,13 +49,15 @@ namespace Forge.TreeWalker
         /// <param name="userContext">The dynamic user context.</param>
         /// <param name="dependencies">Type dependencies required to compile the schema. Can be null if no external dependencies required.</param>
         /// <param name="scriptCache">Script cache used to cache and re-use compiled Roslyn scripts.</param>
-        public ExpressionExecutor(ITreeSession session, object userContext, List<Type> dependencies, ConcurrentDictionary<string, Script<object>> scriptCache)
+        /// <param name="treeInput">The dynamic TreeInput object for this tree walking session.</param>
+        public ExpressionExecutor(ITreeSession session, object userContext, List<Type> dependencies, ConcurrentDictionary<string, Script<object>> scriptCache, object treeInput)
         {
             this.dependencies = dependencies;
             this.parameters = new CodeGenInputParams
             {
                 UserContext = userContext,
-                Session = session
+                Session = session,
+                TreeInput = treeInput
             };
             this.scriptCache = scriptCache ?? new ConcurrentDictionary<string, Script<object>>();
             this.Initialize();
@@ -67,8 +69,9 @@ namespace Forge.TreeWalker
         /// <param name="session">The tree session.</param>
         /// <param name="userContext">The dynamic user context.</param>
         /// <param name="dependencies">Type dependencies required to compile the schema. Can be null if no external dependencies required.</param>
-        public ExpressionExecutor(ITreeSession session, object userContext, List<Type> dependencies)
-            : this(session, userContext, dependencies, new ConcurrentDictionary<string, Script<object>>())
+        /// <param name="treeInput">The dynamic TreeInput object for this tree walking session.</param>
+        public ExpressionExecutor(ITreeSession session, object userContext, List<Type> dependencies, object treeInput)
+            : this(session, userContext, dependencies, new ConcurrentDictionary<string, Script<object>>(), treeInput)
         {
         }
 
@@ -150,6 +153,13 @@ namespace Forge.TreeWalker
             /// The ITreeSession interface that holds accessor methods into the forgeState dictionary that can be referenced in the schema.
             /// </summary>
             public ITreeSession Session { get; set; }
+
+            /// <summary>
+            /// The dynamic TreeInput object for this tree walking session.
+            /// This is passed in to the root/parent session by the App.
+            /// For Subroutines, this is evaluated from the SubroutineInput on the schema.
+            /// </summary>
+            public dynamic TreeInput { get; set; }
         }
     }
 }

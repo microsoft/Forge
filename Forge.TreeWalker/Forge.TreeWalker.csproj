@@ -80,6 +80,7 @@
     <Compile Include="src\IForgeDictionary.cs" />
     <Compile Include="src\ITreeSession.cs" />
     <Compile Include="src\ITreeWalkerCallbacks.cs" />
+    <Compile Include="src\SubroutineAction.cs" />
     <Compile Include="src\TreeWalkerParameters.cs" />
     <Compile Include="src\TreeWalkerSession.cs" />
   </ItemGroup>

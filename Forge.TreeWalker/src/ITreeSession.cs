@@ -9,7 +9,6 @@
 
 namespace Forge.TreeWalker
 {
-    using System;
     using System.Threading.Tasks;
 
     /// <summary>

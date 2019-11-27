@@ -20,11 +20,6 @@ namespace Forge.TreeWalker
     public class ForgeDictionary : IForgeDictionary
     {
         /// <summary>
-        /// The unique identifier for this session.
-        /// </summary>
-        public Guid SessionId { get; set; }
-
-        /// <summary>
         /// The key prefix that should precede the keys when using the forgeStateTable.
         /// This ensures the scope of the table is limited to the current SessionId.
         /// </summary>
@@ -41,12 +36,12 @@ namespace Forge.TreeWalker
         /// ForgeDictionary Constructor.
         /// </summary>
         /// <param name="forgeStateTable">The forge state table dictionary object.</param>
+        /// <param name="rootSessionId">The unique identifier for the root/parent session.</param>
         /// <param name="sessionId">The unique identifier for this session.</param>
-        public ForgeDictionary(IDictionary<string, object> forgeStateTable, Guid sessionId)
+        public ForgeDictionary(IDictionary<string, object> forgeStateTable, Guid rootSessionId, Guid sessionId)
         {
             this.forgeStateTable = forgeStateTable;
-            this.SessionId = sessionId;
-            this.keyPrefix = this.SessionId + "_";
+            this.UpdateKeyPrefix(rootSessionId, sessionId);
         }
 
         /// <summary>
@@ -160,6 +155,33 @@ namespace Forge.TreeWalker
             {
                 this.forgeStateTable.Remove(this.keyPrefix + key);
             }
+        }
+
+        /// <summary>
+        /// Updates the key prefix.
+        /// Note: The KeyPrefix should always precede the key when using the forgeStateTable to limit the scope to the current SessionId.
+        /// </summary>
+        /// <param name="rootSessionId">The unique identifier for the root/parent session.</param>
+        /// <param name="sessionId">The unique identifier for this session.</param>
+        public void UpdateKeyPrefix(Guid rootSessionId, Guid sessionId)
+        {
+            if (rootSessionId == sessionId)
+            {
+                // For backwards compatibility, the parent session will maintain the existing key format: <SessionId>_
+                this.keyPrefix = rootSessionId + "_";
+            }
+            else
+            {
+                this.keyPrefix = rootSessionId + "_" + sessionId + "_";
+            }
+        }
+
+        /// <summary>
+        /// Gets the key prefix.
+        /// </summary>
+        public string GetKeyPrefix()
+        {
+            return this.keyPrefix;
         }
     }
 }

@@ -16,6 +16,7 @@ namespace Forge.TreeWalker.UnitTests
 
     using Forge.ExternalTypes;
     using Forge.TreeWalker;
+    using Newtonsoft.Json.Linq;
 
     [TestClass]
     public class ExecutorUnitTests
@@ -43,7 +44,7 @@ namespace Forge.TreeWalker.UnitTests
         public void TestExecutor_Success_bool()
         {
             this.UserContext.Foo = "Bar";
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
             string expression = "UserContext.Foo == \"Bar\"";
 
             Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate a true expression.");
@@ -54,7 +55,7 @@ namespace Forge.TreeWalker.UnitTests
         {
             // Note that long requires casting where int does not.
             this.UserContext.Foo = (long)1000;
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
             string expression = "UserContext.Foo";
 
             Assert.AreEqual((long)1000, ex.Execute<long>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate the expression.");
@@ -64,7 +65,7 @@ namespace Forge.TreeWalker.UnitTests
         public void TestExecutor_Success_int()
         {
             this.UserContext.Foo = 1000;
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
             string expression = "UserContext.Foo";
 
             Assert.AreEqual(1000, ex.Execute<int>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate the expression.");
@@ -74,7 +75,7 @@ namespace Forge.TreeWalker.UnitTests
         public void TestExecutor_Success_ExecuteTwice()
         {
             this.UserContext.Foo = "Bar";
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
             string expression = "UserContext.Foo == \"Bar\" && UserContext.GetTopic(\"TopicName\").ResourceType == \"Node\"";
 
             // Test - confirm Execute can compile and execute the same code twice without crashing.
@@ -86,7 +87,7 @@ namespace Forge.TreeWalker.UnitTests
         public void TestExecutor_Fail_MissingDefinitions()
         {
             this.UserContext.Foo = "Bar";
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
             string expression = "UserContext.Bar == \"Bar\"";
 
             try
@@ -103,7 +104,7 @@ namespace Forge.TreeWalker.UnitTests
         public void TestExecutor_Fail_BadExpression()
         {
             this.UserContext.Foo = "Bar";
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
             string expression = "UserContext.Foo";
 
             Assert.ThrowsException<InvalidCastException>(() => 
@@ -118,7 +119,7 @@ namespace Forge.TreeWalker.UnitTests
             this.UserContext.Foo = ExternalTestType.TestEnum;
             List<Type> dependencies = new List<Type>();
             dependencies.Add(typeof(ExternalTestType));
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, dependencies);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, dependencies, null);
             string expression = "UserContext.Foo.ToString() == ExternalTestType.TestEnum.ToString()";
             Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate a true expression.");
         }
@@ -127,7 +128,7 @@ namespace Forge.TreeWalker.UnitTests
         public void TestExecutor_Fail_CompileExpressionWithMissingDependencies()
         {
             this.UserContext.Foo = ExternalTestType.ExampleEnum;
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
             string expression = "UserContext.Foo == ExternalTestType.ExampleEnum";
 
             try
@@ -148,7 +149,7 @@ namespace Forge.TreeWalker.UnitTests
             List<Type> dependencies = new List<Type>();
             dependencies.Add(typeof(ExternalTestType));
 
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, dependencies);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, dependencies, null);
             string expression = "UserContext.Foo == ExternalTestType.TestEnum && UserContext.Bar == DiffNamespaceType.TestOne";
 
             try
@@ -169,7 +170,7 @@ namespace Forge.TreeWalker.UnitTests
             List<Type> dependencies = new List<Type>();
             dependencies.Add(typeof(ExternalTestType));
 
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, dependencies);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, dependencies, null);
             string expression = "UserContext.Foo.ToString() == ExternalTestType.TestEnum.ToString() && UserContext.Bar.ToString() == TestType.Test.ToString()";
             Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate a true expression.");
         }
@@ -185,7 +186,7 @@ namespace Forge.TreeWalker.UnitTests
             dependencies.Add(typeof(Type));
 
             // Default dependencies are expected to be tossed away internally in ExpressionExecutor. 
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
             string expression = "UserContext.Foo == \"Foo\"";
             Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate a true expression.");
         }
@@ -193,7 +194,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestExecutor_Success_ChangingFunctionDefinition()
         {
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
 
             // Rewritting GetCount to return 2
             string expression="UserContext.GetCount = new Func<int>(() => 2)";
@@ -205,7 +206,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestExecutor_Fail_ChangingFunctionReturnType()
         {
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
 
             // Changing return type of GetCount
             string expression = "UserContext.GetCount = new Func<string>(() => \"Test\")";
@@ -219,7 +220,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestExecutor_Success_ChangingFunctionReturnType()
         {
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
 
             // Changing return type of GetCount
             string expression = "UserContext.GetCount = new Func<string>(() => \"Test\")";
@@ -232,7 +233,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestExecutor_Fail_ExecutingMultipleStatements()
         {
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
 
             // Changing return type of GetCount
             string expression = "int x = UserContext.GetCount() + 5; UserContext.GetCount = new Func<int>(() => x); return UserContext.GetCount()";
@@ -254,7 +255,7 @@ namespace Forge.TreeWalker.UnitTests
             string expression = "(Func<bool>)(() => {return UserContext.Foo == \"Bar\";})";
 
             // Casting the expression to Func<bool> since the executor will return a delegate of type Func<bool>
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
             dynamic expressionResult = ex.Execute<Delegate>(expression).GetAwaiter().GetResult();
 
             if (expressionResult.GetType() == typeof(Func<bool>))
@@ -277,7 +278,7 @@ namespace Forge.TreeWalker.UnitTests
             string expression = "(Func<Task<bool>>)(() => {return Task.FromResult(UserContext.Foo == \"Bar\");})";
 
             // Casting the expression to Func<bool> since the executor will return a delegate of type Func<bool>
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
             dynamic expressionResult = ex.Execute<Delegate>(expression).GetAwaiter().GetResult();
             
             if (expressionResult.GetType() == typeof(Func<Task<bool>>))
@@ -300,12 +301,45 @@ namespace Forge.TreeWalker.UnitTests
             string expression = "UserContext.Foo == \"Bar\" && UserContext.GetTopic(\"TopicName\").ResourceType == \"Node\"";
 
             // Test - confirm ExpressionExecutor script cache does not contain script before executing.
-            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null);
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
             Assert.IsFalse(ex.ScriptCacheContainsKey(expression));
 
             // Test - confirm ExpressionExecutor script cache does contain script after executing.
             Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult());
             Assert.IsTrue(ex.ScriptCacheContainsKey(expression));
         }
+
+        [TestMethod]
+        public void TestExecutor_TreeInput_Success()
+        {
+            object treeInput = "TestValue";
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, treeInput);
+            string expression = "TreeInput == \"TestValue\"";
+
+            Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate a true expression using TreeInput.");
+        }
+
+        [TestMethod]
+        public void TestExecutor_TreeInputJObject_Success()
+        {
+            JObject treeInput = new JObject();
+            treeInput["StringProperty"] = "TestValue";
+            treeInput["IntProperty"] = 10;
+
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, treeInput);
+            string expression = "TreeInput.StringProperty == \"TestValue\" && TreeInput.IntProperty == 10";
+
+            Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate a true expression using TreeInput as JObject.");
+        }
+
+        [TestMethod]
+        public void TestExecutor_TreeInputNull_Success()
+        {
+            ExpressionExecutor ex = new ExpressionExecutor(null, this.UserContext, null, null);
+            string expression = "TreeInput == null";
+
+            Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate a true expression using TreeInput as null.");
+        }
+
     }
 }
