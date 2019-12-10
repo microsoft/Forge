@@ -303,9 +303,9 @@ namespace Forge.TreeWalker
                         current,
                         await this.EvaluateDynamicProperty(this.Schema.Tree[current].Properties, null),
                         this.Parameters.UserContext,
-                        this.walkTreeCts.Token,
                         this.Parameters.TreeName,
-                        this.Parameters.RootSessionId).ConfigureAwait(false);
+                        this.Parameters.RootSessionId,
+                        this.walkTreeCts.Token).ConfigureAwait(false);
 
                     try
                     {
@@ -320,9 +320,9 @@ namespace Forge.TreeWalker
                             current,
                             await this.EvaluateDynamicProperty(this.Schema.Tree[current].Properties, null),
                             this.Parameters.UserContext,
-                            this.walkTreeCts.Token,
                             this.Parameters.TreeName,
-                            this.Parameters.RootSessionId).ConfigureAwait(false);
+                            this.Parameters.RootSessionId,
+                            this.walkTreeCts.Token).ConfigureAwait(false);
                     }
 
                     current = next;

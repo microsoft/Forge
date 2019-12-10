@@ -38,7 +38,7 @@ namespace Forge.TreeWalker
         /// <param name="parameters">The tree walker parameters of the parent tree walker session.</param>
         public SubroutineAction(TreeWalkerParameters parameters)
         {
-            this.parameters = parameters;
+            this.parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
         }
 
         /// <summary>

@@ -742,9 +742,9 @@ namespace Forge.TreeWalker.UnitTests
                 string treeNodeKey,
                 dynamic properties,
                 dynamic userContext,
-                CancellationToken token,
                 string treeName,
-                Guid rootSessionId)
+                Guid rootSessionId,
+                CancellationToken token)
             {
                 string serializeProperties = JsonConvert.SerializeObject(properties);
 
@@ -760,9 +760,9 @@ namespace Forge.TreeWalker.UnitTests
                 string treeNodeKey,
                 dynamic properties,
                 dynamic userContext,
-                CancellationToken token,
                 string treeName,
-                Guid rootSessionId)
+                Guid rootSessionId,
+                CancellationToken token)
             {
                 Console.WriteLine(string.Format(
                     "OnAfterVisitNode: SessionId: {0}, TreeNodeKey: {1}, Properties: {2}.",

@@ -69,9 +69,30 @@ namespace Forge.TreeWalker
         /// <param name="session">The tree session.</param>
         /// <param name="userContext">The dynamic user context.</param>
         /// <param name="dependencies">Type dependencies required to compile the schema. Can be null if no external dependencies required.</param>
-        /// <param name="treeInput">The dynamic TreeInput object for this tree walking session.</param>
-        public ExpressionExecutor(ITreeSession session, object userContext, List<Type> dependencies, object treeInput)
-            : this(session, userContext, dependencies, new ConcurrentDictionary<string, Script<object>>(), treeInput)
+        /// <param name="scriptCache">Script cache used to cache and re-use compiled Roslyn scripts.</param>
+        public ExpressionExecutor(ITreeSession session, object userContext, List<Type> dependencies, ConcurrentDictionary<string, Script<object>> scriptCache)
+            : this(session, userContext, dependencies, scriptCache, null)
+        {
+        }
+
+        /// <summary>
+        /// Instantiates the ExpressionExecutor class with objects that can be referenced in the schema.
+        /// </summary>
+        /// <param name="session">The tree session.</param>
+        /// <param name="userContext">The dynamic user context.</param>
+        /// <param name="dependencies">Type dependencies required to compile the schema. Can be null if no external dependencies required.</param>
+        public ExpressionExecutor(ITreeSession session, object userContext, List<Type> dependencies)
+            : this(session, userContext, dependencies, new ConcurrentDictionary<string, Script<object>>())
+        {
+        }
+
+        /// <summary>
+        /// Instantiates the ExpressionExecutor class with objects that can be referenced in the schema.
+        /// </summary>
+        /// <param name="session">The tree session.</param>
+        /// <param name="userContext">The dynamic user context.</param>
+        public ExpressionExecutor(ITreeSession session, object userContext)
+            : this(session, userContext, null)
         {
         }
 

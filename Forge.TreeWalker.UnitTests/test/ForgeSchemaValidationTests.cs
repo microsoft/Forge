@@ -41,14 +41,14 @@ namespace Forge.TreeWalker.UnitTests
             this.jsonSchemaFailureBlacklist = new Dictionary<string, List<string>>()
             {
                 {
-                    "SubroutineAction_FailsOnActionTreeNodeType",
+                    nameof(ForgeSchemaHelper.SubroutineAction_FailsOnActionTreeNodeType),
                     new List<string>
                     {
                         "RootTree"
                     }
                 },
                 {
-                    "SubroutineAction_FailsOnNoSubroutineAction",
+                    nameof(ForgeSchemaHelper.SubroutineAction_FailsOnNoSubroutineAction),
                     new List<string>
                     {
                         "RootTree"
@@ -102,7 +102,6 @@ namespace Forge.TreeWalker.UnitTests
                         bool expectedResult = !(this.jsonSchemaFailureBlacklist.TryGetValue(fieldInfo.Name, out List<string> list) && list.Contains(treeName));
                         jsonTrees.Add(new Tuple<string, bool>(jsonSubSchema, expectedResult));
                     }
-                    Console.WriteLine("DICTIONARY NO THROW");
                 }
                 catch (Exception)
                 {
