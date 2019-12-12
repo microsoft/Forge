@@ -13,17 +13,17 @@ namespace Forge.TreeWalker.UnitTests
     {
         public const string TardigradeScenario = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Selection"",
-                        ""ChildSelector"":
-                        [
+                        ""ChildSelector"": [
                             {
+                                ""Label"": ""Node"",
                                 ""ShouldSelect"": ""C#|UserContext.ResourceType == \""Node\"""",
                                 ""Child"": ""Node""
                             },
                             {
+                                ""Label"": ""Label"",
                                 ""ShouldSelect"": ""C#|UserContext.ResourceType == \""Container\"""",
                                 ""Child"": ""Container""
                             }
@@ -31,8 +31,7 @@ namespace Forge.TreeWalker.UnitTests
                     },
                     ""Container"": {
                         ""Type"": ""Action"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Container_CollectDiagnosticsAction"": {
                                 ""Action"": ""CollectDiagnosticsAction"",
                                 ""Input"":
@@ -41,9 +40,9 @@ namespace Forge.TreeWalker.UnitTests
                                 }
                             }
                         },
-                        ""ChildSelector"":
-                        [
+                        ""ChildSelector"": [
                             {
+                                ""Label"": ""Label"",
                                 ""ShouldSelect"": ""C#|Session.GetLastActionResponse().Status == \""Success\"""",
                                 ""Child"": ""Tardigrade""
                             }
@@ -51,15 +50,14 @@ namespace Forge.TreeWalker.UnitTests
                     },
                     ""Tardigrade"": {
                         ""Type"": ""Action"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Tardigrade_TardigradeAction"": {
                                 ""Action"": ""TardigradeAction""
                             }
                         },
-                        ""ChildSelector"":
-                        [
+                        ""ChildSelector"": [
                             {
+                                ""Label"": ""Label"",
                                 ""ShouldSelect"": ""C#|Session.GetLastActionResponse().Status == \""Success\"""",
                                 ""Child"": ""Tardigrade_Success""
                             }
@@ -73,16 +71,13 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string ActionException_Fail = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Action"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Root_TestDelayExceptionAction"": {
                                 ""Action"": ""TestDelayExceptionAction"",
-                                ""Input"":
-                                {
+                                ""Input"": {
                                     ""ThrowException"": true
                                 }
                             }
@@ -93,16 +88,13 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string ActionException_ContinuationOnRetryExhaustion = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Action"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Root_TestDelayExceptionAction"": {
                                 ""Action"": ""TestDelayExceptionAction"",
-                                ""Input"":
-                                {
+                                ""Input"": {
                                     ""ThrowException"": true
                                 },
                                 ""ContinuationOnRetryExhaustion"": true
@@ -114,16 +106,13 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string ActionDelay_Fail = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Action"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Root_TestDelayExceptionAction"": {
                                 ""Action"": ""TestDelayExceptionAction"",
-                                ""Input"":
-                                {
+                                ""Input"": {
                                     ""DelayMilliseconds"": 50
                                 },
                                 ""Timeout"": 10,
@@ -135,16 +124,13 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string ActionDelay_ContinuationOnTimeout = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Action"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Root_TestDelayExceptionAction"": {
                                 ""Action"": ""TestDelayExceptionAction"",
-                                ""Input"":
-                                {
+                                ""Input"": {
                                     ""DelayMilliseconds"": 50
                                 },
                                 ""Timeout"": 10,
@@ -157,22 +143,18 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string ActionDelay_ContinuationOnTimeout_RetryPolicy_TimeoutInAction = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Action"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Root_TestDelayExceptionAction"": {
                                 ""Action"": ""TestDelayExceptionAction"",
-                                ""Input"":
-                                {
+                                ""Input"": {
                                     ""DelayMilliseconds"": 50,
                                     ""ThrowException"": true
                                 },
                                 ""Timeout"": 100,
-                                ""RetryPolicy"":
-                                {
+                                ""RetryPolicy"": {
                                     ""Type"": ""FixedInterval"",
                                     ""MinBackoffMs"": 25
                                 },
@@ -185,22 +167,18 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string ActionDelay_ContinuationOnTimeout_RetryPolicy_TimeoutBetweenRetries = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Action"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Root_TestDelayExceptionAction"": {
                                 ""Action"": ""TestDelayExceptionAction"",
-                                ""Input"":
-                                {
+                                ""Input"": {
                                     ""DelayMilliseconds"": 25,
                                     ""ThrowException"": true
                                 },
                                 ""Timeout"": 50,
-                                ""RetryPolicy"":
-                                {
+                                ""RetryPolicy"": {
                                     ""Type"": ""FixedInterval"",
                                     ""MinBackoffMs"": 100
                                 },
@@ -213,13 +191,12 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string NoChildMatch = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Selection"",
-                        ""ChildSelector"":
-                        [
+                        ""ChildSelector"": [
                             {
+                                ""Label"": ""Label"",
                                 ""ShouldSelect"": ""C#|false"",
                                 ""Child"": ""LeafNode""
                             }
@@ -234,26 +211,22 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string TestEvaluateInputTypeAction = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Action"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Root_TestEvaluateInputTypeAction"": {
                                 ""Action"": ""TestEvaluateInputTypeAction"",
-                                ""Input"":
-                                {
+                                ""Input"": {
                                     ""Command"": ""tasklist"",
                                     ""IntExpression"": ""C#<Int64>|UserContext.GetCount()"",
                                     ""BoolExpression"": ""C#|true"",
-                                    ""NestedObject"":
-                                    {
+                                    ""NestedObject"": {
                                         ""Name"": ""C#|string.Format(\""{0}_{1}\"", \""MyName\"", UserContext.Name)"",
-                                        ""Value"": ""MyValue""
+                                        ""Value"": ""MyValue"",
+                                        ""IntPropertyInObject"": ""C#<Int64>|UserContext.GetCount()""
                                     },
-                                    ""ObjectArray"":
-                                    [
+                                    ""ObjectArray"": [
                                         {
                                             ""Name"": ""C#|UserContext.Name"",
                                             ""Value"": ""FirstValue""
@@ -263,10 +236,29 @@ namespace Forge.TreeWalker.UnitTests
                                             ""Value"": ""SecondValue""
                                         }
                                     ],
-                                    ""StringArray"": [""value1"", ""value2""],
-                                    ""LongArray"": [1, 3, 2],
+                                    ""StringArray"": [
+                                        ""C#|UserContext.Name"",
+                                        ""value2""
+                                    ],
+                                    ""LongArray"": [
+                                        ""C#<Int64>|(long)UserContext.GetCount()"",
+                                        3,
+                                        2
+                                    ],
                                     ""BoolDelegate"": ""C#|(Func<bool>)(() => {return UserContext.GetCount() == 1;})"",
-                                    ""BoolDelegateAsync"": ""C#|(Func<Task<bool>>)(async() => { return await UserContext.GetCountAsync() == 2; })""
+                                    ""BoolDelegateAsync"": ""C#|(Func<Task<bool>>)(async() => { return await UserContext.GetCountAsync() == 2; })"",
+                                    ""StringDictionary"": {
+                                        ""TestKey1"": ""C#|UserContext.Name"",
+                                        ""TestKey2"": ""TestValue2""
+                                    },
+                                    ""DynamicObject"": {
+                                        ""DynamicPropertyString"": ""TestValue1"",
+                                        ""DynamicPropertyInt"": 10,
+                                        ""DynamicPropertyExpression"": ""C#|UserContext.Name"",
+                                        ""DynamicPropertyNestedObject"": {
+                                            ""NestedPropertyOne"": ""NestedValue1""
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -277,16 +269,13 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string TestEvaluateInputType_FailOnField_Action = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Action"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Root_TestEvaluateInputType_FailOnField_Action"": {
                                 ""Action"": ""TestEvaluateInputType_FailOnField_Action"",
-                                ""Input"":
-                                {
+                                ""Input"": {
                                     ""UnexpectedField"": true
                                 },
                                 ""ContinuationOnRetryExhaustion"": true
@@ -299,16 +288,13 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string TestEvaluateInputTypeAction_UnexpectedPropertyFail = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Action"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Root_TestEvaluateInputTypeAction"": {
                                 ""Action"": ""TestEvaluateInputTypeAction"",
-                                ""Input"":
-                                {
+                                ""Input"": {
                                     ""UnexpectedProperty"": true
                                 },
                                 ""ContinuationOnRetryExhaustion"": true
@@ -321,16 +307,13 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string TestEvaluateInputType_FailOnNonEmptyCtor_Action = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Action"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Root_TestEvaluateInputType_FailOnNonEmptyCtor_Action"": {
                                 ""Action"": ""TestEvaluateInputType_FailOnNonEmptyCtor_Action"",
-                                ""Input"":
-                                {
+                                ""Input"": {
                                     ""BoolProperty"": true
                                 },
                                 ""ContinuationOnRetryExhaustion"": true
@@ -343,16 +326,13 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string LeafNodeSummaryAction = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Leaf"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Root_LeafNodeSummaryAction"": {
                                 ""Action"": ""LeafNodeSummaryAction"",
-                                ""Input"":
-                                {
+                                ""Input"": {
                                     ""Status"": ""Success"",
                                     ""StatusCode"": 1,
                                     ""Output"": ""TheResult""
@@ -366,31 +346,27 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string LeafNodeSummaryAction_InputIsActionResponse = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Action"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Root_CollectDiagnosticsAction"": {
                                 ""Action"": ""CollectDiagnosticsAction"",
-                                ""Input"":
-                                {
+                                ""Input"": {
                                     ""Command"": ""TheCommand""
                                 }
                             }
                         },
-                        ""ChildSelector"":
-                        [
+                        ""ChildSelector"": [
                             {
+                                ""Label"": ""Label"",
                                 ""Child"": ""LeafNodeSummaryTest""
                             }
                         ]
                     },
                     ""LeafNodeSummaryTest"": {
                         ""Type"": ""Leaf"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""LeafNodeSummaryTest_LeafNodeSummaryAction"": {
                                 ""Action"": ""LeafNodeSummaryAction"",
                                 ""Input"": ""C#|Session.GetLastActionResponse()""
@@ -403,17 +379,235 @@ namespace Forge.TreeWalker.UnitTests
 
         public const string ExternalExecutors = @"
             {
-                ""Tree"":
-                {
+                ""Tree"": {
                     ""Root"": {
                         ""Type"": ""Leaf"",
-                        ""Actions"":
-                        {
+                        ""Actions"": {
                             ""Root_LeafNodeSummaryAction"": {
                                 ""Action"": ""LeafNodeSummaryAction"",
-                                ""Input"":
-                                {
+                                ""Input"": {
                                     ""Status"": ""External|StatusResult""
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ";
+
+        public const string SubroutineAction_GetLastActionResponse = @"
+            {
+                ""ParentTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Subroutine"",
+                            ""Actions"": {
+                                ""Root_Subroutine"": {
+                                    ""Action"": ""SubroutineAction"",
+                                    ""Input"": {
+                                        ""TreeName"": ""SubroutineTree"",
+                                        ""TreeInput"": {
+                                            ""TestStatusCode"": 10
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                ""SubroutineTree"": {
+                    ""RootTreeNodeKey"": ""StartingNode"",
+                    ""Tree"": {
+                        ""StartingNode"": {
+                            ""Type"": ""Leaf"",
+                            ""Actions"": {
+                                ""Root_LeafNodeSummaryAction"": {
+                                    ""Action"": ""LeafNodeSummaryAction"",
+                                    ""Input"": {
+                                        ""Status"": ""Success"",
+                                        ""StatusCode"": ""C#|(int)TreeInput.TestStatusCode""
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ";
+
+        public const string SubroutineAction_NoActions = @"
+            {
+                ""RootTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Subroutine"",
+                            ""Actions"": {
+                                ""Root_Subroutine"": {
+                                    ""Action"": ""SubroutineAction"",
+                                    ""Input"": {
+                                        ""TreeName"": ""SubroutineTree"",
+                                        ""TreeInput"": ""TestValue""
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                ""SubroutineTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Leaf""
+                        }
+                    }
+                }
+            }
+        ";
+
+        public const string SubroutineAction_ParallelSubroutineActions = @"
+            {
+                ""RootTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Subroutine"",
+                            ""Actions"": {
+                                ""Root_Subroutine_One"": {
+                                    ""Action"": ""SubroutineAction"",
+                                    ""Input"": {
+                                        ""TreeName"": ""SubroutineTree"",
+                                        ""TreeInput"": ""TestValueOne""
+                                    }
+                                },
+                                ""Root_Subroutine_Two"": {
+                                    ""Action"": ""SubroutineAction"",
+                                    ""Input"": {
+                                        ""TreeName"": ""SubroutineTree"",
+                                        ""TreeInput"": ""TestValueTwo""
+                                    }
+                                },
+                                ""Root_CollectDiagnosticsAction"": {
+                                    ""Action"": ""CollectDiagnosticsAction"",
+                                    ""Input"": {
+                                        ""Command"": ""TheCommand""
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                ""SubroutineTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Leaf"",
+                            ""Actions"": {
+                                ""Root_LeafNodeSummaryAction"": {
+                                    ""Action"": ""LeafNodeSummaryAction"",
+                                    ""Input"": {
+                                        ""Status"": ""C#|(string)TreeInput"",
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ";
+
+        public const string SubroutineAction_FailsOnActionTreeNodeType = @"
+            {
+                ""RootTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Action"",
+                            ""Actions"": {
+                                ""Root_Subroutine"": {
+                                    ""Action"": ""SubroutineAction"",
+                                    ""Input"": {
+                                        ""TreeName"": ""SubroutineTree"",
+                                        ""TreeInput"": ""TestValue""
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                ""SubroutineTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Leaf""
+                        }
+                    }
+                }
+            }
+        ";
+
+        public const string SubroutineAction_FailsOnNoSubroutineAction = @"
+            {
+                ""RootTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Subroutine""
+                        }
+                    }
+                }
+            }
+        ";
+
+        public const string CycleSchema = @"
+            {
+                ""Tree"": {
+                    ""Root"": {
+                        ""Type"": ""Action"",
+                        ""Actions"": {
+                            ""Root_RevisitAction"": {
+                                ""Action"": ""RevisitAction""
+                            }
+                        },
+                        ""ChildSelector"": [
+                            {
+                                ""Label"": ""Label"",
+                                ""ShouldSelect"": ""C#|(int)Session.GetLastActionResponse().Output < 3"",
+                                ""Child"": ""Root""
+                            }
+                        ]
+                    }
+                }
+            }
+        ";
+
+        public const string Cycle_SubroutineActionUsesDifferentSessionId = @"
+            {
+                ""RootTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Subroutine"",
+                            ""Actions"": {
+                                ""Root_Subroutine"": {
+                                    ""Action"": ""SubroutineAction"",
+                                    ""Input"": {
+                                        ""TreeName"": ""SubroutineTree""
+                                    }
+                                },
+                                ""Root_RevisitAction"": {
+                                    ""Action"": ""RevisitAction""
+                                }
+                            },
+                            ""ChildSelector"": [
+                                {
+                                    ""Label"": ""Label"",
+                                    ""ShouldSelect"": ""C#|(int)Session.GetOutput(\""Root_RevisitAction\"").Output < 3"",
+                                    ""Child"": ""Root""
+                                }
+                            ]
+                        }
+                    }
+                },
+                ""SubroutineTree"": {
+                    ""Tree"": {
+                        ""Root"": {
+                            ""Type"": ""Action"",
+                                ""Actions"": {
+                                ""Root_ReturnSessionIdAction"": {
+                                    ""Action"": ""ReturnSessionIdAction""
                                 }
                             }
                         }

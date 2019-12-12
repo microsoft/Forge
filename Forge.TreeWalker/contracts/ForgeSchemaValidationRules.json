@@ -1,193 +1,281 @@
 {
-  "type": "object",
-  "definitions": {
-    "TreeDefinition": {
-      "type": "object",
-      "patternProperties": {
-        ".*?": {
-          "$ref": "#/definitions/TreeNodeDefinition"
+    "type": "object",
+    "properties": {
+        "Tree": {
+            "$ref": "#/definitions/TreeDefinition"
+        },
+        "RootTreeNodeKey": {
+            "type": "string"
         }
-      }
     },
-    "TreeNodeDefinition": {
-      "oneOf": [
-        {
-          "$ref": "#/definitions/SelectionTypeNodeDefinition"
-        },
-        {
-          "$ref": "#/definitions/ActionTypeNodeDefinition"
-        },
-        {
-          "$ref": "#/definitions/LeafTypeNodeDefinition"
-        }
-      ]
-    },
-    "SelectionTypeNodeDefinition": {
-      "type": "object",
-      "properties": {
-        "Type": {
-          "type": "string",
-          "enum": [ "Selection" ]
-        },
-        "ChildSelector": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ChildSelectorDefinition"
-          },
-          "minItems": 1
-        },
-        "Properties": {
-          "type": "object"
-        }
-      },
-      "additionalProperties": false,
-      "required": [ "Type" ]
-    },
-    "ActionTypeNodeDefinition": {
-      "type": "object",
-      "properties": {
-        "Type": {
-          "type": "string",
-          "enum": [ "Action" ]
-        },
-        "Timeout": {
-          "type": [ "number", "string" ]
-        },
-        "Actions": {
-          "patternProperties": {
-            ".*?": {
-              "$ref": "#/definitions/ActionDefinition"
+    "additionalProperties": false,
+    "definitions": {
+        "TreeDefinition": {
+            "type": "object",
+            "patternProperties": {
+                ".*?": {
+                    "$ref": "#/definitions/TreeNodeDefinition"
+                }
             }
-          },
-          "minProperties": 1
         },
-        "ChildSelector": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ChildSelectorDefinition"
-          },
-          "minItems": 1
+        "TreeNodeDefinition": {
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/SelectionTypeNodeDefinition"
+                },
+                {
+                    "$ref": "#/definitions/ActionTypeNodeDefinition"
+                },
+                {
+                    "$ref": "#/definitions/LeafTypeNodeDefinition"
+                },
+                {
+                    "$ref": "#/definitions/SubroutineTypeNodeDefinition"
+                }
+            ]
         },
-        "Properties": {
-          "type": "object"
-        }
-      },
-      "additionalProperties": false,
-      "required": [ "Type", "Actions" ]
-    },
-    "LeafTypeNodeDefinition": {
-      "type": "object",
-      "properties": {
-        "Type": {
-          "type": "string",
-          "enum": [ "Leaf" ]
+        "SelectionTypeNodeDefinition": {
+            "type": "object",
+            "properties": {
+                "Type": {
+                    "type": "string",
+                    "enum": [ "Selection" ]
+                },
+                "ChildSelector": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ChildSelectorDefinition"
+                    },
+                    "minItems": 1
+                },
+                "Properties": {
+                    "type": "object"
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "Type", "ChildSelector" ]
         },
-        "Actions": {
-          "patternProperties": {
-            ".*?": {
-              "$ref": "#/definitions/LeafNodeSummaryActionDefinition"
-            }
-          },
-          "minProperties": 1,
-          "maxProperties": 1
+        "ActionTypeNodeDefinition": {
+            "type": "object",
+            "properties": {
+                "Type": {
+                    "type": "string",
+                    "enum": [ "Action" ]
+                },
+                "Timeout": {
+                    "type": [ "number", "string" ]
+                },
+                "Actions": {
+                    "allOf": [
+                        {
+                            "not": {
+                                "patternProperties": {
+                                    ".*?": {
+                                        "$ref": "#/definitions/SubroutineActionDefinition"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "patternProperties": {
+                                ".*?": {
+                                    "$ref": "#/definitions/ActionDefinition"
+                                }
+                            },
+                            "minProperties": 1
+                        }
+                    ]
+                },
+                "ChildSelector": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ChildSelectorDefinition"
+                    },
+                    "minItems": 1
+                },
+                "Properties": {
+                    "type": "object"
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "Type", "Actions" ]
         },
-        "Properties": {
-          "type": "object"
-        }
-      },
-      "additionalProperties": false,
-      "required": [ "Type" ]
-    },
-    "ChildSelectorDefinition": {
-      "type": "object",
-      "properties": {
-        "Label": {
-          "type": "string"
+        "LeafTypeNodeDefinition": {
+            "type": "object",
+            "properties": {
+                "Type": {
+                    "type": "string",
+                    "enum": [ "Leaf" ]
+                },
+                "Actions": {
+                    "patternProperties": {
+                        ".*?": {
+                            "$ref": "#/definitions/LeafNodeSummaryActionDefinition"
+                        }
+                    },
+                    "minProperties": 1,
+                    "maxProperties": 1
+                },
+                "Properties": {
+                    "type": "object"
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "Type" ]
         },
-        "ShouldSelect": {
-          "type": "string"
+        "SubroutineTypeNodeDefinition": {
+            "type": "object",
+            "properties": {
+                "Type": {
+                    "type": "string",
+                    "enum": [ "Subroutine" ]
+                },
+                "Timeout": {
+                    "type": [ "number", "string" ]
+                },
+                "Actions": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "patternProperties": {
+                        ".*?": {
+                            "if": {
+                                "$ref": "#/definitions/SubroutineActionDefinition"
+                            },
+                            "else": {
+                                "$ref": "#/definitions/ActionDefinition"
+                            }
+                        }
+                    }
+                },
+                "ChildSelector": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ChildSelectorDefinition"
+                    },
+                    "minItems": 1
+                },
+                "Properties": {
+                    "type": "object"
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "Type", "Actions" ]
         },
-        "Child": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": [ "Label", "Child" ]
-    },
-    "RetryPolicy": {
-      "type": "object",
-      "properties": {
-        "Type": {
-          "type": "string",
-          "enum": [ "None", "FixedInterval", "ExponentialBackoff" ]
-        },
-        "MinBackoffMs": {
-          "type": "number"
-        },
-        "MaxBackoffMs": {
-          "type": "number"
-        }
-      },
-      "required": [ "Type" ]
-    },
-    "ActionDefinition": {
-      "type": "object",
-      "properties": {
-        "Action": {
-          "type": "string"
-        },
-        "Input": {
-          "type": "object"
-        },
-        "Properties": {
-          "type": "object"
-        },
-        "Timeout": {
-          "type": [ "number", "string" ]
-        },
-        "ContinuationOnTimeout": {
-          "type": "boolean"
+        "ChildSelectorDefinition": {
+            "type": "object",
+            "properties": {
+                "Label": {
+                    "type": "string"
+                },
+                "ShouldSelect": {
+                    "type": "string"
+                },
+                "Child": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "Label", "Child" ]
         },
         "RetryPolicy": {
-          "$ref": "#/definitions/RetryPolicy"
-        },
-        "ContinuationOnRetryExhaustion": {
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false,
-      "required": [ "Action" ]
-    },
-    "LeafNodeSummaryActionDefinition": {
-      "type": "object",
-      "properties": {
-        "Action": {
-          "enum": [ "LeafNodeSummaryAction" ]
-        },
-        "Input": {
-          "type": [ "object", "string" ],
-          "properties": {
-            "Status": {
-              "type": "string"
+            "type": "object",
+            "properties": {
+                "Type": {
+                    "type": "string",
+                    "enum": [ "None", "FixedInterval", "ExponentialBackoff" ]
+                },
+                "MinBackoffMs": {
+                    "type": "number"
+                },
+                "MaxBackoffMs": {
+                    "type": "number"
+                }
             },
-            "StatusCode": {
-              "type": [ "number", "string" ]
+            "required": [ "Type" ]
+        },
+        "ActionDefinition": {
+            "type": "object",
+            "properties": {
+                "Action": {
+                    "type": "string"
+                },
+                "Input": {
+                    "type": "object"
+                },
+                "Properties": {
+                    "type": "object"
+                },
+                "Timeout": {
+                    "type": [ "number", "string" ]
+                },
+                "ContinuationOnTimeout": {
+                    "type": "boolean"
+                },
+                "RetryPolicy": {
+                    "$ref": "#/definitions/RetryPolicy"
+                },
+                "ContinuationOnRetryExhaustion": {
+                    "type": "boolean"
+                }
             },
-            "Output": {
-              "type": [ "object", "string" ]
-            }
-          },
-          "additionalProperties": false
+            "additionalProperties": false,
+            "required": [ "Action" ]
+        },
+        "LeafNodeSummaryActionDefinition": {
+            "type": "object",
+            "properties": {
+                "Action": {
+                    "enum": [ "LeafNodeSummaryAction" ]
+                },
+                "Input": {
+                    "type": [ "object", "string" ],
+                    "properties": {
+                        "Status": {
+                            "type": "string"
+                        },
+                        "StatusCode": {
+                            "type": [ "number", "string" ]
+                        },
+                        "Output": {
+                            "type": [ "object", "string" ]
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "Action", "Input" ]
+        },
+        "SubroutineActionDefinition": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/ActionDefinition"
+                },
+                {
+                    "properties": {
+                        "Action": {
+                            "enum": [ "SubroutineAction" ]
+                        },
+                        "Input": {
+                            "type": [ "object" ],
+                            "properties": {
+                                "TreeName": {
+                                    "type": "string"
+                                },
+                                "TreeInput": {
+                                    "type": [ "object", "string" ]
+                                },
+                                "TreeFilePath": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [ "TreeName" ]
+                        }
+                    },
+                    "required": [ "Action", "Input" ]
+                }
+            ]
         }
-      },
-      "additionalProperties": false,
-      "required": [ "Action", "Input" ]
     }
-  },
-  "properties": {
-    "Tree": {
-      "$ref": "#/definitions/TreeDefinition"
-    }
-  },
-  "additionalProperties": false
 }

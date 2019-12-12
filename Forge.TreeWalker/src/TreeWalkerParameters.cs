@@ -81,6 +81,39 @@ namespace Forge.TreeWalker
         /// </summary>
         public Dictionary<string, Func<string, CancellationToken, Task<object>>> ExternalExecutors { get; set; }
 
+        /// <summary>
+        /// The delegate called by Forge when executing SubroutineActions to get an initialized TreeWalkerSession that Forge will call WalkTree upon.
+        /// The TreeWalkerSession should be set up according to the input to execute the Subroutine session.
+        /// Typically this delegate is expected to:
+        ///   1. Create new TreeWalkerParameters with passed in TreeName and TreeInput.
+        ///   2. Update the JsonSchema that maps from the passed in TreeName.
+        ///   3. Create a new ForgeState object. It is important for Subroutine sessions to have their own ForgeState object since the private keyPrefix gets updated.
+        ///   4. Use the same RootSessionId.
+        ///   5. Other parameters can stay the same or be changed. For example, the App could use a different UserContext or ForgeActionsAssembly for different ForgeTrees if they desire.
+        /// </summary>
+        public Func<SubroutineInput, Guid, TreeWalkerParameters, TreeWalkerSession> InitializeSubroutineTree { get; set; }
+
+        /// <summary>
+        /// The unique identifier of the root/parent session that gets passed on to Subroutine sessions.
+        /// RootSessionId will get set to SessionId if not initialized.
+        /// </summary>
+        public Guid RootSessionId { get; set; }
+
+        /// <summary>
+        /// The name of the ForgeTree in the JsonSchema.
+        /// For Subroutines, this is evaluated from the SubroutineInput on the schema.
+        /// "RootTree" will be used as TreeName if not specified.
+        /// </summary>
+        public string TreeName { get; set; }
+
+        /// <summary>
+        /// The dynamic TreeInput object for this tree walking session.
+        /// This is passed in to the root/parent session by the App.
+        /// For Subroutines, this is evaluated from the SubroutineInput on the schema.
+        /// TreeInput is able to be referenced when evaluating schema expressions.
+        /// </summary>
+        public object TreeInput { get; set; }
+
         #endregion
 
         /// <summary>

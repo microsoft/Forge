@@ -19,25 +19,25 @@ namespace Forge.TreeWalker.UnitTests
     using Forge.DataContracts;
     using Forge.TreeWalker;
     using Forge.TreeWalker.ForgeExceptions;
-
     using Newtonsoft.Json;
 
     [TestClass]
     public class TreeWalkerUnitTests
     {
         private Guid sessionId;
-        private IForgeDictionary forgeState = new ForgeDictionary(new Dictionary<string, object>(), Guid.Empty);
+        private IForgeDictionary forgeState = new ForgeDictionary(new Dictionary<string, object>(), Guid.Empty, Guid.Empty);
         private dynamic UserContext = new System.Dynamic.ExpandoObject();
         private ITreeWalkerCallbacks callbacks;
         private CancellationToken token;
         private TreeWalkerParameters parameters;
         private TreeWalkerSession session;
+        private Dictionary<string, ForgeTree> forgeTrees = new Dictionary<string, ForgeTree>();
 
-        public void TestInitialize(string jsonSchema)
+        public void TestInitialize(string jsonSchema, string treeName = null)
         {
             // Initialize contexts, callbacks, and actions.
             this.sessionId = Guid.NewGuid();
-            this.forgeState = new ForgeDictionary(new Dictionary<string, object>(), this.sessionId);
+            this.forgeState = new ForgeDictionary(new Dictionary<string, object>(), this.sessionId, this.sessionId);
             this.callbacks = new TreeWalkerCallbacks();
             this.token = new CancellationTokenSource().Token;
 
@@ -62,10 +62,22 @@ namespace Forge.TreeWalker.UnitTests
                 this.token)
             {
                 UserContext = this.UserContext,
-                ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly
+                ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly,
+                InitializeSubroutineTree = this.InitializeSubroutineTree,
+                TreeName = treeName
             };
 
             this.session = new TreeWalkerSession(this.parameters);
+        }
+
+        public void TestSubroutineInitialize(string jsonSchema, string treeName = "RootTree")
+        {
+            // Subroutine tests use a ForgeSchema file that deserializes to a Dictionary of TreeName to ForgeTree.
+            this.forgeTrees = JsonConvert.DeserializeObject<Dictionary<string, ForgeTree>>(jsonSchema);
+            ForgeTree forgeTree = this.forgeTrees[treeName];
+            string rootSchema = JsonConvert.SerializeObject(forgeTree);
+
+            this.TestInitialize(rootSchema, treeName);
         }
 
         [TestMethod]
@@ -507,11 +519,220 @@ namespace Forge.TreeWalker.UnitTests
                 "Expected to successfully retrieve the Func output value from the action.");
         }
 
+        [TestMethod]
+        public void Test_SubroutineAction_ConfirmLastActionResponseGetsPersisted_Success()
+        {
+            this.TestSubroutineInitialize(jsonSchema: ForgeSchemaHelper.SubroutineAction_GetLastActionResponse, treeName: "ParentTree");
+
+            // Test - WalkTree to execute a SubroutineAction. Subroutine tree contains an action, defines a RootTreeNodeKey, and queries TreeInput from the schema.
+            //        Confirm the output of the SubroutineAction is the last ActionResponse in the Subroutine tree.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "Success",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the output value from the action that matches the last action response of the subroutine tree.");
+
+            Assert.AreEqual(
+                10,
+                subroutineActionResponse.StatusCode,
+                "Expected to successfully retrieve the output value from the action that matches the last action response of the subroutine tree.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_NoActions_Success()
+        {
+            this.TestSubroutineInitialize(jsonSchema: ForgeSchemaHelper.SubroutineAction_NoActions, treeName: "RootTree");
+
+            // Test - WalkTree to execute a SubroutineAction. Subroutine tree contains no Actions. Subroutine tree does not specify RootTreeNodeKey, so expect to visit "Root" be default.
+            //        Confirm the output of the SubroutineAction is the Status of the Subroutine tree walker session.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "RanToCompletion",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session, since the subroutine tree contained no Actions.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_ConfirmIntermediatesUsePersistedSessionIdOnRehydration_Success()
+        {
+            this.TestSubroutineInitialize(jsonSchema: ForgeSchemaHelper.SubroutineAction_NoActions, treeName: "RootTree");
+
+            // WalkTree to execute a SubroutineAction.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "RanToCompletion",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session, since the subroutine tree contained no Actions.");
+
+            // Cache the original subroutine SessionId to check against later.
+            SubroutineIntermediates subroutineIntermediates = this.forgeState.GetValue<SubroutineIntermediates>("Root_Subroutine" + TreeWalkerSession.IntermediatesSuffix).GetAwaiter().GetResult();
+            Guid subroutineSessionId = subroutineIntermediates.SessionId;
+
+            // Brain surgery to make it look like we failed over during SubroutineAction before the ActionResponse was persisted.
+            this.forgeState.Set<ActionResponse>("Root_Subroutine" + TreeWalkerSession.ActionResponseSuffix, null).GetAwaiter().GetResult();
+            this.session = new TreeWalkerSession(this.session.Parameters);
+
+            actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            // Test - Confirm the SubroutineIntermediates.SessionId is persisted and gets re-used on rehydration.
+            subroutineIntermediates = this.forgeState.GetValue<SubroutineIntermediates>("Root_Subroutine" + TreeWalkerSession.IntermediatesSuffix).GetAwaiter().GetResult();
+            Assert.AreEqual(subroutineSessionId, subroutineIntermediates.SessionId);
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_ParallelSubroutineActions_Success()
+        {
+            this.TestSubroutineInitialize(jsonSchema: ForgeSchemaHelper.SubroutineAction_ParallelSubroutineActions, treeName: "RootTree");
+
+            // Test - WalkTree to execute a Subroutine node with 2 SubroutineActions and a regular Action in parallel.
+            //        Confirm parallel actions execute successfully.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine_One");
+            Assert.AreEqual(
+                "TestValueOne",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the output value from the action that matches the last action response of the subroutine tree.");
+
+            subroutineActionResponse = this.session.GetOutput("Root_Subroutine_Two");
+            Assert.AreEqual(
+                "TestValueTwo",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the output value from the action that matches the last action response of the subroutine tree.");
+
+            ActionResponse actionResponse = this.session.GetOutput("Root_CollectDiagnosticsAction");
+            Assert.AreEqual(
+                "Success",
+                actionResponse.Status,
+                "Expected to successfully read ActionResponse.Status.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_FailsOnActionTreeNodeType_Failure()
+        {
+            this.TestSubroutineInitialize(jsonSchema: ForgeSchemaHelper.SubroutineAction_FailsOnActionTreeNodeType, treeName: "RootTree");
+
+            // Test - WalkTree and fail to execute an Action type node containing a SubroutineAction.
+            string actual;
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                actual = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            }, "Expected WalkTree to fail because the schema contained a Property that does not exist in ActionDefinition.InputType.");
+
+            actual = this.session.Status;
+            Assert.AreEqual(
+                "Failed",
+                actual,
+                "Expected WalkTree to fail because the schema contained a Property that does not exist in ActionDefinition.InputType.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_FailsOnNoSubroutineAction_Failure()
+        {
+            this.TestSubroutineInitialize(jsonSchema: ForgeSchemaHelper.SubroutineAction_FailsOnNoSubroutineAction, treeName: "RootTree");
+
+            // Test - WalkTree and fail to execute a Subroutine type node that does not contain at least one SubroutineAction.
+            string actual;
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                actual = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            }, "Expected WalkTree to fail because the schema contained a Property that does not exist in ActionDefinition.InputType.");
+
+            actual = this.session.Status;
+            Assert.AreEqual(
+                "Failed",
+                actual,
+                "Expected WalkTree to fail because the schema contained a Property that does not exist in ActionDefinition.InputType.");
+        }
+
+        [TestMethod]
+        public void Test_Cycles_Success()
+        {
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.CycleSchema);
+
+            // Test - WalkTree that revisits a node multiple times.
+            //        Inside the Action, we confirm that GetPreviousActionResponse gets persisted and Action Intermediates get wiped.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion_NoChildMatched", actualStatus);
+
+            ActionResponse actionResponse = this.session.GetLastActionResponse();
+            Assert.AreEqual(
+                3,
+                (int)actionResponse.Output,
+                "Expected to successfully retrieve the output value from the action that matches the last action response of the subroutine tree.");
+        }
+
+        [TestMethod]
+        public void Test_Cycles_RevisitSubroutineActionUsesDifferentSessionId_Success()
+        {
+            this.TestSubroutineInitialize(jsonSchema: ForgeSchemaHelper.Cycle_SubroutineActionUsesDifferentSessionId);
+
+            // Test - WalkTree that revisits a Subroutine node multiple times.
+            //        Confirm different SessionIds get used each time we revisit the SubroutineAction.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion_NoChildMatched", actualStatus);
+
+            string rootSessionId = this.session.Parameters.RootSessionId.ToString();
+            ActionResponse previousActionResponse = this.forgeState.GetValue<ActionResponse>("Root_Subroutine" + TreeWalkerSession.PreviousActionResponseSuffix).GetAwaiter().GetResult();
+            ActionResponse actionResponse = this.session.GetOutput("Root_Subroutine");
+
+            Assert.AreNotEqual(
+                previousActionResponse.Status,
+                actionResponse.Status,
+                "Expected to successfully retrieve the output value from the action that matches the last action response of the subroutine tree.");
+
+            Assert.AreNotEqual(
+                rootSessionId,
+                previousActionResponse.Status);
+
+            Assert.AreNotEqual(
+                rootSessionId,
+                actionResponse.Status);
+        }
+
+        /// <summary>
+        /// Used to test ExternalExecutors.
+        /// </summary>
         private static async Task<object> External(string expression, CancellationToken token)
         {
             // External executes the expression and returns.
             await Task.Delay(1, token);
             return expression + "_Executed";
+        }
+
+        /// <summary>
+        /// Used to test SubroutineActions.
+        /// </summary>
+        private TreeWalkerSession InitializeSubroutineTree(SubroutineInput subroutineInput, Guid subroutineSessionId, TreeWalkerParameters parentParameters)
+        {
+            string jsonSchema = JsonConvert.SerializeObject(forgeTrees[subroutineInput.TreeName]);
+            TreeWalkerParameters subroutineParameters = new TreeWalkerParameters(
+                subroutineSessionId,
+                jsonSchema,
+                new ForgeDictionary(new Dictionary<string, object>(), parentParameters.RootSessionId, subroutineSessionId),
+                this.callbacks,
+                this.token)
+            {
+                UserContext = this.UserContext,
+                ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly,
+                InitializeSubroutineTree = this.InitializeSubroutineTree,
+                RootSessionId = parentParameters.RootSessionId,
+                TreeName = subroutineInput.TreeName,
+                TreeInput = subroutineInput.TreeInput
+            };
+
+            return new TreeWalkerSession(subroutineParameters);
         }
 
         private sealed class TreeWalkerCallbacks : ITreeWalkerCallbacks
@@ -521,6 +742,8 @@ namespace Forge.TreeWalker.UnitTests
                 string treeNodeKey,
                 dynamic properties,
                 dynamic userContext,
+                string treeName,
+                Guid rootSessionId,
                 CancellationToken token)
             {
                 string serializeProperties = JsonConvert.SerializeObject(properties);
@@ -537,6 +760,8 @@ namespace Forge.TreeWalker.UnitTests
                 string treeNodeKey,
                 dynamic properties,
                 dynamic userContext,
+                string treeName,
+                Guid rootSessionId,
                 CancellationToken token)
             {
                 Console.WriteLine(string.Format(
@@ -582,6 +807,11 @@ namespace Forge.TreeWalker.UnitTests
             public Task<T> GetIntermediates<T>()
             {
                 return this.actionContext.GetIntermediates<T>();
+            }
+
+            public Task<ActionResponse> GetPreviousActionResponse()
+            {
+                return this.actionContext.GetPreviousActionResponse();
             }
         }
 
@@ -703,12 +933,15 @@ namespace Forge.TreeWalker.UnitTests
             public long[] LongArray { get; set; }
             public Func<bool> BoolDelegate { get; set; }
             public Func<Task<bool>> BoolDelegateAsync { get; set; }
+            public Dictionary<string, string> StringDictionary { get; set; }
+            public object DynamicObject { get; set; }
         }
 
         public class FooActionObject
         {
             public string Name { get; set; }
             public string Value { get; set; }
+            public int IntPropertyInObject { get; set; }
         }
 
         [ForgeAction(InputType: typeof(FooActionInput_UnexpectedField))]
@@ -757,6 +990,46 @@ namespace Forge.TreeWalker.UnitTests
             public bool BoolProperty { get; set; }
 
             public FooActionInput_NonEmptyConstructor(int unexpectedParameter) {}
+        }
+
+        /// <summary>
+        /// This action increases counters each time it is visited from the same TreeActionKey in the same SessionId.
+        /// It persists these counters in the ActionResponse/PreviousActionResponse.
+        /// This tests CommitCurrentTreeNode revisit/cycle behavior.
+        /// </summary>
+        [ForgeAction]
+        public class RevisitAction : BaseCommonAction
+        {
+            public override async Task<ActionResponse> RunAction()
+            {
+                // Confirm that intermediates are getting cleared every time we revisit the node, despite us increasing the counter.
+                int intermediates = await this.GetIntermediates<int>();
+                Assert.AreEqual(0, intermediates);
+
+                intermediates++;
+                await this.CommitIntermediates<int>(intermediates);
+
+                // GetPreviousActionResponse, increase the Output counter by one, and return.
+                ActionResponse actionResponse = await this.GetPreviousActionResponse() ?? new ActionResponse() { Status = "Success", Output = 0 };
+                actionResponse.Output = (int)actionResponse.Output + 1;
+
+                Console.WriteLine(string.Format(
+                    "RevisitAction - SessionId: {0}, TreeNodeKey: {1}, ActionResponse.Output: {2}.",
+                    this.SessionId,
+                    this.TreeNodeKey,
+                    actionResponse.Output));
+
+                return actionResponse;
+            }
+        }
+
+        [ForgeAction]
+        public class ReturnSessionIdAction : BaseCommonAction
+        {
+            public override Task<ActionResponse> RunAction()
+            {
+                return Task.FromResult(new ActionResponse() { Status = this.SessionId.ToString() });
+            }
         }
     }
 }

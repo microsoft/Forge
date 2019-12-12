@@ -20,11 +20,6 @@ namespace Forge.TreeWalker
     public interface IForgeDictionary
     {
         /// <summary>
-        /// The unique identifier for this session.
-        /// </summary>
-        Guid SessionId { get; set; }
-
-        /// <summary>
         /// Sets an element with the provided key and value to the backing store.
         /// </summary>
         /// <param name="key">The key of the element to set.</param>
@@ -56,5 +51,18 @@ namespace Forge.TreeWalker
         /// </summary>
         /// <param name="keys">The list of keys to remove.</param>
         Task RemoveKeys(List<string> keys);
+
+        /// <summary>
+        /// Updates the key prefix.
+        /// Note: The KeyPrefix should always precede the key when using the forgeStateTable to limit the scope to the current SessionId.
+        /// </summary>
+        /// <param name="rootSessionId">The unique identifier for the root/parent session.</param>
+        /// <param name="sessionId">The unique identifier for this session.</param>
+        void UpdateKeyPrefix(Guid rootSessionId, Guid sessionId);
+
+        /// <summary>
+        /// Gets the key prefix.
+        /// </summary>
+        string GetKeyPrefix();
     }
 }
