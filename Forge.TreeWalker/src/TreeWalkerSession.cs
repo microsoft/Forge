@@ -56,6 +56,7 @@ namespace Forge.TreeWalker
 
         /// <summary>
         /// The TreeInput suffix appended to the end of the key in forgeState that maps to this tree walking session's TreeInput object.
+        /// Key: <SessionId>_TI
         /// </summary>
         public static string TreeInputSuffix = "TI";
 
@@ -63,6 +64,7 @@ namespace Forge.TreeWalker
         /// The PreviousActionResponse suffix appended to the end of the key in forgeState that maps to a previously persisted ActionResponse.
         /// When a TreeNodeKey in a tree walking session was previously successfully visited, the ActionResponses get wiped and persisted to PreviousActionResponse.
         /// GetPreviousActionResponse method is available in ActionContext.
+        /// Key: <SessionId>_<TreeActionKey>_PAR
         /// </summary>
         public static string PreviousActionResponseSuffix = "_PAR";
 
@@ -73,6 +75,11 @@ namespace Forge.TreeWalker
         /// This Action is intended to give schema authors the ability to cleanly end a tree walking path with a summary.
         /// </summary>
         public static string LeafNodeSummaryAction = "LeafNodeSummaryAction";
+
+        /// <summary>
+        /// The default TreeName if not specified in the TreeWalkerParameters.
+        /// </summary>
+        public static string DefaultTreeName = "RootTree";
 
         /// <summary>
         /// The Roslyn regex expression. Used to check if dynamic schema values should be evaluated with Roslyn.
@@ -141,7 +148,7 @@ namespace Forge.TreeWalker
 
             if (string.IsNullOrWhiteSpace(parameters.TreeName))
             {
-                this.Parameters.TreeName = "RootTree";
+                this.Parameters.TreeName = DefaultTreeName;
             }
 
             // Initialize properties from required TreeWalkerParameters properties.
@@ -509,7 +516,7 @@ namespace Forge.TreeWalker
             // Perform pre-checks.
             if (treeNode.Actions == null)
             {
-                throw new ArgumentException("Subroutine TreeNodeTypes must contain at least one SubroutineAction. TreeNodeKey: " + treeNodeKey);
+                throw new ArgumentException("Subroutine TreeNodeType does not contain any Actions. TreeNodeKey: " + treeNodeKey);
             }
 
             bool preCheck_ContainsAtLeastOneSubroutineAction = false;
