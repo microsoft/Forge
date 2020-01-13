@@ -34,7 +34,7 @@ steps:
 
 - task: EsrpCodeSigning@1
   inputs:
-    ConnectedServiceName: 'Forge ESRP CodeSign'
+    ConnectedServiceName: 'Forge ESRP CodeSign2'
     FolderPath: '$(Build.SourcesDirectory)'
     Pattern: 'Forge.TreeWalker.dll'
     signConfigType: 'inlineSignParams'
