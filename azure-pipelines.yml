@@ -36,7 +36,7 @@ steps:
   inputs:
     ConnectedServiceName: 'Forge ESRP CodeSign2'
     FolderPath: '$(Build.SourcesDirectory)'
-    Pattern: 'Forge.TreeWalker.dll'
+    Pattern: 'Forge.TreeWalker*.nupkg'
     signConfigType: 'inlineSignParams'
     inlineOperation: |
       [ 
