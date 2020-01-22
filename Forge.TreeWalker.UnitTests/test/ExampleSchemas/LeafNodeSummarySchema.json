@@ -1,0 +1,30 @@
+{
+    "Tree": {
+        "Root": {
+            "Type": "Action",
+            "Actions": {
+                "Root_CollectDiagnosticsAction": {
+                    "Action": "CollectDiagnosticsAction",
+                    "Input": {
+                        "Command": "TheCommand"
+                    }
+                }
+            },
+            "ChildSelector": [
+                {
+                    "Label": "Label",
+                    "Child": "LeafNodeSummaryTest"
+                }
+            ]
+        },
+        "LeafNodeSummaryTest": {
+            "Type": "Leaf",
+            "Actions": {
+                "LeafNodeSummaryTest_LeafNodeSummaryAction": {
+                    "Action": "LeafNodeSummaryAction",
+                    "Input": "C#|Session.GetLastActionResponse()"
+                }
+            }
+        }
+    }
+}

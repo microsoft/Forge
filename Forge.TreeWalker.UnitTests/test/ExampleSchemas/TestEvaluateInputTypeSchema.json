@@ -1,0 +1,55 @@
+{
+    "Tree": {
+        "Root": {
+            "Type": "Action",
+            "Actions": {
+                "Root_TestEvaluateInputTypeAction": {
+                    "Action": "TestEvaluateInputTypeAction",
+                    "Input": {
+                        "Command": "tasklist",
+                        "IntExpression": "C#<Int64>|UserContext.GetCount()",
+                        "BoolExpression": "C#|true",
+                        "NestedObject": {
+                            "Name": "C#|string.Format(\"{0}_{1}\", \"MyName\", UserContext.Name)",
+                            "Value": "MyValue",
+                            "IntPropertyInObject": "C#<Int64>|UserContext.GetCount()"
+                        },
+                        "ObjectArray": [
+                            {
+                                "Name": "C#|UserContext.Name",
+                                "Value": "FirstValue"
+                            },
+                            {
+                                "Name": "SecondName",
+                                "Value": "SecondValue"
+                            }
+                        ],
+                        "StringArray": [
+                            "C#|UserContext.Name",
+                            "value2"
+                        ],
+                        "LongArray": [
+                            "C#<Int64>|(long)UserContext.GetCount()",
+                            3,
+                            2
+                        ],
+                        "BoolDelegate": "C#|(Func<bool>)(() => {return UserContext.GetCount() == 1;})",
+                        "BoolDelegateAsync": "C#|(Func<Task<bool>>)(async() => { return await UserContext.GetCountAsync() == 2; })",
+                        "StringDictionary": {
+                            "TestKey1": "C#|UserContext.Name",
+                            "TestKey2": "TestValue2"
+                        },
+                        "DynamicObject": {
+                            "DynamicPropertyString": "TestValue1",
+                            "DynamicPropertyInt": 10,
+                            "DynamicPropertyExpression": "C#|UserContext.Name",
+                            "DynamicPropertyNestedObject": {
+                                "NestedPropertyOne": "NestedValue1"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,37 @@
+{
+    "ParentTree": {
+        "Tree": {
+            "Root": {
+                "Type": "Subroutine",
+                "Actions": {
+                    "Root_Subroutine": {
+                        "Action": "SubroutineAction",
+                        "Input": {
+                            "TreeName": "SubroutineTree",
+                            "TreeInput": {
+                                "TestStatusCode": 10
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "SubroutineTree": {
+        "RootTreeNodeKey": "StartingNode",
+        "Tree": {
+            "StartingNode": {
+                "Type": "Leaf",
+                "Actions": {
+                    "Root_LeafNodeSummaryAction": {
+                        "Action": "LeafNodeSummaryAction",
+                        "Input": {
+                            "Status": "Success",
+                            "StatusCode": "C#|(int)TreeInput.TestStatusCode"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

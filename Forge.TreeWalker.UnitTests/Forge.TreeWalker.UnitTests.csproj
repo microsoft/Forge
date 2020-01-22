@@ -76,11 +76,33 @@
     <Compile Include="test\ForgeSchemaHelper.cs" />
     <Compile Include="test\ForgeSchemaValidationTests.cs" />
     <Compile Include="test\TreeWalkerUnitTests.cs" />
+    <Compile Include="test\ActionsAndCallbacks\BaseCommonAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\CollectDiagnosticsAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\ReturnSessionIdAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\RevisitAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TardigradeAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TestDelayExceptionAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TestEvaluateInputType_FailOnField_Action.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TestEvaluateInputType_FailOnNonEmptyCtor_Action.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TestEvaluateInputTypeAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TreeWalkerCallbacks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="test\ExampleSchemas\LeafNodeSummarySchema.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="test\ExampleSchemas\SubroutineSchema.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="test\ExampleSchemas\TardigradeSchema.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="test\ExampleSchemas\TestEvaluateInputTypeSchema.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Forge.TreeWalker\Forge.TreeWalker.csproj">
