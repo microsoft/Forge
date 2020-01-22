@@ -7,7 +7,7 @@
 // </summary>
 //-----------------------------------------------------------------------
 
-namespace Forge.TreeWalker
+namespace Microsoft.Forge.TreeWalker
 {
     using System;
     using System.Threading;

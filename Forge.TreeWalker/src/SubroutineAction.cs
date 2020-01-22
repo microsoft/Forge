@@ -7,12 +7,12 @@
 // </summary>
 //-----------------------------------------------------------------------
 
-namespace Forge.TreeWalker
+namespace Microsoft.Forge.TreeWalker
 {
     using System;
     using System.Threading.Tasks;
 
-    using Forge.Attributes;
+    using Microsoft.Forge.Attributes;
 
     /// <summary>
     /// The SubroutineAction is a native Forge action that walks a TreeWalkerSession.

@@ -7,7 +7,7 @@
 // </summary>
 //-----------------------------------------------------------------------
 
-namespace Forge.TreeWalker.UnitTests
+namespace Microsoft.Forge.TreeWalker.UnitTests
 {
     using System;
     using System.Collections.Generic;
@@ -15,10 +15,10 @@ namespace Forge.TreeWalker.UnitTests
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using Forge.Attributes;
-    using Forge.DataContracts;
-    using Forge.TreeWalker;
-    using Forge.TreeWalker.ForgeExceptions;
+    using Microsoft.Forge.Attributes;
+    using Microsoft.Forge.DataContracts;
+    using Microsoft.Forge.TreeWalker;
+    using Microsoft.Forge.TreeWalker.ForgeExceptions;
     using Newtonsoft.Json;
 
     [TestClass]

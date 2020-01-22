@@ -7,7 +7,7 @@
 // </summary>
 //-----------------------------------------------------------------------
 
-namespace Forge.TreeWalker.ForgeExceptions
+namespace Microsoft.Forge.TreeWalker.ForgeExceptions
 {
     using System;
 
