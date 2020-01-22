@@ -22,7 +22,7 @@ steps:
   displayName: 'Run Tests'
   inputs:
     testAssemblyVer2: | 
-      $(Build.SourcesDirectory)\Forge.TreeWalker.UnitTests\obj\Release\Forge.TreeWalker.UnitTests.dll
+      $(Build.SourcesDirectory)\Forge.TreeWalker.UnitTests\obj\Release\Microsoft.Forge.TreeWalker.UnitTests.dll
     runInParallel: True
 
 - task: NuGetCommand@2
@@ -36,7 +36,7 @@ steps:
   inputs:
     ConnectedServiceName: 'Forge ESRP CodeSign2'
     FolderPath: '$(Build.SourcesDirectory)\..\a'
-    Pattern: 'Forge.TreeWalker*.nupkg'
+    Pattern: 'Microsoft.Forge.TreeWalker*.nupkg'
     signConfigType: 'inlineSignParams'
     inlineOperation: |
       [ 
