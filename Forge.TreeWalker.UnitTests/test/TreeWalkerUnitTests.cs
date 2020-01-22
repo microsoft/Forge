@@ -11,11 +11,11 @@ namespace Forge.TreeWalker.UnitTests
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using Forge.Attributes;
     using Forge.DataContracts;
     using Forge.TreeWalker;
     using Forge.TreeWalker.ForgeExceptions;
@@ -24,6 +24,11 @@ namespace Forge.TreeWalker.UnitTests
     [TestClass]
     public class TreeWalkerUnitTests
     {
+        private const string TardigradeSchemaPath = "test\\ExampleSchemas\\TardigradeSchema.json";
+        private const string TestEvaluateInputTypeSchemaPath = "test\\ExampleSchemas\\TestEvaluateInputTypeSchema.json";
+        private const string LeafNodeSummarySchemaPath = "test\\ExampleSchemas\\LeafNodeSummarySchema.json";
+        private const string SubroutineSchemaPath = "test\\ExampleSchemas\\SubroutineSchema.json";
+
         private Guid sessionId;
         private IForgeDictionary forgeState = new ForgeDictionary(new Dictionary<string, object>(), Guid.Empty, Guid.Empty);
         private dynamic UserContext = new System.Dynamic.ExpandoObject();
@@ -80,10 +85,23 @@ namespace Forge.TreeWalker.UnitTests
             this.TestInitialize(rootSchema, treeName);
         }
 
+        public void TestFromFileInitialize(string filePath, string treeName = null)
+        {
+            string jsonSchema = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, filePath));
+            if (treeName == null)
+            {
+                this.TestInitialize(jsonSchema, treeName);
+            }
+            else
+            {
+                this.TestSubroutineInitialize(jsonSchema, treeName);
+            }
+        }
+
         [TestMethod]
         public void TestTreeWalkerSession_Constructor()
         {
-            this.TestInitialize(jsonSchema: ForgeSchemaHelper.TardigradeScenario);
+            this.TestFromFileInitialize(filePath: TardigradeSchemaPath);
 
             // Test 1 - Verify jsonSchema was successfully deserialized in constructor.
             Assert.AreEqual("Action", this.session.Schema.Tree["Tardigrade"].Type.ToString());
@@ -95,7 +113,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestTreeWalkerSession_VisitNode_Success()
         {
-            this.TestInitialize(jsonSchema: ForgeSchemaHelper.TardigradeScenario);
+            this.TestFromFileInitialize(filePath: TardigradeSchemaPath);
 
             // Test - VisitNode and expect the first child to be returned.
             string expected = "Tardigrade";
@@ -107,7 +125,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestTreeWalkerSession_VisitNode_LeafNode_Success()
         {
-            this.TestInitialize(jsonSchema: ForgeSchemaHelper.TardigradeScenario);
+            this.TestFromFileInitialize(filePath: TardigradeSchemaPath);
 
             // Test - VisitNode on node of Leaf type and confirm it does not throw.
             string expected = null;
@@ -119,7 +137,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestTreeWalkerSession_VisitNode_NoTimeout_Success()
         {
-            this.TestInitialize(jsonSchema: ForgeSchemaHelper.TardigradeScenario);
+            this.TestFromFileInitialize(filePath: TardigradeSchemaPath);
 
             // Test - VisitNode with no Timeout and execute an Action with no Timeout set. Confirm we do not throw exceptions.
             string expected = "Tardigrade_Success";
@@ -130,7 +148,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestTreeWalkerSession_WalkTree_Success()
         {
-            this.TestInitialize(jsonSchema: ForgeSchemaHelper.TardigradeScenario);
+            this.TestFromFileInitialize(filePath: TardigradeSchemaPath);
 
             // Test - WalkTree and expect the Status to be RanToCompletion.
             string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
@@ -228,7 +246,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestTreeWalkerSession_WalkTree_CancelledBeforeExecution()
         {
-            this.TestInitialize(jsonSchema: ForgeSchemaHelper.TardigradeScenario);
+            this.TestFromFileInitialize(filePath: TardigradeSchemaPath);
 
             // Test - CancelWalkTree before WalkTree and expect the Status to be CancelledBeforeExecution.
             this.session.CancelWalkTree();
@@ -265,7 +283,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestTreeWalkerSession_WalkTree_Failed_MissingKey()
         {
-            this.TestInitialize(jsonSchema: ForgeSchemaHelper.TardigradeScenario);
+            this.TestFromFileInitialize(filePath: TardigradeSchemaPath);
 
             // Test - WalkTree and expect the Status to be Failed because the key does not exist which threw an exception.
             Assert.ThrowsException<KeyNotFoundException>(() => 
@@ -290,7 +308,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestGetCurrentTreeNode()
         {
-            this.TestInitialize(jsonSchema: ForgeSchemaHelper.TardigradeScenario);
+            this.TestFromFileInitialize(filePath: TardigradeSchemaPath);
 
             // Test 1 - Confirm GetCurrentTreeNode returns null before walking tree.
             Assert.AreEqual(null, this.session.GetCurrentTreeNode().GetAwaiter().GetResult(), "Expected CurrentTreeNode to be null before starting walk tree.");
@@ -303,7 +321,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestGetLastTreeAction()
         {
-            this.TestInitialize(jsonSchema: ForgeSchemaHelper.TardigradeScenario);
+            this.TestFromFileInitialize(filePath: TardigradeSchemaPath);
 
             // Test 1 - Confirm GetLastTreeAction returns null before walking tree.
             Assert.AreEqual(null, this.session.GetLastTreeAction().GetAwaiter().GetResult(), "Expected LastTreeAction to be null before starting walk tree.");
@@ -316,7 +334,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestGetOutput()
         {
-            this.TestInitialize(jsonSchema: ForgeSchemaHelper.TardigradeScenario);
+            this.TestFromFileInitialize(filePath: TardigradeSchemaPath);
 
             string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
             Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to run to completion.");
@@ -360,25 +378,10 @@ namespace Forge.TreeWalker.UnitTests
                 "Expected to successfully read ActionResponse.Status.");
         }
 
-        // TODO: Add back test once we decide how we want to handle this case: Should people be able to change function definitions?
-        // TestScript in  local jsonSchema is related to this test.
-        // [TestMethod]
-        // public void TestTreeWalkerSession_WalkTree_Success_ChangingFunctionDefinition()
-        // {
-        //     this.TestInitialize(jsonSchema: ForgeSchemaHelper.TardigradeScenario);
-
-        //     Assert.AreEqual(this.UserContext.GetCount(), 1);
-        //     string actual = this.session.WalkTree("TestScript").GetAwaiter().GetResult();   
-        //     Assert.AreEqual(2, this.UserContext.GetCount());
-        // }
-
-        // TODO: Add back test once we decide how we want to handle this case: Should people be able to change function definitions?
-        // TestScript in  local jsonSchema is related to this test.
-
         [TestMethod]
         public void Test_EvaluateInputType_Success()
         {
-            this.TestInitialize(jsonSchema: ForgeSchemaHelper.TestEvaluateInputTypeAction);
+            this.TestFromFileInitialize(filePath: TestEvaluateInputTypeSchemaPath);
 
             // Test - WalkTree to execute an Action with its ActionInput type defined in the ActionDefinition.InputType.
             string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
@@ -479,7 +482,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void Test_LeafNodeSummaryAction_InputAsObject_Success()
         {
-            this.TestInitialize(jsonSchema: ForgeSchemaHelper.LeafNodeSummaryAction_InputIsActionResponse);
+            this.TestFromFileInitialize(filePath: LeafNodeSummarySchemaPath);
 
             // Test - WalkTree to execute a LeafNodeSummaryAction node with its ActionInput set to ActionResponse object of the previously ran Action in the parent node.
             string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
@@ -522,7 +525,7 @@ namespace Forge.TreeWalker.UnitTests
         [TestMethod]
         public void Test_SubroutineAction_ConfirmLastActionResponseGetsPersisted_Success()
         {
-            this.TestSubroutineInitialize(jsonSchema: ForgeSchemaHelper.SubroutineAction_GetLastActionResponse, treeName: "ParentTree");
+            this.TestFromFileInitialize(filePath: SubroutineSchemaPath, treeName: "ParentTree");
 
             // Test - WalkTree to execute a SubroutineAction. Subroutine tree contains an action, defines a RootTreeNodeKey, and queries TreeInput from the schema.
             //        Confirm the output of the SubroutineAction is the last ActionResponse in the Subroutine tree.
@@ -733,303 +736,6 @@ namespace Forge.TreeWalker.UnitTests
             };
 
             return new TreeWalkerSession(subroutineParameters);
-        }
-
-        private sealed class TreeWalkerCallbacks : ITreeWalkerCallbacks
-        {
-            public async Task BeforeVisitNode(
-                Guid sessionId,
-                string treeNodeKey,
-                dynamic properties,
-                dynamic userContext,
-                string treeName,
-                Guid rootSessionId,
-                CancellationToken token)
-            {
-                string serializeProperties = JsonConvert.SerializeObject(properties);
-
-                await Task.Run(() => Console.WriteLine(string.Format(
-                    "OnBeforeVisitNode: SessionId: {0}, TreeNodeKey: {1}, Properties: {2}.",
-                    sessionId,
-                    treeNodeKey,
-                    serializeProperties)));
-            }
-
-            public Task AfterVisitNode(
-                Guid sessionId,
-                string treeNodeKey,
-                dynamic properties,
-                dynamic userContext,
-                string treeName,
-                Guid rootSessionId,
-                CancellationToken token)
-            {
-                Console.WriteLine(string.Format(
-                    "OnAfterVisitNode: SessionId: {0}, TreeNodeKey: {1}, Properties: {2}.",
-                    sessionId,
-                    treeNodeKey,
-                    JsonConvert.SerializeObject(properties)));
-
-                return Task.FromResult(0);
-            }
-        }
-
-        public abstract class BaseCommonAction : BaseAction
-        {
-            public object Input { get; private set; }
-
-            public CancellationToken Token { get; private set; }
-
-            public Guid SessionId { get; private set; }
-
-            public string TreeNodeKey { get; private set; }
-
-            private ActionContext actionContext;
-
-            public override Task<ActionResponse> RunAction(ActionContext actionContext)
-            {
-                this.Input = actionContext.ActionInput;
-                this.Token = actionContext.Token;
-                this.SessionId = actionContext.SessionId;
-                this.TreeNodeKey = actionContext.TreeNodeKey;
-                this.actionContext = actionContext;
-
-                return this.RunAction();
-            }
-
-            public abstract Task<ActionResponse> RunAction();
-
-            public Task CommitIntermediates<T>(T intermediates)
-            {
-                return this.actionContext.CommitIntermediates<T>(intermediates);
-            }
-
-            public Task<T> GetIntermediates<T>()
-            {
-                return this.actionContext.GetIntermediates<T>();
-            }
-
-            public Task<ActionResponse> GetPreviousActionResponse()
-            {
-                return this.actionContext.GetPreviousActionResponse();
-            }
-        }
-
-        [ForgeAction(InputType: typeof(CollectDiagnosticsInput))]
-        public class CollectDiagnosticsAction : BaseCommonAction
-        {
-            public override async Task<ActionResponse> RunAction()
-            {
-                CollectDiagnosticsInput actionInput = (CollectDiagnosticsInput)this.Input;
-
-                // Collect diagnostics using the input command and commit results.
-                string intermediates = this.GetIntermediates<string>().GetAwaiter().GetResult();
-                Assert.AreEqual(null, intermediates);
-
-                string result = MockCollectDiagnosticsResult(actionInput.Command);
-
-                intermediates = result;
-                this.CommitIntermediates<string>(intermediates).GetAwaiter().GetResult();
-                Assert.AreEqual(intermediates, this.GetIntermediates<string>().GetAwaiter().GetResult());
-
-                await Task.Run(() => Console.WriteLine(string.Format(
-                    "CollectDiagnosticsAction - SessionId: {0}, TreeNodeKey: {1}, ActionInput: {2}.",
-                    this.SessionId,
-                    this.TreeNodeKey,
-                    JsonConvert.SerializeObject(actionInput))));
-
-                ActionResponse actionResponse = new ActionResponse() { Status = "Success", Output = result };
-                return actionResponse;
-            }
-
-            private static string MockCollectDiagnosticsResult(string command)
-            {
-                return command + "_Results";
-            }
-        }
-
-        public class CollectDiagnosticsInput
-        {
-            public string Command { get; set; }
-        }
-
-        [ForgeAction]
-        public class TardigradeAction : BaseCommonAction
-        {
-            public override async Task<ActionResponse> RunAction()
-            {
-                await Task.Run(() => Console.WriteLine(string.Format(
-                    "TardigradeAction - SessionId: {0}, TreeNodeKey: {1}.",
-                    this.SessionId,
-                    this.TreeNodeKey)));
-
-                ActionResponse actionResponse = new ActionResponse() { Status = "Success" };
-                return actionResponse;
-            }
-        }
-
-        [ForgeAction(InputType: typeof(TestDelayExceptionInput))]
-        public class TestDelayExceptionAction : BaseCommonAction
-        {
-            public override async Task<ActionResponse> RunAction()
-            {
-                TestDelayExceptionInput actionInput = (TestDelayExceptionInput)this.Input;
-                Console.WriteLine(string.Format(
-                    "TestDelayExceptionAction - SessionId: {0}, TreeNodeKey: {1}, ActionInput: {2}.",
-                    this.SessionId,
-                    this.TreeNodeKey,
-                    JsonConvert.SerializeObject(actionInput)));
-
-                await Task.Delay(actionInput.DelayMilliseconds, this.Token);
-
-                if (actionInput.ThrowException)
-                {
-                    throw new NullReferenceException("Throwing unexpected Exception!!");
-                }
-                
-                ActionResponse actionResponse = new ActionResponse() { Status = "Success" };
-                return actionResponse;
-            }
-        }
-
-        public class TestDelayExceptionInput
-        {
-            public int DelayMilliseconds { get; set; } = 0;
-
-            public bool ThrowException { get; set; } = false;
-        }
-
-        [ForgeAction(InputType: typeof(FooActionInput))]
-        public class TestEvaluateInputTypeAction : BaseCommonAction
-        {
-            public override async Task<ActionResponse> RunAction()
-            {
-                FooActionInput actionInput = (FooActionInput)this.Input;
-                bool boolDelegateResult = actionInput.BoolDelegate();
-                bool boolDelegateAsyncResult = await actionInput.BoolDelegateAsync();
-
-                Console.WriteLine(string.Format(
-                    "TestEvaluateInputTypeAction - SessionId: {0}, TreeNodeKey: {1}, ActionInput: {2}, BoolDelegateResult: {3}, BoolDelegateAsyncResult: {4}.",
-                    this.SessionId,
-                    this.TreeNodeKey,
-                    JsonConvert.SerializeObject(actionInput),
-                    boolDelegateResult,
-                    boolDelegateAsyncResult));
-
-                ActionResponse actionResponse = new ActionResponse() { Status = "Success", Output = boolDelegateResult && boolDelegateAsyncResult };
-                return actionResponse;
-            }
-        }
-
-        public class FooActionInput
-        {
-            public string Command { get; set; }
-            public int IntExpression { get; set; }
-            public bool BoolExpression { get; set; }
-            public string PropertyNotInSchema { get; set; }
-            public FooActionObject NestedObject { get; set; }
-            public FooActionObject[] ObjectArray { get; set; }
-            public string[] StringArray { get; set; }
-            public long[] LongArray { get; set; }
-            public Func<bool> BoolDelegate { get; set; }
-            public Func<Task<bool>> BoolDelegateAsync { get; set; }
-            public Dictionary<string, string> StringDictionary { get; set; }
-            public object DynamicObject { get; set; }
-        }
-
-        public class FooActionObject
-        {
-            public string Name { get; set; }
-            public string Value { get; set; }
-            public int IntPropertyInObject { get; set; }
-        }
-
-        [ForgeAction(InputType: typeof(FooActionInput_UnexpectedField))]
-        public class TestEvaluateInputType_FailOnField_Action : BaseCommonAction
-        {
-            public override async Task<ActionResponse> RunAction()
-            {
-                FooActionInput_UnexpectedField actionInput = (FooActionInput_UnexpectedField)this.Input;
-
-                await Task.Run(() => Console.WriteLine(string.Format(
-                    "TestEvaluateInputType_FailOnField_Action - SessionId: {0}, TreeNodeKey: {1}, ActionInput: {2}.",
-                    this.SessionId,
-                    this.TreeNodeKey,
-                    JsonConvert.SerializeObject(actionInput))));
-
-                ActionResponse actionResponse = new ActionResponse() { Status = "Success" };
-                return actionResponse;
-            }
-        }
-
-        public class FooActionInput_UnexpectedField
-        {
-            public bool UnexpectedField = false;
-        }
-
-        [ForgeAction(InputType: typeof(FooActionInput_NonEmptyConstructor))]
-        public class TestEvaluateInputType_FailOnNonEmptyCtor_Action : BaseCommonAction
-        {
-            public override async Task<ActionResponse> RunAction()
-            {
-                FooActionInput_NonEmptyConstructor actionInput = (FooActionInput_NonEmptyConstructor)this.Input;
-
-                await Task.Run(() => Console.WriteLine(string.Format(
-                    "TestEvaluateInputType_FailOnNonEmptyCtor_Action - SessionId: {0}, TreeNodeKey: {1}, ActionInput: {2}.",
-                    this.SessionId,
-                    this.TreeNodeKey,
-                    JsonConvert.SerializeObject(actionInput))));
-
-                ActionResponse actionResponse = new ActionResponse() { Status = "Success" };
-                return actionResponse;
-            }
-        }
-
-        public class FooActionInput_NonEmptyConstructor
-        {
-            public bool BoolProperty { get; set; }
-
-            public FooActionInput_NonEmptyConstructor(int unexpectedParameter) {}
-        }
-
-        /// <summary>
-        /// This action increases counters each time it is visited from the same TreeActionKey in the same SessionId.
-        /// It persists these counters in the ActionResponse/PreviousActionResponse.
-        /// This tests CommitCurrentTreeNode revisit/cycle behavior.
-        /// </summary>
-        [ForgeAction]
-        public class RevisitAction : BaseCommonAction
-        {
-            public override async Task<ActionResponse> RunAction()
-            {
-                // Confirm that intermediates are getting cleared every time we revisit the node, despite us increasing the counter.
-                int intermediates = await this.GetIntermediates<int>();
-                Assert.AreEqual(0, intermediates);
-
-                intermediates++;
-                await this.CommitIntermediates<int>(intermediates);
-
-                // GetPreviousActionResponse, increase the Output counter by one, and return.
-                ActionResponse actionResponse = await this.GetPreviousActionResponse() ?? new ActionResponse() { Status = "Success", Output = 0 };
-                actionResponse.Output = (int)actionResponse.Output + 1;
-
-                Console.WriteLine(string.Format(
-                    "RevisitAction - SessionId: {0}, TreeNodeKey: {1}, ActionResponse.Output: {2}.",
-                    this.SessionId,
-                    this.TreeNodeKey,
-                    actionResponse.Output));
-
-                return actionResponse;
-            }
-        }
-
-        [ForgeAction]
-        public class ReturnSessionIdAction : BaseCommonAction
-        {
-            public override Task<ActionResponse> RunAction()
-            {
-                return Task.FromResult(new ActionResponse() { Status = this.SessionId.ToString() });
-            }
         }
     }
 }

@@ -1,0 +1,92 @@
+﻿{
+    "Tree": {
+        "Root": {
+            "Type": "Selection",
+            "ChildSelector": [
+                {
+                    "Label": "Container",
+                    "ShouldSelect": "C#|UserContext.ResourceType == \"Container\"",
+                    "Child": "Container"
+                },
+                {
+                    "Label": "Node",
+                    "ShouldSelect": "C#|UserContext.ResourceType == \"Node\"",
+                    "Child": "Node"
+                }
+            ]
+        },
+        "Container": {
+            "Type": "Action",
+            "Actions": {
+                "Container_CollectDiagnosticsAction": {
+                    "Action": "CollectDiagnosticsAction",
+                    "Input": {
+                        "Command": "RunCollectDiagnostics.exe"
+                    }
+                }
+            },
+            "ChildSelector": [
+                {
+                    "Label": "Tardigrade",
+                    "ShouldSelect": "C#|Session.GetLastActionResponse().Status == \"Success\"",
+                    "Child": "Tardigrade"
+                }
+            ]
+        },
+        "Tardigrade": {
+            "Type": "Action",
+            "Actions": {
+                "Tardigrade_TardigradeAction": {
+                    "Action": "TardigradeAction"
+                }
+            },
+            "ChildSelector": [
+                {
+                    "Label": "Tardigrade_Success",
+                    "ShouldSelect": "C#|Session.GetLastActionResponse().Status == \"Success\"",
+                    "Child": "Tardigrade_Success"
+                },
+                {
+                    "Label": "Tardigrade_Failure",
+                    "Child": "Tardigrade_Failure"
+                }
+            ]
+        },
+        "Tardigrade_Success": {
+            "Type": "Leaf"
+        },
+        "Tardigrade_Failure": {
+            "Type": "Leaf"
+        },
+        "Node": {
+            "Type": "Selection",
+            "ChildSelector": [
+                {
+                    "Label": "Reboot",
+                    "ShouldSelect": "C#|UserContext.GetCount() == 1",
+                    "Child": "Reboot"
+                },
+                {
+                    "Label": "Evacuate",
+                    "Child": "Evacuate"
+                }
+            ]
+        },
+        "Reboot": {
+            "Type": "Action",
+            "Actions": {
+                "Reboot_RebootAction": {
+                    "Action": "RebootAction"
+                }
+            }
+        },
+        "Evacuate": {
+            "Type": "Action",
+            "Actions": {
+                "Evacuate_EvacuateAction": {
+                    "Action": "EvacuateAction"
+                }
+            }
+        }
+    }
+}

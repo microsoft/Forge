@@ -28,6 +28,8 @@ Forge has 3 major components: ForgeTree, TreeWalker, and ForgeEditor.
 
 * ForgeEditor is coming to GitHub soon (currently only available internally to Microsoft). ForgeEditor is an Electron application that allows you to visualize and edit the ForgeTree in a clean UI experience. It contains features such as: tree visualization, buttons to create/delete TreeNodes, auto-complete when editing JSON file, text highlighting when hovering over TreeNode, evaluates ForgeSchemaValidationRules while editing, Diagnose mode, etc..
 
+![](images/ForgeEditorImage.PNG)
+
 ## Values of using Forge:
 * Clarity: Allows users to intuitively walk a visualized tree and understand the workflow logic.
 * Versatility: Once you understand the tree, you can easily add/update nodes, actions, child selectors, paths, etc.. The dynamic capabilities allows for high extensibility on top of the base features.
