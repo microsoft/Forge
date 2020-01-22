@@ -8,8 +8,8 @@
     <ProjectGuid>{00FC1C22-6AE9-4F60-8A3E-05885BA34C9C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Forge.TreeWalker</RootNamespace>
-    <AssemblyName>Forge.TreeWalker</AssemblyName>
+    <RootNamespace>Microsoft.Forge.TreeWalker</RootNamespace>
+    <AssemblyName>Microsoft.Forge.TreeWalker</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
