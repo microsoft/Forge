@@ -16,16 +16,9 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-<<<<<<< HEAD
-    using Forge.DataContracts;
-    using Forge.TreeWalker;
-    using Forge.TreeWalker.ForgeExceptions;
-=======
-    using Microsoft.Forge.Attributes;
     using Microsoft.Forge.DataContracts;
     using Microsoft.Forge.TreeWalker;
     using Microsoft.Forge.TreeWalker.ForgeExceptions;
->>>>>>> 148edc7... Changing assembly and namespace to Microsoft.Forge.TreeWalker.
     using Newtonsoft.Json;
 
     [TestClass]
