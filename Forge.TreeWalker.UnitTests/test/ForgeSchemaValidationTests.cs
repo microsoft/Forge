@@ -7,7 +7,7 @@
 // </summary>
 //-----------------------------------------------------------------------
 
-namespace Forge.TreeWalker.UnitTests
+namespace Microsoft.Forge.TreeWalker.UnitTests
 {
     using System;
     using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace Forge.TreeWalker.UnitTests
     using System.Reflection;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using Forge.DataContracts;
+    using Microsoft.Forge.DataContracts;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using Newtonsoft.Json.Schema;

@@ -7,7 +7,7 @@
 // </summary>
 //-----------------------------------------------------------------------
 
-namespace Forge.ExternalTypes
+namespace Microsoft.Forge.ExternalTypes
 {
 
     public enum ExternalTestType
@@ -25,7 +25,7 @@ namespace Forge.ExternalTypes
     }
 }
 
-namespace Forge.TreeWalker.UnitTests
+namespace Microsoft.Forge.TreeWalker.UnitTests
 {
     public enum DiffNamespaceType
     {

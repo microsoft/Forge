@@ -7,14 +7,14 @@
 // </summary>
 //-----------------------------------------------------------------------
 
-namespace Forge.TreeWalker.UnitTests
+namespace Microsoft.Forge.TreeWalker.UnitTests
 {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
-    using Forge.Attributes;
-    using Forge.TreeWalker;
+    using Microsoft.Forge.Attributes;
+    using Microsoft.Forge.TreeWalker;
     using Newtonsoft.Json;
 
     [ForgeAction(InputType: typeof(FooActionInput))]

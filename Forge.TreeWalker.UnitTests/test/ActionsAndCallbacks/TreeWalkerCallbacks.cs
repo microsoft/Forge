@@ -7,13 +7,13 @@
 // </summary>
 //-----------------------------------------------------------------------
 
-namespace Forge.TreeWalker.UnitTests
+namespace Microsoft.Forge.TreeWalker.UnitTests
 {
     using System;
     using System.Threading;
     using System.Threading.Tasks;
 
-    using Forge.TreeWalker;
+    using Microsoft.Forge.TreeWalker;
     using Newtonsoft.Json;
 
     public class TreeWalkerCallbacks : ITreeWalkerCallbacks

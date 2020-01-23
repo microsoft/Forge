@@ -7,15 +7,15 @@
 // </summary>
 //-----------------------------------------------------------------------
 
-namespace Forge.TreeWalker.UnitTests
+namespace Microsoft.Forge.TreeWalker.UnitTests
 {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using Forge.ExternalTypes;
-    using Forge.TreeWalker;
+    using Microsoft.Forge.ExternalTypes;
+    using Microsoft.Forge.TreeWalker;
     using Newtonsoft.Json.Linq;
 
     [TestClass]

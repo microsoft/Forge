@@ -7,7 +7,7 @@
 // </summary>
 //-----------------------------------------------------------------------
 
-namespace Forge.TreeWalker
+namespace Microsoft.Forge.TreeWalker
 {
     using System;
     using System.Collections;
@@ -18,9 +18,9 @@ namespace Forge.TreeWalker
     using System.Threading;
     using System.Threading.Tasks;
 
-    using Forge.Attributes;
-    using Forge.DataContracts;
-    using Forge.TreeWalker.ForgeExceptions;
+    using Microsoft.Forge.Attributes;
+    using Microsoft.Forge.DataContracts;
+    using Microsoft.Forge.TreeWalker.ForgeExceptions;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 

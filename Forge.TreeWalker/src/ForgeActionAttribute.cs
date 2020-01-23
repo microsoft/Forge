@@ -7,7 +7,7 @@
 // </summary>
 //-----------------------------------------------------------------------
 
-namespace Forge.Attributes
+namespace Microsoft.Forge.Attributes
 {
     using System;
 

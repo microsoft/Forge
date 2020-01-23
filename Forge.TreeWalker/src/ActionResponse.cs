@@ -7,7 +7,7 @@
 // </summary>
 //-----------------------------------------------------------------------
 
-namespace Forge.TreeWalker
+namespace Microsoft.Forge.TreeWalker
 {
     /// <summary>
     /// The ActionResponse class holds the response information from actions.

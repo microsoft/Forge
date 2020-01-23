@@ -7,7 +7,7 @@
 // </summary>
 //-----------------------------------------------------------------------
 
-namespace Forge.DataContracts
+namespace Microsoft.Forge.DataContracts
 {
     using System.Collections.Generic;
     using System.Runtime.Serialization;
