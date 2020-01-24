@@ -21,6 +21,7 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <PackageOutputPath>bin\Release</PackageOutputPath>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
