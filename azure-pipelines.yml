@@ -12,12 +12,11 @@ steps:
     restoreSolution: '$(Build.SourcesDirectory)\Forge.sln'
 
 - task: VSBuild@1
-  displayName: 'Build .NET sln and pack'
+  displayName: 'Build .NET sln for tests'
   inputs:
     solution: '$(Build.SourcesDirectory)\Forge.sln'
     platform: 'Any CPU'
     configuration: Release
-    msbuildArgs: '-t:pack'
 
 - task: VSTest@2
   displayName: 'Run Tests'
@@ -26,6 +25,14 @@ steps:
       $(Build.SourcesDirectory)\Forge.TreeWalker.UnitTests\obj\Release\Microsoft.Forge.TreeWalker.UnitTests.dll
     runInParallel: True
 
+- task: VSBuild@1
+  displayName: 'Build .NET sln and pack'
+  inputs:
+    solution: '$(Build.SourcesDirectory)\Forge.sln'
+    platform: 'Any CPU'
+    configuration: Release
+    msbuildArgs: '-t:pack'
+    
 - task: EsrpCodeSigning@1
   displayName: 'ESRP CodeSigning - Authenticode'
   inputs:
