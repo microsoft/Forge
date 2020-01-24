@@ -12,11 +12,12 @@ steps:
     restoreSolution: '$(Build.SourcesDirectory)\Forge.sln'
 
 - task: VSBuild@1
-  displayName: 'Build .NET sln'
+  displayName: 'Build .NET sln and pack'
   inputs:
     solution: '$(Build.SourcesDirectory)\Forge.sln'
     platform: 'Any CPU'
     configuration: Release
+    msbuildArgs: '-t:pack'
 
 - task: VSTest@2
   displayName: 'Run Tests'
@@ -33,7 +34,7 @@ steps:
     Pattern: 'Microsoft.Forge.TreeWalker.dll'
     signConfigType: 'inlineSignParams'
     OpusName: 'Microsoft Forge TreeWalker'
-    OpusInfo: 'https://www.github.com/microsot/forge'
+    OpusInfo: 'https://www.github.com/microsoft/forge'
     inlineOperation: |
      [  {
              "keyCode": "CP-230012",
@@ -75,19 +76,11 @@ steps:
              "toolVersion": "1.0"
          }]
 
-- task: VSBuild@1
-  displayName: 'Build with pack'
-  inputs:
-    solution: '$(Build.SourcesDirectory)\Forge.sln'
-    platform: 'Any CPU'
-    configuration: Release
-    msbuildArgs: '-t:pack'
-
 - task: EsrpCodeSigning@1
   displayName: 'ESRP CodeSigning - NuGet'
   inputs:
     ConnectedServiceName: 'Forge ESRP CodeSign2'
-    FolderPath: '$(Build.SourcesDirectory)\..\a'
+    FolderPath: '$(Build.SourcesDirectory)\Forge.TreeWalker\bin\Release'
     Pattern: 'Microsoft.Forge.TreeWalker*.nupkg'
     signConfigType: 'inlineSignParams'
     inlineOperation: |
@@ -115,5 +108,6 @@ steps:
   displayName: 'NuGet push AzureArtifacts'
   inputs:
     command: push
+    packagesToPush: '$(Build.SourcesDirectory)\Forge.TreeWalker\bin\Release\Microsoft.Forge.TreeWalker*.nupkg'
     publishVstsFeed: 'ForgeArtifacts'
     allowPackageConflicts: true
