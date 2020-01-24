@@ -12,7 +12,7 @@ steps:
     restoreSolution: '$(Build.SourcesDirectory)\Forge.sln'
 
 - task: VSBuild@1
-  displayName: 'Build .NET sln'
+  displayName: 'Build .NET sln for tests'
   inputs:
     solution: '$(Build.SourcesDirectory)\Forge.sln'
     platform: 'Any CPU'
@@ -25,17 +25,69 @@ steps:
       $(Build.SourcesDirectory)\Forge.TreeWalker.UnitTests\obj\Release\Microsoft.Forge.TreeWalker.UnitTests.dll
     runInParallel: True
 
-- task: NuGetCommand@2
-  displayName: 'NuGet pack'
+- task: VSBuild@1
+  displayName: 'Build .NET sln and pack'
   inputs:
-    command: pack
-    packagesToPack: '**/Forge.TreeWalker.csproj'
-    configuration: 'Release'
-
+    solution: '$(Build.SourcesDirectory)\Forge.sln'
+    platform: 'Any CPU'
+    configuration: Release
+    msbuildArgs: '-t:pack'
+    
 - task: EsrpCodeSigning@1
+  displayName: 'ESRP CodeSigning - Authenticode'
   inputs:
     ConnectedServiceName: 'Forge ESRP CodeSign2'
-    FolderPath: '$(Build.SourcesDirectory)\..\a'
+    FolderPath: '$(Build.SourcesDirectory)\Forge.TreeWalker\bin\Release'
+    Pattern: 'Microsoft.Forge.TreeWalker.dll'
+    signConfigType: 'inlineSignParams'
+    OpusName: 'Microsoft Forge TreeWalker'
+    OpusInfo: 'https://www.github.com/microsoft/forge'
+    inlineOperation: |
+     [  {
+             "keyCode": "CP-230012",
+             "operationSetCode": "SigntoolSign",
+             "parameters": [
+             {
+                 "parameterName": "OpusName",
+                 "parameterValue": "Microsoft"
+             },
+             {
+                 "parameterName": "OpusInfo",
+                 "parameterValue": "http://www.microsoft.com"
+             },
+             {
+                 "parameterName": "Append",
+                 "parameterValue": "/as"
+             },
+             {
+                 "parameterName": "FileDigest",
+                 "parameterValue": "/fd \"SHA256\""
+             },
+             {
+                 "parameterName": "PageHash",
+                 "parameterValue": "/NPH"
+             },
+             {
+                 "parameterName": "TimeStamp",
+                 "parameterValue": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+             }
+             ],
+             "toolName": "sign",
+             "toolVersion": "1.0"
+         },
+         {
+             "keyCode": "CP-230012",
+             "operationSetCode": "SigntoolVerify",
+             "parameters": [ ],
+             "toolName": "sign",
+             "toolVersion": "1.0"
+         }]
+
+- task: EsrpCodeSigning@1
+  displayName: 'ESRP CodeSigning - NuGet'
+  inputs:
+    ConnectedServiceName: 'Forge ESRP CodeSign2'
+    FolderPath: '$(Build.SourcesDirectory)\Forge.TreeWalker\bin\Release'
     Pattern: 'Microsoft.Forge.TreeWalker*.nupkg'
     signConfigType: 'inlineSignParams'
     inlineOperation: |
@@ -63,5 +115,6 @@ steps:
   displayName: 'NuGet push AzureArtifacts'
   inputs:
     command: push
+    packagesToPush: '$(Build.SourcesDirectory)\Forge.TreeWalker\bin\Release\Microsoft.Forge.TreeWalker*.nupkg'
     publishVstsFeed: 'ForgeArtifacts'
     allowPackageConflicts: true
