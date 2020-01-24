@@ -75,13 +75,13 @@ steps:
              "toolVersion": "1.0"
          }]
 
-- task: NuGetCommand@2
-  displayName: 'NuGet pack'
+- task: DotNetCoreCLI@2
+  displayName: "DotNetCore Pack"
   inputs:
     command: pack
-    packagesToPack: '**/Forge.TreeWalker.csproj'
     configuration: 'Release'
-
+    packagesToPack: '**/Forge.TreeWalker.csproj'
+    
 - task: EsrpCodeSigning@1
   displayName: 'ESRP CodeSigning - NuGet'
   inputs:
