@@ -1,3 +1,7 @@
+[![Build Status](https://dev.azure.com/ForgePipeline/Forge/_apis/build/status/Microsoft.Forge?branchName=master)](https://dev.azure.com/ForgePipeline/Forge/_build/latest?definitionId=1&branchName=master)
+		
+[Microsoft.Forge.TreeWalker NuGet link](https://www.nuget.org/packages/Microsoft.Forge.TreeWalker/)
+
 ## What is Forge?
 Forge is a config-driven decision tree, designed to drive your workflows in a dynamic way. At the highest level, Forge walks a ForgeTree (JSON schema file) and executes actions. (If you are familiar with Microsoft Flow, it's kind of like that but a library)
 
@@ -30,7 +34,7 @@ Forge has 3 major components: ForgeTree, TreeWalker, and ForgeEditor.
 
 ![](images/ForgeEditorImage.PNG)
 
-## Values of using Forge:
+## Value of using Forge:
 * Clarity: Allows users to intuitively walk a visualized tree and understand the workflow logic.
 * Versatility: Once you understand the tree, you can easily add/update nodes, actions, child selectors, paths, etc.. The dynamic capabilities allows for high extensibility on top of the base features.
 * Velocity: Updating and deploying ForgeTree schema files is much quicker/easier than deploying code. Allows for hot-pushing updates while your application is running. New behaviors that would take weeks to add to legacy codebases turns into minutes/hours with Forge.
