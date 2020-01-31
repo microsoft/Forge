@@ -3,7 +3,7 @@
 [Microsoft.Forge.TreeWalker NuGet link](https://www.nuget.org/packages/Microsoft.Forge.TreeWalker/)
 
 ## What is Forge?
-Forge is a workflow driver solution utilizing a config-based decision tree framework.
+Forge is a config-driven, decision tree workflow engine.
 
 At a high level, Forge walks a tree and executes Actions. Output from the Actions get cached/persisted and can be used as input for future Actions, during child selection, etc.. *(think of Microsoft Flow if you are familiar with that, except as a library)*
 		
@@ -11,7 +11,7 @@ Additionally, Forge accepts a hook into your application that can be called in a
 
 ## Forge components at a high-level
 Forge has 3 major components: ForgeTree, TreeWalker, and ForgeEditor.
-* **ForgeTree** is the JSON schema data contract that defines the tree structure. It contains normal tree-concept objects such as TreeNodes and ChildSelectors, as well as TreeActions and RetryPolicies.
+* **ForgeTree** is the JSON schema data contract that defines the tree structure. It contains normal tree-concept objects such as TreeNodes and ChildSelectors, as well as TreeActions and RetryPolicies. The dynamic Properties can be used to extend new features specific to your application.
 
 ```json
 "Container": {
@@ -38,12 +38,13 @@ Forge has 3 major components: ForgeTree, TreeWalker, and ForgeEditor.
 
 ![](images/ForgeEditorImage.PNG)
 
-## Advantages of using Forge:
+## Advantages of using Forge
 * ***Clarity***: Allows users to intuitively walk a visualized tree and understand the workflow logic.
-* ***Versatility***: Once you understand the tree, you can easily add/update nodes, actions, child selectors, paths, etc.. The dynamic capabilities allows for high extensibility on top of the base features.
+* ***Versatility***: Once you understand the tree, you can easily add or update nodes, actions, child selectors, paths, etc..
+* ***Extensibility***: The dynamic objects and properties allow for new functionality to be seamlessly piped into the tree model. For example, adding [rate limits](https://github.com/microsoft/Forge/wiki/Extending-Forge-for-your-Application#RateLimiting) to the BeforeVisitNode callback.
 * ***Velocity***: Updating and deploying ForgeTree schema files is much quicker/easier than deploying code. Allows for hot-pushing updates while your application is running. New behaviors that would take weeks to add to legacy codebases turns into minutes/hours with Forge.
 * ***Debuggability***: Add logging to the built-in callbacks before and after visiting each node and inside Actions. This allows users to view statistics on their historical data. Statistics can also be viewed in ForgeEditor as a heatmap to highlight "hot" nodes/paths.
-* ***Safety***: It can be easy to typo an Action name or other property in the ForgeTree since they are JSON strings. To help with that, Forge includes the ForgeSchemaValidationRules.json file containing JSON schema rules for ForgeTrees. These rules can be augmented to contain application-specific properties/values, such as enforcing a set of known ForgeActions and ActionInputs. These rules are used in ForgeEditor to help auto-complete properties and highlight typos.
+* ***Model Verification***: It can be easy to typo an Action name or other property in the ForgeTree since they are JSON strings. To help with that, Forge includes the ForgeSchemaValidationRules.json file containing JSON schema rules for ForgeTrees. These rules can be augmented to contain application-specific properties/values, such as enforcing a set of known ForgeActions and ActionInputs. These rules are used in ForgeEditor to help auto-complete properties and highlight typos.
 * ***Stateful (optional)***: The IForgeDictionary is used to cache state while Forge walks the tree. This can be implemented by the application to be stateful if desired, but a Dictionary implementation is built-in. This allows applications to pick up where they left off after a failover.
 
 ## Is Forge right for my application?
