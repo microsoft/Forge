@@ -244,6 +244,34 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         }
 
         [TestMethod]
+        public void TestTreeWalkerSession_WalkTree_ActionHasDelay_ContinuationOnRetryExhaustion_RetryPolicy_FixedCount()
+        {
+            // Initialize TreeWalkerSession with a schema containing an Action that throws an excetion, however since the RetryPolicy is fixedCount multiple attempts should be made to run the action.
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.ActionDelay_ContinuationOnRetryExhaustion_RetryPolicy_FixedCount);
+
+            // Test - Expect WalkTree to be successful because the TreeAction failed but ContinuationOnRetryExhaustion flag was set.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus, "Expect WalkTree to be successful because the TreeAction failed but ContinuationOnRetryExhaustion flag was set.");
+
+            ActionResponse actionResponse = this.session.GetLastActionResponse();
+            Assert.AreEqual("RetryExhaustedOnAction", actionResponse.Status, "Expect WalkTree to be successful because the TreeAction failed but ContinuationOnRetryExhaustion flag was set.");
+        }
+
+        [TestMethod]
+        public void TestTreeWalkerSession_WalkTree_ActionHasDelay_ContinuationOnTimeout_RetryPolicy_FixedCount()
+        {
+            // Initialize TreeWalkerSession with a schema that defines a fixed retry count as well as a timeout.
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.ActionDelay_ContinuationOnTimeout_RetryPolicy_FixedCount);
+
+            // Test - Expect WalkTree to be successful because the TreeAction timed out but ContinuationOnTimeout flag was set.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus, "Expect WalkTree to be successful because the TreeAction timed out but ContinuationOnTimeout flag was set.");
+
+            ActionResponse actionResponse = this.session.GetLastActionResponse();
+            Assert.AreEqual("TimeoutOnAction", actionResponse.Status, "Expect WalkTree to be successful because the TreeAction timed out but ContinuationOnTimeout flag was set.");
+        }
+
+        [TestMethod]
         public void TestTreeWalkerSession_WalkTree_CancelledBeforeExecution()
         {
             this.TestFromFileInitialize(filePath: TardigradeSchemaPath);
