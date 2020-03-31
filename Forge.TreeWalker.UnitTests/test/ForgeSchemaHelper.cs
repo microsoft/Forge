@@ -130,6 +130,29 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                     }
                 }
             }";
+            
+            public const string ActionDelay_ContinuationOnRetryExhaustion_RetryPolicy_FixedCount = @"
+            {
+                ""Tree"": {
+                    ""Root"": {
+                        ""Type"": ""Action"",
+                        ""Actions"": {
+                            ""Root_TestDelayExceptionAction"": {
+                                ""Action"": ""TestDelayExceptionAction"",
+                                ""Input"": {
+                                    ""ThrowException"": true
+                                },
+                                ""RetryPolicy"": {
+                                    ""Type"": ""FixedCount"",
+                                    ""MinBackoffMs"": 25,
+                                    ""MaxRetry"": 2,
+                                },
+                                ""ContinuationOnRetryExhaustion"": true
+                            }
+                        }
+                    }
+                }
+            }";
 
         public const string NoChildMatch = @"
             {

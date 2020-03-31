@@ -244,6 +244,20 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         }
 
         [TestMethod]
+        public void TestTreeWalkerSession_WalkTree_ActionHasDelay_ContinuationOnRetryExhaustion_RetryPolicy_FixedCount()
+        {
+            // Initialize TreeWalkerSession with a schema containing Action with throw an excetion but RetryPolicy is fixedCount so should try.
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.ActionDelay_ContinuationOnRetryExhaustion_RetryPolicy_FixedCount);
+
+            // Test - Expect WalkTree to be successful because the TreeAction timed out but ContinuationOnRetryExhaustion flag was set.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to be successful because the TreeAction timed out but ContinuationOnRetryExhaustion flag was set.");
+
+            ActionResponse actionResponse = this.session.GetLastActionResponse();
+            Assert.AreEqual("RetryExhaustedOnAction", actionResponse.Status, "Expected WalkTree to be successful because the TreeAction timed out but ContinuationOnRetryExhaustion flag was set.");
+        }
+
+        [TestMethod]
         public void TestTreeWalkerSession_WalkTree_CancelledBeforeExecution()
         {
             this.TestFromFileInitialize(filePath: TardigradeSchemaPath);

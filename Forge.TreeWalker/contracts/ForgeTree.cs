@@ -192,6 +192,14 @@ namespace Microsoft.Forge.DataContracts
         /// </summary>
         [DataMember]
         public long MaxBackoffMs { get; private set; }
+
+        /// <summary>
+        /// This setting is specifically for RetryPolicyType.FixedCount.
+        /// Max retry is the maximum number of times to attempt to run an action before failing. 
+        /// The default value is 0; if value is not specified no retries will run. 
+        /// </summary>
+        [DataMember]
+        public int MaxRetry { get; private set; } = 0;
     }
 
     /// <summary>
@@ -217,9 +225,13 @@ namespace Microsoft.Forge.DataContracts
         /// Start with MinBackoffMs, then wait Math.Min(MinBackoffMs * 2^(retryCount), MaxBackoffMs).
         /// </summary>
         [EnumMember]
-        ExponentialBackoff = 2
-
-        // TODO: Add a FixedCount type that will give the full timeout duration for the set number of retries.
+        ExponentialBackoff = 2,
+        
+        /// <summary>
+        /// Specify the number of retries for an action.
+        /// </summary>
+        [EnumMember]
+        FixedCount = 3
     }
 
     /// <summary>

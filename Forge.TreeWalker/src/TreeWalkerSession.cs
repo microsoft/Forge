@@ -640,6 +640,7 @@ namespace Microsoft.Forge.TreeWalker
             CancellationToken token)
         {
             // Initialize values. Default infinite timeout. Default RetryPolicyType.None.
+            int maxRetryCount = treeAction.RetryPolicy != null ? treeAction.RetryPolicy.MaxRetry : 0; // Specific setting for RetryPolicyType.FixedCount
             int retryCount = 0;
             Exception innerException = null;
             Stopwatch stopwatch = new Stopwatch();
@@ -654,7 +655,8 @@ namespace Microsoft.Forge.TreeWalker
 
             // Attmpt to ExecuteAction based on RetryPolicy and Timeout.
             // Throw on non-retriable exceptions.
-            while (actionTimeout == -1 || stopwatch.ElapsedMilliseconds < actionTimeout)
+            while (((actionTimeout == -1 || stopwatch.ElapsedMilliseconds < actionTimeout) && (retryPolicyType != RetryPolicyType.FixedCount)) || 
+                    (retryPolicyType == RetryPolicyType.FixedCount && maxRetryCount > 0))
             {
                 token.ThrowIfCancellationRequested();
 
@@ -685,6 +687,7 @@ namespace Microsoft.Forge.TreeWalker
                     switch (retryPolicyType)
                     {
                         case RetryPolicyType.FixedInterval:
+                        case RetryPolicyType.FixedCount:
                         {
                             // FixedInterval retries every MinBackoffMs until the timeout.
                             // Ex) 200ms, 200ms, 200ms...
@@ -707,8 +710,8 @@ namespace Microsoft.Forge.TreeWalker
                     }
                 }
 
-                // Break out if no retry policy set.
-                if (retryPolicyType == RetryPolicyType.None)
+                // Break out if no retry policy set or if RetryCount limit has been hit (when maxRetryCount == 1, the last retry is being executed)
+                if (retryPolicyType == RetryPolicyType.None || (retryPolicyType == RetryPolicyType.FixedCount && maxRetryCount == 1))
                 {
                     // If the retries have exhausted and the ContinuationOnRetryExhaustion flag is set, commit a new ActionResponse 
                     // with the status set to RetryExhaustedOnAction and return.
@@ -727,7 +730,8 @@ namespace Microsoft.Forge.TreeWalker
                 }
 
                 // Break out early if we would hit timeout before next retry.
-                if (actionTimeout != -1 && stopwatch.ElapsedMilliseconds + waitTime.TotalMilliseconds >= actionTimeout)
+                // RetryPolicyType.FixedCount works independently of retry timeout
+                if (retryPolicyType != RetryPolicyType.FixedCount && actionTimeout != -1 && stopwatch.ElapsedMilliseconds + waitTime.TotalMilliseconds >= actionTimeout)
                 {
                     // If the timeout is hit and the ContinuationOnTimeout flag is set, commit a new ActionResponse 
                     // with the status set to TimeoutOnAction and return.
@@ -748,6 +752,7 @@ namespace Microsoft.Forge.TreeWalker
                 token.ThrowIfCancellationRequested();
                 await Task.Delay(waitTime, token).ConfigureAwait(false);
                 retryCount++;
+                maxRetryCount--;
             }
 
             // Retries are exhausted. Throw ActionTimeoutException with executeAction exception as innerException.

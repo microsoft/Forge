@@ -182,14 +182,17 @@
             "properties": {
                 "Type": {
                     "type": "string",
-                    "enum": [ "None", "FixedInterval", "ExponentialBackoff" ]
+                    "enum": [ "None", "FixedInterval", "ExponentialBackoff", "FixedCount" ]
                 },
                 "MinBackoffMs": {
                     "type": "number"
                 },
-                "MaxBackoffMs": {
-                    "type": "number"
-                }
+              "MaxBackoffMs": {
+                "type": "number"
+              },
+              "MaxRetry": {
+                "type": "number"
+              }
             },
             "required": [ "Type" ]
         },
