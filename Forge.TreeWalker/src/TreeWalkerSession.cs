@@ -731,9 +731,9 @@ namespace Microsoft.Forge.TreeWalker
                 }
 
                 // Break out early if we would hit timeout before next retry.
-                if (retryPolicyType != RetryPolicyType.FixedCount && actionTimeout != -1 && stopwatch.ElapsedMilliseconds + waitTime.TotalMilliseconds >= actionTimeout)
+                if (actionTimeout != -1 && stopwatch.ElapsedMilliseconds + waitTime.TotalMilliseconds >= actionTimeout)
                 {
-                    // If the timeout is hit and the ContinuationOnTimeout flag is set, commit a new ActionResponse 
+                    // If the timeout is hit and the ContinuationOnTimeout flag is set, commit a new ActionResponse. 
                     // with the status set to TimeoutOnAction and return.
                     if (treeAction.ContinuationOnTimeout)
                     {
