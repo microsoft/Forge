@@ -131,6 +131,58 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                 }
             }";
 
+        public const string ActionDelay_ContinuationOnRetryExhaustion_RetryPolicy_FixedCount = @"
+            {
+                ""Tree"": {
+                    ""Root"": {
+                        ""Type"": ""Action"",
+                        ""Actions"": {
+                            ""Root_TestDelayExceptionAction"": {
+                                ""Action"": ""TestDelayExceptionAction"",
+                                ""Input"": {
+                                    ""ThrowException"": true,
+                                    ""DelayMilliseconds"": 10
+                                },
+                                ""Timeout"": 100,
+                                ""RetryPolicy"": {
+                                    ""Type"": ""FixedCount"",
+                                    ""MinBackoffMs"": 25,
+                                    ""MaxRetry"": 2,
+                                },
+                                ""ContinuationOnTimeout"": true,
+                                ""ContinuationOnRetryExhaustion"": true
+                            }
+                        }
+                    }
+                }
+            }";
+
+        public const string ActionDelay_ContinuationOnTimeout_RetryPolicy_FixedCount = @"
+            {
+                ""Tree"": {
+                    ""Root"": {
+                        ""Type"": ""Action"",
+                        ""Actions"": {
+                            ""Root_TestDelayExceptionAction"": {
+                                ""Action"": ""TestDelayExceptionAction"",
+                                ""Input"": {
+                                    ""ThrowException"": true,
+                                    ""DelayMilliseconds"": 150
+                                },
+                                ""Timeout"": 100,
+                                ""RetryPolicy"": {
+                                    ""Type"": ""FixedCount"",
+                                    ""MinBackoffMs"": 25,
+                                    ""MaxRetryCount"": 2,
+                                },
+                                ""ContinuationOnTimeout"": true,
+                                ""ContinuationOnRetryExhaustion"": true
+                            }
+                        }
+                    }
+                }
+            }";
+
         public const string NoChildMatch = @"
             {
                 ""Tree"": {

@@ -232,8 +232,38 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestTreeWalkerSession_WalkTree_ActionHasDelay_ContinuationOnTimeout_RetryPolicy_TimeoutBetweenRetries()
         {
-            // Initialize TreeWalkerSession with a schema containing Action with RetryPolicy that will time out between retry attempts but has ContinuationOnTimeout flag set.
+            // Initialize TreeWalkerSession with a schema with a RetryPolicy. The action in this schema will time out between retry attempts but has ContinuationOnTimeout flag set.
             this.TestInitialize(jsonSchema: ForgeSchemaHelper.ActionDelay_ContinuationOnTimeout_RetryPolicy_TimeoutBetweenRetries);
+
+            // Test - Expect WalkTree to be successful because the TreeAction timed out but ContinuationOnTimeout flag was set.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to be successful because the TreeAction timed out but ContinuationOnTimeout flag was set.");
+
+            ActionResponse actionResponse = this.session.GetLastActionResponse();
+            Assert.AreEqual("TimeoutOnAction", actionResponse.Status, "Expected WalkTree to be successful because the TreeAction timed out but ContinuationOnTimeout flag was set.");
+        }
+
+        [TestMethod]
+        public void TestTreeWalkerSession_WalkTree_ActionHasDelay_ContinuationOnRetryExhaustion_RetryPolicy_FixedCount()
+        {
+            // Initialize TreeWalkerSession with a schema that defines a FixedCount retry policy.
+            // The schema contains an Action that throws an exception but has ContinuationOnRetryExhaustion flag set.
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.ActionDelay_ContinuationOnRetryExhaustion_RetryPolicy_FixedCount);
+
+            // Test - Expected WalkTree to be successful because, even though the action threw an exception, ContinuationOnRetryExhaustion flag was set.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to be successful because, even though the action threw an exception, ContinuationOnRetryExhaustion flag was set.");
+
+            ActionResponse actionResponse = this.session.GetLastActionResponse();
+            Assert.AreEqual("RetryExhaustedOnAction", actionResponse.Status, "Expected WalkTree to be successful because, even though the action threw an exception, ContinuationOnRetryExhaustion flag was set.");
+        }
+
+        [TestMethod]
+        public void TestTreeWalkerSession_WalkTree_ActionHasDelay_ContinuationOnTimeout_RetryPolicy_FixedCount()
+        {
+            // Initialize TreeWalkerSession with a schema that defines a FixedCount retry policy.
+            // The schema contains an Action that timesout but has ContinuationOnTimeout flag set.
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.ActionDelay_ContinuationOnTimeout_RetryPolicy_FixedCount);
 
             // Test - Expect WalkTree to be successful because the TreeAction timed out but ContinuationOnTimeout flag was set.
             string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
