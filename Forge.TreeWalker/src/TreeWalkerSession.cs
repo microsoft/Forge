@@ -85,11 +85,11 @@ namespace Microsoft.Forge.TreeWalker
         /// The Roslyn regex expression. Used to check if dynamic schema values should be evaluated with Roslyn.
         /// Type can be added to indicate that Roslyn should evaluate the expression and return the specified type.
         /// If the property is a "KnownType", the KnownType is used even if a <type> is specified in the expression. ActionDefinition.InputType is an example of a KnownType.
-        /// If the property is not a KnownType and no type is specified in the expression, string is used by default.
+        /// If the property is not a KnownType and no type is specified in the expression, object is used by default.
         ///     Ex) C#|"expression"
         ///     Ex) C#<Boolean>|"expression"
         /// </summary>
-        private static Regex RoslynRegex = new Regex(@"^C#(\<(\w+)\>)?\|");
+        private static Regex RoslynRegex = new Regex(@"^C#(\<(.+)\>)?\|");
 
         /// <summary>
         /// The leading text to add to Schema strings to indicate the property value should be evaluated with Roslyn.
@@ -889,21 +889,15 @@ namespace Microsoft.Forge.TreeWalker
                     return null;
                 }
 
-                if (knownType != null && knownType == typeof(object))
-                {
-                    // Nullify the knownType instead of using object type. This allows us to dynamically create JObjects from the schema.
-                    knownType = null;
-                }
-
                 if (schemaObj is string && schemaObj.StartsWith(RoslynLeadingText))
                 {
                     // Case when schema property is a Roslyn expression.
-                    // Evaluate it as either the knownType if it exists, the <type> embeded in the RoslynRegex, or a string by default, in that order.
+                    // Evaluate it as either the knownType if it exists, the <type> embeded in the RoslynRegex, or an object by default, in that order.
                     Match result = RoslynRegex.Match(schemaObj);
 
                     if (result.Success)
                     {
-                        string typeStr = string.IsNullOrWhiteSpace(result.Groups[2].Value) ? "String" : result.Groups[2].Value;
+                        string typeStr = string.IsNullOrWhiteSpace(result.Groups[2].Value) ? "Object" : result.Groups[2].Value;
                         Type type = knownType ?? Type.GetType("System." + typeStr);
 
                         MethodInfo method = typeof(ExpressionExecutor).GetMethod("Execute");
@@ -946,7 +940,7 @@ namespace Microsoft.Forge.TreeWalker
                             var prop = knownType.GetProperty("Item");
                             prop.SetValue(knownObj, await this.EvaluateDynamicProperty(propertyValues[key], prop.PropertyType).ConfigureAwait(false), new[] { key });
                         }
-                        else if (knownType != null)
+                        else if (knownType != null && knownType != typeof(object))
                         {
                             // Case when schema object is a knownType object.
                             var prop = knownType.GetProperty(key);
@@ -959,27 +953,21 @@ namespace Microsoft.Forge.TreeWalker
                         }
                     }
 
-                    return knownType != null ? knownObj : (dynamic)JObject.FromObject(propertyValues);
+                    return knownType != null && knownType != typeof(object) ? knownObj : (dynamic)JObject.FromObject(propertyValues);
                 }
                 else if (schemaObj is JArray)
                 {
                     // Case when schema object is an array.
                     // Create an array with the knownType if given, then use recursion to evaluate each index.
                     dynamic knownObj = Activator.CreateInstance(knownType ?? typeof(object[]), schemaObj.Count);
+                    Type knownTypeElement = knownType != null && knownType != typeof(object) ? knownType.GetElementType() : null;
 
                     for (int i = 0; i < schemaObj.Count; i++)
                     {
-                        if (knownType != null)
-                        {
-                            knownObj.SetValue(await this.EvaluateDynamicProperty(schemaObj[i].ToObject<object>(), knownType.GetElementType()).ConfigureAwait(false), i);
-                        }
-                        else
-                        {
-                            schemaObj[i] = await this.EvaluateDynamicProperty(schemaObj[i].ToObject<object>(), null).ConfigureAwait(false);
-                        }
+                        knownObj.SetValue(await this.EvaluateDynamicProperty(schemaObj[i].ToObject<object>(), knownTypeElement).ConfigureAwait(false), i);
                     }
 
-                    return knownType != null ? knownObj : schemaObj;
+                    return knownObj;
                 }
                 else if (schemaObj is JValue)
                 {

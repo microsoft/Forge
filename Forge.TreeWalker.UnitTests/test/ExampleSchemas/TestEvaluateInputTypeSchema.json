@@ -39,6 +39,13 @@
                             "TestKey1": "C#|UserContext.Name",
                             "TestKey2": "TestValue2"
                         },
+                        "ObjectDictionary": {
+                            "TestKey1": {
+                                "Name": "C#|UserContext.Name",
+                                "Value": "MyValue"
+                            },
+                            "TestKey2": "C#|UserContext.CustomObject.NestedObject"
+                        },
                         "DynamicObject": {
                             "DynamicPropertyString": "TestValue1",
                             "DynamicPropertyInt": 10,
