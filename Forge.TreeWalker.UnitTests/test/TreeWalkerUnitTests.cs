@@ -31,7 +31,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
 
         private Guid sessionId;
         private IForgeDictionary forgeState = new ForgeDictionary(new Dictionary<string, object>(), Guid.Empty, Guid.Empty);
-        private dynamic UserContext = new System.Dynamic.ExpandoObject();
+        private ForgeUserContext UserContext = new ForgeUserContext();
         private ITreeWalkerCallbacks callbacks;
         private CancellationToken token;
         private TreeWalkerParameters parameters;
@@ -45,19 +45,6 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             this.forgeState = new ForgeDictionary(new Dictionary<string, object>(), this.sessionId, this.sessionId);
             this.callbacks = new TreeWalkerCallbacks();
             this.token = new CancellationTokenSource().Token;
-
-            this.UserContext.Name = "MyName";
-            this.UserContext.ResourceType = "Container";
-
-            this.UserContext.GetCount = (Func<Int32>)(() =>
-            {
-                return 1;
-            });
-
-            this.UserContext.GetCountAsync = (Func<Task<Int32>>)(() =>
-            {
-                return Task.FromResult(2);
-            });
 
             this.parameters = new TreeWalkerParameters(
                 this.sessionId,
@@ -732,6 +719,327 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             Assert.AreNotEqual(
                 rootSessionId,
                 actionResponse.Status);
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_TreeInput_ObjectFromRoslyn()
+        {
+            string jsonSchema = TreeInputSchemaHelper(treeInput: @"""TreeInput"": ""C#|Session.GetLastActionResponse()""",
+                                                      status: @"""Status"": ""C#|TreeInput.Status""");
+            this.TestSubroutineInitialize(jsonSchema: jsonSchema, treeName: "RootTree");
+
+            // Test - WalkTree to execute a SubroutineAction with the passed in TreeInput.
+            //        Confirm the passed in Status is able to successfully read the TreeInput.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "Success",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_TreeInput_CustomObjectFromRoslyn()
+        {
+            string jsonSchema = TreeInputSchemaHelper(
+                treeInput: @"""TreeInput"": ""C#|UserContext.CustomObject""",
+                status: @"""Status"": ""C#|(string)TreeInput.Command + TreeInput.NestedObject.IntPropertyInObject.ToString() + TreeInput.ObjectArray[0].Name""");
+            this.TestSubroutineInitialize(jsonSchema: jsonSchema, treeName: "RootTree");
+
+            // Test - WalkTree to execute a SubroutineAction with the passed in TreeInput.
+            //        Confirm the passed in Status is able to successfully read the TreeInput.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "TheCommand10MyName",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_TreeInput_DictionaryFromRoslyn()
+        {
+            string jsonSchema = TreeInputSchemaHelper(treeInput: @"""TreeInput"": ""C#|UserContext.GetDictionary()""",
+                                                      status: @"""Status"": ""C#|TreeInput[\""Key1\""]""");
+            this.TestSubroutineInitialize(jsonSchema: jsonSchema, treeName: "RootTree");
+
+            // Test - WalkTree to execute a SubroutineAction with the passed in TreeInput.
+            //        Confirm the passed in Status is able to successfully read the TreeInput.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "Value1",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_TreeInput_ArrayFromRoslyn()
+        {
+            string jsonSchema = TreeInputSchemaHelper(treeInput: @"""TreeInput"": ""C#|UserContext.GetCustomObjectArray()""",
+                                                      status: @"""Status"": ""C#|TreeInput[0].Command + TreeInput[1].NestedObject.IntPropertyInObject""");
+            this.TestSubroutineInitialize(jsonSchema: jsonSchema, treeName: "RootTree");
+
+            // Test - WalkTree to execute a SubroutineAction with the passed in TreeInput.
+            //        Confirm the passed in Status is able to successfully read the TreeInput.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "TheCommand10",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_TreeInput_StringFromRoslyn()
+        {
+            string jsonSchema = TreeInputSchemaHelper(treeInput: @"""TreeInput"": ""C#|Session.GetLastActionResponse().Status""",
+                                                      status: @"""Status"": ""C#|TreeInput""");
+            this.TestSubroutineInitialize(jsonSchema: jsonSchema, treeName: "RootTree");
+
+            // Test - WalkTree to execute a SubroutineAction with the passed in TreeInput.
+            //        Confirm the passed in Status is able to successfully read the TreeInput.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "Success",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_TreeInput_IntFromRoslyn()
+        {
+            string jsonSchema = TreeInputSchemaHelper(treeInput: @"""TreeInput"": ""C#|Session.GetLastActionResponse().StatusCode""",
+                                                      status: @"""Status"": ""C#|TreeInput.ToString()""");
+            this.TestSubroutineInitialize(jsonSchema: jsonSchema, treeName: "RootTree");
+
+            // Test - WalkTree to execute a SubroutineAction with the passed in TreeInput.
+            //        Confirm the passed in Status is able to successfully read the TreeInput.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "0",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_TreeInput_BoolFromRoslyn()
+        {
+            string jsonSchema = TreeInputSchemaHelper(treeInput: @"""TreeInput"": ""C#|Session.GetLastActionResponse().StatusCode == 0""",
+                                                      status: @"""Status"": ""C#|TreeInput.ToString()""");
+            this.TestSubroutineInitialize(jsonSchema: jsonSchema, treeName: "RootTree");
+
+            // Test - WalkTree to execute a SubroutineAction with the passed in TreeInput.
+            //        Confirm the passed in Status is able to successfully read the TreeInput.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "True",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_TreeInput_String()
+        {
+            string jsonSchema = TreeInputSchemaHelper(treeInput: @"""TreeInput"": ""Success""",
+                                                      status: @"""Status"": ""C#|TreeInput""");
+            this.TestSubroutineInitialize(jsonSchema: jsonSchema, treeName: "RootTree");
+
+            // Test - WalkTree to execute a SubroutineAction with the passed in TreeInput.
+            //        Confirm the passed in Status is able to successfully read the TreeInput.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "Success",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_TreeInput_Int()
+        {
+            string jsonSchema = TreeInputSchemaHelper(treeInput: @"""TreeInput"": 10",
+                                                      status: @"""Status"": ""C#|TreeInput.ToString()""");
+            this.TestSubroutineInitialize(jsonSchema: jsonSchema, treeName: "RootTree");
+
+            // Test - WalkTree to execute a SubroutineAction with the passed in TreeInput.
+            //        Confirm the passed in Status is able to successfully read the TreeInput.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "10",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_TreeInput_Bool()
+        {
+            string jsonSchema = TreeInputSchemaHelper(treeInput: @"""TreeInput"": true",
+                                                      status: @"""Status"": ""C#|TreeInput.ToString()""");
+            this.TestSubroutineInitialize(jsonSchema: jsonSchema, treeName: "RootTree");
+
+            // Test - WalkTree to execute a SubroutineAction with the passed in TreeInput.
+            //        Confirm the passed in Status is able to successfully read the TreeInput.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "True",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_TreeInputObject()
+        {
+            string jsonSchema = TreeInputSchemaHelper(
+                treeInput: @"""TreeInput"": {
+                                ""Key1"": ""Success"",
+                                ""Key2"": 10,
+                                ""Key3"": true,
+                                ""Key4"": [
+                                    ""ValueOne"",
+                                    ""ValueTwo""
+                                ],
+                                ""Key5"": {
+                                    ""NestedKey"": 5,
+                                    ""NestedKey2"": ""NestedValue""
+                                }
+                            }",
+                status: @"""Status"": ""C#|(string)TreeInput.Key1 + TreeInput.Key2 + TreeInput.Key3 + TreeInput.Key4[0] + TreeInput.Key5.NestedKey + TreeInput.Key5[\""NestedKey2\""]""");
+            this.TestSubroutineInitialize(jsonSchema: jsonSchema, treeName: "RootTree");
+
+            // Test - WalkTree to execute a SubroutineAction with the passed in TreeInput.
+            //        Confirm the passed in Status is able to successfully read the TreeInput.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "Success10TrueValueOne5NestedValue",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session.");
+        }
+
+        [TestMethod]
+        public void Test_SubroutineAction_TreeInputObject_ObjectFromRoslyn()
+        {
+            string jsonSchema = TreeInputSchemaHelper(
+                treeInput: @"""TreeInput"": {
+                                ""Key1"": ""C#|Session.GetLastActionResponse()"",
+                                ""Key2"": ""C#<Collections.Generic.IDictionary`2[System.String,System.String]>|UserContext.GetDictionary()"",
+                                ""Key3"": ""C#|UserContext.GetCustomObjectDictionary()"",
+                                ""Key4"": [
+                                    ""C#|UserContext.CustomObject"",
+                                    {
+                                        ""Command"": ""MyCommand""
+                                    }
+                                ],
+                                ""Key5"": {
+                                    ""NestedKey1"": ""C#|UserContext.CustomObject"",
+                                    ""NestedKey2"": {
+                                        ""Command"": ""MyOtherCommand""
+                                    }
+                                }
+                            }",
+                status: @"""Status"": ""C#|(string)TreeInput.Key1.Status + TreeInput.Key2[\""Key2\""] + TreeInput.Key3[\""Key1\""].Command + TreeInput.Key4[0].Command + TreeInput.Key4[1].Command + TreeInput.Key5[\""NestedKey1\""].Command + TreeInput.Key5[\""NestedKey2\""].Command""");
+            this.TestSubroutineInitialize(jsonSchema: jsonSchema, treeName: "RootTree");
+
+            // Test - WalkTree to execute a SubroutineAction with the passed in TreeInput.
+            //        Confirm the passed in Status is able to successfully read the TreeInput.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus);
+
+            ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
+            Assert.AreEqual(
+                "SuccessValue2TheCommandTheCommandMyCommandTheCommandMyOtherCommand",
+                subroutineActionResponse.Status,
+                "Expected to successfully retrieve the Status of the subroutine session.");
+        }
+
+        /// <summary>
+        /// Used to verify TreeInput without having to re-write the whole schema for each test.
+        /// </summary>
+        /// <param name="treeInput">The TreeInput.</param>
+        /// <param name="status">The Status.</param>
+        /// <returns>A complete ForgeSchema with the given inputs.</returns>
+        private static string TreeInputSchemaHelper(string treeInput, string status)
+        {
+            return @"
+                {
+                    ""RootTree"": {
+                        ""Tree"": {
+                            ""Root"": {
+                                ""Type"": ""Action"",
+                                ""Actions"": {
+                                    ""Tardigrade_TardigradeAction"": {
+                                        ""Action"": ""TardigradeAction""
+                                    }
+                                },
+                                ""ChildSelector"": [
+                                    {
+                                        ""Label"": ""Tardigrade_Success"",
+                                        ""ShouldSelect"": ""C#|Session.GetLastActionResponse().Status == \""Success\"""",
+                                        ""Child"": ""Tardigrade_Success""
+                                    }
+                                ]
+                            },
+                            ""Tardigrade_Success"": {
+                                ""Type"": ""Subroutine"",
+                                ""Actions"": {
+                                    ""Root_Subroutine"": {
+                                        ""Action"": ""SubroutineAction"",
+                                        ""Input"": {
+                                            ""TreeName"": ""SubroutineTree"",
+                                            "
+                + treeInput
+                + @"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    ""SubroutineTree"": {
+                        ""Tree"": {
+                            ""Root"": {
+                                ""Type"": ""Leaf"",
+                                ""Actions"": {
+                                    ""Root_LeafNodeSummaryAction"": {
+                                        ""Action"": ""LeafNodeSummaryAction"",
+                                        ""Input"": {"
+                + status
+                + @"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }";
         }
 
         /// <summary>

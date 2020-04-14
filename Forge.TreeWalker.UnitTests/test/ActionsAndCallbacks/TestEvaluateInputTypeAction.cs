@@ -52,6 +52,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         public Func<bool> BoolDelegate { get; set; }
         public Func<Task<bool>> BoolDelegateAsync { get; set; }
         public Dictionary<string, string> StringDictionary { get; set; }
+        public Dictionary<string, FooActionObject> ObjectDictionary { get; set; }
         public object DynamicObject { get; set; }
     }
 
