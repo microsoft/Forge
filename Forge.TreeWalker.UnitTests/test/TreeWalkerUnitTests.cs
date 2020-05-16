@@ -56,7 +56,8 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                 UserContext = this.UserContext,
                 ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly,
                 InitializeSubroutineTree = this.InitializeSubroutineTree,
-                TreeName = treeName
+                TreeName = treeName,
+                Dependencies = new List<Type>() { typeof(FooEnum) }
             };
 
             this.session = new TreeWalkerSession(this.parameters);
@@ -471,6 +472,26 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         }
 
         [TestMethod]
+        public void Test_EvaluateInputType_UndefinedEnumMemberFail()
+        {
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.TestEvaluateInputTypeAction_UndefinedEnumMemberFail);
+
+            // Test - WalkTree and expect the Status to be Failed_EvaluateDynamicProperty
+            //        because the schema contained a Property value that is not a valid FooEnum value.
+            string actual;
+            Assert.ThrowsException<EvaluateDynamicPropertyException>(() =>
+            {
+                actual = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            }, "Expected WalkTree to fail because the schema contained a Property value that is not a valid FooEnum value.");
+
+            actual = this.session.Status;
+            Assert.AreEqual(
+                "Failed_EvaluateDynamicProperty",
+                actual,
+                "Expected WalkTree to fail because the schema contained a Property value that is not a valid FooEnum value.");
+        }
+
+        [TestMethod]
         public void Test_LeafNodeSummaryAction_Success()
         {
             this.TestInitialize(jsonSchema: ForgeSchemaHelper.LeafNodeSummaryAction);
@@ -745,7 +766,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         {
             string jsonSchema = TreeInputSchemaHelper(
                 treeInput: @"""TreeInput"": ""C#|UserContext.CustomObject""",
-                status: @"""Status"": ""C#|(string)TreeInput.Command + TreeInput.NestedObject.IntPropertyInObject.ToString() + TreeInput.ObjectArray[0].Name""");
+                status: @"""Status"": ""C#|(string)TreeInput.Command + TreeInput.NestedObject.IntPropertyInObject.ToString() + TreeInput.ObjectArray[0].Name + TreeInput.FooEnumArray[2]""");
             this.TestSubroutineInitialize(jsonSchema: jsonSchema, treeName: "RootTree");
 
             // Test - WalkTree to execute a SubroutineAction with the passed in TreeInput.
@@ -755,7 +776,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
 
             ActionResponse subroutineActionResponse = this.session.GetOutput("Root_Subroutine");
             Assert.AreEqual(
-                "TheCommand10MyName",
+                "TheCommand10MyNameTestEnumTwo",
                 subroutineActionResponse.Status,
                 "Expected to successfully retrieve the Status of the subroutine session.");
         }

@@ -110,7 +110,10 @@ namespace Microsoft.Forge.TreeWalker
                              this.scriptOptions,
                              typeof(CodeGenInputParams)));
 
-            return (T)(await script.RunAsync(this.parameters).ConfigureAwait(false)).ReturnValue;
+            // Execute script and return the result.
+            // Parse Enum types explicitly since they cannot be casted directly.
+            var temp = (await script.RunAsync(this.parameters).ConfigureAwait(false)).ReturnValue;
+            return typeof(T).IsEnum ? (T)Enum.Parse(typeof(T), temp.ToString()) : (T)temp;
         }
 
         /// <summary>

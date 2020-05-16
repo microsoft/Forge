@@ -54,6 +54,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         public Dictionary<string, string> StringDictionary { get; set; }
         public Dictionary<string, FooActionObject> ObjectDictionary { get; set; }
         public object DynamicObject { get; set; }
+        public FooEnum[] FooEnumArray { get; set; }
     }
 
     public class FooActionObject
@@ -61,5 +62,12 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         public string Name { get; set; }
         public string Value { get; set; }
         public int IntPropertyInObject { get; set; }
+    }
+
+    public enum FooEnum
+    {
+        TestEnumOne = 0,
+
+        TestEnumTwo = 1
     }
 }
