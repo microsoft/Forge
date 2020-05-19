@@ -260,6 +260,27 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             }
         ";
 
+        public const string TestEvaluateInputTypeAction_UndefinedEnumMemberFail = @"
+            {
+                ""Tree"": {
+                    ""Root"": {
+                        ""Type"": ""Action"",
+                        ""Actions"": {
+                            ""Root_TestEvaluateInputTypeAction"": {
+                                ""Action"": ""TestEvaluateInputTypeAction"",
+                                ""Input"": {
+                                    ""FooEnumArray"": [
+                                        ""UNDEFINED_Enum_Value""
+                                    ]
+                                },
+                                ""ContinuationOnRetryExhaustion"": true
+                            }
+                        }
+                    }
+                }
+            }
+        ";
+
         public const string LeafNodeSummaryAction = @"
             {
                 ""Tree"": {

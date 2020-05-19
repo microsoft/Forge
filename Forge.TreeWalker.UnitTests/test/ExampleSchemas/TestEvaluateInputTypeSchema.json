@@ -53,7 +53,19 @@
                             "DynamicPropertyNestedObject": {
                                 "NestedPropertyOne": "NestedValue1"
                             }
-                        }
+                        },
+                        "FooEnumArray": [
+                            "TestEnumTwo",
+                            "1",
+                            1,
+                            "C#|\"TestEnumTwo\"",
+                            "C#|\"1\"",
+                            "C#|1",
+                            "100",
+                            100,
+                            "C#|FooEnum.TestEnumTwo",
+                            "C#|(FooEnum)Enum.Parse(typeof(FooEnum), \"TestEnumOne\")"
+                        ]
                     }
                 }
             }

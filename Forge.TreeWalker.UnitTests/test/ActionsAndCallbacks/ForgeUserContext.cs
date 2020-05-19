@@ -29,6 +29,12 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                     {
                         Name = "MyName"
                     }
+                },
+                FooEnumArray = new FooEnum[]
+                {
+                    FooEnum.TestEnumOne,
+                    FooEnum.TestEnumTwo,
+                    (FooEnum)1
                 }
             };
 

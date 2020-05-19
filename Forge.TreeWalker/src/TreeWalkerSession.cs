@@ -923,6 +923,12 @@ namespace Microsoft.Forge.TreeWalker
                         }
                     }
 
+                    if (knownType?.IsEnum ?? false)
+                    {
+                        // Case when schema property is an Enum type.
+                        return Enum.Parse(knownType, schemaObj);
+                    }
+
                     return schemaObj;
                 }
                 else if (schemaObj is JObject)
@@ -978,8 +984,20 @@ namespace Microsoft.Forge.TreeWalker
                 else
                 {
                     // Case when schema object is a value type.
+                    // Return the value as an Enum if knownType is an Enum.
                     // Return the value as the knownType if given.
-                    return knownType != null ? Convert.ChangeType(schemaObj, knownType) : schemaObj;
+                    if (knownType == null)
+                    {
+                        return schemaObj;
+                    }
+                    else if (knownType.IsEnum)
+                    {
+                        return Enum.Parse(knownType, schemaObj.ToString());
+                    }
+                    else
+                    {
+                        return Convert.ChangeType(schemaObj, knownType);
+                    }
                 }
             }
             catch (OperationCanceledException)
