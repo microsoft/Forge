@@ -8,7 +8,7 @@
 </Query>
 
 //
-// This Linqpad script is a bare-bones implementation of Forge.TreeWalker.
+// This Linqpad script is a bare-bones application that integrates Microsoft.Forge.TreeWalker.
 // It is intended to give users a quick, hands-on experience with Forge from the 
 // various contributors perspective: application owner, ForgeTree author, ForgeAction author.
 //
@@ -101,33 +101,32 @@ public const string TestForgeSchema = @"
         {
             ""Root"": {
                 ""Type"": ""Action"",
-				 ""Actions"": {
+                ""Actions"": {
                     ""Tardigrade_TardigradeAction"": {
                         ""Action"": ""TardigradeAction"",
-						""Input"": {
-						    ""Reason"": ""Testing Input""
-						}
+                        ""Input"": {
+                            ""Reason"": ""Testing Input""
+                        }
                     }
                 },
-                ""ChildSelector"":
-                [
+                ""ChildSelector"": [
                     {
                         ""ShouldSelect"": ""C#|Session.GetLastActionResponse().Status == \""Success\"" && UserContext.ResourceType == \""Container\"""",
                         ""Child"": ""TardigradeSuccess""
                     },
-					{
+                    {
                         ""Child"": ""TardigradeFail""
                     }
                 ]
             },
-			""TardigradeSuccess"": {
-				""Type"": ""Leaf""
-			},
-			""TardigradeFail"": {
-				""Type"": ""Leaf""
-			}
-		}
-	}";
+            ""TardigradeSuccess"": {
+                ""Type"": ""Leaf""
+            },
+            ""TardigradeFail"": {
+                ""Type"": ""Leaf""
+            }
+        }
+    }";
 
 //
 // ForgeActions are easily created with the [ForgeAction] Attribute and inheriting from BaseAction.
@@ -159,7 +158,7 @@ public class TardigradeInput
 // BeforeVisitNode is called before visiting each node, offering a convenient global hook into all TreeNodes.
 // Similar for AfterVisitNode.
 //
-// More details here: https://github.com/microsoft/Forge/wiki/How-To:-Use-Forge-in-my-Application#ITreeWalkerCallbacks
+// More details here: https://github.com/microsoft/Forge/wiki/How-To:-Use-Forge-in-my-Application#ITreeWalkerCallbacks-Callbacks
 //
 public class TreeWalkerCallbacks : ITreeWalkerCallbacks
 {
