@@ -63,14 +63,38 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             this.session = new TreeWalkerSession(this.parameters);
         }
 
+        public void TestInitializeWithForgeTree(ForgeTree forgeTree, string treeName = null)
+        {
+            // Initialize contexts, callbacks, and actions.
+            this.sessionId = Guid.NewGuid();
+            this.forgeState = new ForgeDictionary(new Dictionary<string, object>(), this.sessionId, this.sessionId);
+            this.callbacks = new TreeWalkerCallbacks();
+            this.token = new CancellationTokenSource().Token;
+
+            this.parameters = new TreeWalkerParameters(
+                this.sessionId,
+                forgeTree,
+                this.forgeState,
+                this.callbacks,
+                this.token)
+            {
+                UserContext = this.UserContext,
+                ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly,
+                InitializeSubroutineTree = this.InitializeSubroutineTree,
+                TreeName = treeName,
+                Dependencies = new List<Type>() { typeof(FooEnum) }
+            };
+
+            this.session = new TreeWalkerSession(this.parameters);
+        }
+
         public void TestSubroutineInitialize(string jsonSchema, string treeName = "RootTree")
         {
             // Subroutine tests use a ForgeSchema file that deserializes to a Dictionary of TreeName to ForgeTree.
             this.forgeTrees = JsonConvert.DeserializeObject<Dictionary<string, ForgeTree>>(jsonSchema);
             ForgeTree forgeTree = this.forgeTrees[treeName];
-            string rootSchema = JsonConvert.SerializeObject(forgeTree);
 
-            this.TestInitialize(rootSchema, treeName);
+            this.TestInitializeWithForgeTree(forgeTree, treeName);
         }
 
         public void TestFromFileInitialize(string filePath, string treeName = null)
@@ -87,7 +111,22 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         }
 
         [TestMethod]
-        public void TestTreeWalkerSession_Constructor()
+        public void TestTreeWalkerSession_Constructor_ForgeTree()
+        {
+            string jsonSchema = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, TardigradeSchemaPath));
+            ForgeTree forgeTree = JsonConvert.DeserializeObject<ForgeTree>(jsonSchema);
+
+            this.TestInitializeWithForgeTree(forgeTree);
+
+            // Test 1 - Verify jsonSchema was successfully deserialized in constructor.
+            Assert.AreEqual("Action", this.session.Schema.Tree["Tardigrade"].Type.ToString());
+
+            // Test 2 - Verify the Status is Initialized.
+            Assert.AreEqual("Initialized", this.session.Status, "Expected WalkTree status to be Initialized after initializing TreeWalkerSession.");
+        }
+
+        [TestMethod]
+        public void TestTreeWalkerSession_Constructor_JsonSchema()
         {
             this.TestFromFileInitialize(filePath: TardigradeSchemaPath);
 
@@ -1078,10 +1117,9 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         /// </summary>
         private TreeWalkerSession InitializeSubroutineTree(SubroutineInput subroutineInput, Guid subroutineSessionId, TreeWalkerParameters parentParameters)
         {
-            string jsonSchema = JsonConvert.SerializeObject(forgeTrees[subroutineInput.TreeName]);
             TreeWalkerParameters subroutineParameters = new TreeWalkerParameters(
                 subroutineSessionId,
-                jsonSchema,
+                forgeTrees[subroutineInput.TreeName],
                 new ForgeDictionary(new Dictionary<string, object>(), parentParameters.RootSessionId, subroutineSessionId),
                 this.callbacks,
                 this.token)

@@ -152,7 +152,7 @@ namespace Microsoft.Forge.TreeWalker
             }
 
             // Initialize properties from required TreeWalkerParameters properties.
-            this.Schema = JsonConvert.DeserializeObject<ForgeTree>(parameters.JsonSchema);
+            this.Schema = parameters.ForgeTree ?? JsonConvert.DeserializeObject<ForgeTree>(parameters.JsonSchema);
             this.walkTreeCts = CancellationTokenSource.CreateLinkedTokenSource(parameters.Token);
 
             // Initialize properties from optional TreeWalkerParameters properties.
