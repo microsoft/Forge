@@ -16,6 +16,7 @@ namespace Microsoft.Forge.TreeWalker
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.CodeAnalysis.Scripting;
+    using Microsoft.Forge.DataContracts;
 
     /// <summary>
     /// The TreeWalkerParameters class contains the required and optional properties used by the TreeWalkerSession.
@@ -31,8 +32,15 @@ namespace Microsoft.Forge.TreeWalker
 
         /// <summary>
         /// The string representation of the JSON schema.
+        /// Note: Either ForgeTree or JsonSchema must be used to construct a TreeWalkerParameters. The other property should be null.
         /// </summary>
         public string JsonSchema { get; private set; }
+
+        /// <summary>
+        /// The ForgeTree for this session.
+        /// Note: Either ForgeTree or JsonSchema must be used to construct a TreeWalkerParameters. The other property should be null.
+        /// </summary>
+        public ForgeTree ForgeTree { get; set; }
 
         /// <summary>
         /// The state given to TreeWalker on construction by a wrapper class.
@@ -117,7 +125,7 @@ namespace Microsoft.Forge.TreeWalker
         #endregion
 
         /// <summary>
-        /// Instantiates a TreeWalkerParameters object with the properies that are required to instantiate a TreeWalkerSession object.
+        /// Instantiates a TreeWalkerParameters object with the properties that are required to instantiate a TreeWalkerSession object.
         /// </summary>
         /// <param name="sessionId">The unique identifier for this session.</param>
         /// <param name="jsonSchema">The JSON schema.</param>
@@ -139,6 +147,34 @@ namespace Microsoft.Forge.TreeWalker
 
             this.SessionId = sessionId;
             this.JsonSchema = jsonSchema;
+            this.ForgeState = forgeState;
+            this.Callbacks = callbacks;
+            this.Token = token;
+        }
+
+        /// <summary>
+        /// Instantiates a TreeWalkerParameters object with the properties that are required to instantiate a TreeWalkerSession object.
+        /// </summary>
+        /// <param name="sessionId">The unique identifier for this session.</param>
+        /// <param name="forgeTree">The ForgeTree for this session.</param>
+        /// <param name="forgeState">The Forge state.</param>
+        /// <param name="callbacks">The callbacks object.</param>
+        /// <param name="token">The cancellation token.</param>
+        public TreeWalkerParameters(
+            Guid sessionId,
+            ForgeTree forgeTree,
+            IForgeDictionary forgeState,
+            ITreeWalkerCallbacks callbacks,
+            CancellationToken token)
+        {
+            if (sessionId == Guid.Empty) throw new ArgumentNullException("sessionId");
+            if (forgeTree == null) throw new ArgumentNullException("forgeTree");
+            if (forgeState == null) throw new ArgumentNullException("forgeState");
+            if (callbacks == null) throw new ArgumentNullException("callbacks");
+            if (token == null) throw new ArgumentNullException("token");
+
+            this.SessionId = sessionId;
+            this.ForgeTree = forgeTree;
             this.ForgeState = forgeState;
             this.Callbacks = callbacks;
             this.Token = token;
