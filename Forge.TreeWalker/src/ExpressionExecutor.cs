@@ -26,7 +26,9 @@ namespace Microsoft.Forge.TreeWalker
     {
         /// <summary>
         /// Code that Forge uses to prime the parentScript on initialization.
-        /// Evaluating some code moves roughly 600ms from the first expression to initializing the parentScript.
+        /// Evaluating any random code moves roughly 600ms from the first expression to initializing the parentScript.
+        /// The first expression still takes roughly 100ms when tested.
+        /// The code block is arbitrary, though I did find in testing that the first expression ran quicker when the logic was similar to the parentScriptCode.
         /// </summary>
         public static string ParentScriptCode = "(1+1).ToString()";
 
@@ -51,8 +53,9 @@ namespace Microsoft.Forge.TreeWalker
         private List<Type> dependencies;
 
         /// <summary>
-        /// The ScriptCache is used to cache and re-use Roslyn scripts.
-        /// Scripts include the parentScript, as well as all unique expressions that get Executed.
+        /// The ScriptCache holds Roslyn Scripts that are created using parentScript.ContinueWith.
+        /// This saves on memory and time since these continued Scripts use the already compiled parentScript as a base.
+        /// The parentScript gets asynchronously compiled, ran, and cached on initialization.
         /// </summary>
         private ConcurrentDictionary<string, Script<object>> scriptCache;
 
