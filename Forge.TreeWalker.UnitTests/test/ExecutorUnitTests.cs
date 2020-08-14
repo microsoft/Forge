@@ -10,8 +10,10 @@
 namespace Microsoft.Forge.TreeWalker.UnitTests
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using Microsoft.CodeAnalysis.Scripting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using Microsoft.Forge.ExternalTypes;
@@ -180,8 +182,10 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         {
             this.UserContext.Foo = "Foo";
             List<Type> dependencies = new List<Type>();
+
             // Tasks dependency needed by Forge by default.
             dependencies.Add(typeof(Task));
+
             // Reflection dependency needed by Forge for runtime compilation.
             dependencies.Add(typeof(Type));
 
@@ -225,6 +229,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             // Changing return type of GetCount
             string expression = "UserContext.GetCount = new Func<string>(() => \"Test\")";
             Assert.AreEqual(this.UserContext.GetCount(), 1);
+
             // Since expected return type has been updated, this should pass
             ex.Execute<Func<string>>(expression).GetAwaiter().GetResult();
             Assert.AreEqual(this.UserContext.GetCount(), "Test");
@@ -301,12 +306,13 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             string expression = "UserContext.Foo == \"Bar\" && UserContext.GetTopic(\"TopicName\").ResourceType == \"Node\"";
 
             // Test - confirm ExpressionExecutor script cache does not contain script before executing.
-            ExpressionExecutor ex = new ExpressionExecutor(session: null, userContext: this.UserContext);
-            Assert.IsFalse(ex.ScriptCacheContainsKey(expression));
+            ConcurrentDictionary<string, Script<object>> scriptCache = new ConcurrentDictionary<string, Script<object>>();
+            ExpressionExecutor ex = new ExpressionExecutor(session: null, userContext: this.UserContext, dependencies: null, scriptCache: scriptCache);
+            Assert.IsFalse(scriptCache.ContainsKey(expression));
 
             // Test - confirm ExpressionExecutor script cache does contain script after executing.
             Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult());
-            Assert.IsTrue(ex.ScriptCacheContainsKey(expression));
+            Assert.IsTrue(scriptCache.ContainsKey(expression));
         }
 
         [TestMethod]
@@ -341,5 +347,30 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate a true expression using TreeInput as null.");
         }
 
+        [TestMethod]
+        public void TestExecutor_ParentScriptBehavior()
+        {
+            // Test - Initialize an ExpressionExecutor and confirm the parentScriptTask is not immediately completed.
+            //        It should take 2~ seconds to compile and run the parentScript.
+            ConcurrentDictionary<string, Script<object>> scriptCache = new ConcurrentDictionary<string, Script<object>>();
+            ExpressionExecutor ex = new ExpressionExecutor(session: null, userContext: this.UserContext, dependencies: null, scriptCache: scriptCache);
+
+            if (ex.parentScriptTask.IsCompleted)
+            {
+                Assert.Fail("Do not expect parentScriptTask to be completed immediately after ExpressionExecutor is initialized.");
+            }
+
+            // Test - After ScriptCache is initialized with parentScript, subsuquent ExpressionExecutor initialization should happen quickly.
+            ex.parentScriptTask.Wait();
+            ex = new ExpressionExecutor(session: null, userContext: this.UserContext, dependencies: null, scriptCache: scriptCache);
+
+            if (!ex.parentScriptTask.IsCompleted)
+            {
+                Assert.Fail("Expect parentScriptTask to be completed on ExpressionExecutor initialize when using an already initialized scriptCache.");
+            }
+
+            // Test - Confirm ParentScriptCode is present in the ScriptCache after initialization.
+            Assert.IsTrue(scriptCache.ContainsKey(ExpressionExecutor.ParentScriptCode));
+        }
     }
 }
