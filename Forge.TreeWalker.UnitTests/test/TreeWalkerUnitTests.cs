@@ -10,10 +10,12 @@
 namespace Microsoft.Forge.TreeWalker.UnitTests
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.CodeAnalysis.Scripting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using Microsoft.Forge.DataContracts;
@@ -31,12 +33,13 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
 
         private Guid sessionId;
         private IForgeDictionary forgeState = new ForgeDictionary(new Dictionary<string, object>(), Guid.Empty, Guid.Empty);
-        private ForgeUserContext UserContext = new ForgeUserContext();
         private ITreeWalkerCallbacks callbacks;
         private CancellationToken token;
         private TreeWalkerParameters parameters;
         private TreeWalkerSession session;
         private Dictionary<string, ForgeTree> forgeTrees = new Dictionary<string, ForgeTree>();
+        private ConcurrentDictionary<string, Script<object>> scriptCache = new ConcurrentDictionary<string, Script<object>>();
+
 
         public void TestInitialize(string jsonSchema, string treeName = null)
         {
@@ -53,11 +56,12 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                 this.callbacks,
                 this.token)
             {
-                UserContext = this.UserContext,
+                UserContext = new ForgeUserContext(),
                 ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly,
                 InitializeSubroutineTree = this.InitializeSubroutineTree,
                 TreeName = treeName,
-                Dependencies = new List<Type>() { typeof(FooEnum) }
+                Dependencies = new List<Type>() { typeof(FooEnum) },
+                ScriptCache = this.scriptCache
             };
 
             this.session = new TreeWalkerSession(this.parameters);
@@ -78,7 +82,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                 this.callbacks,
                 this.token)
             {
-                UserContext = this.UserContext,
+                UserContext = new ForgeUserContext(),
                 ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly,
                 InitializeSubroutineTree = this.InitializeSubroutineTree,
                 TreeName = treeName,
@@ -1122,14 +1126,15 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                 forgeTrees[subroutineInput.TreeName],
                 new ForgeDictionary(new Dictionary<string, object>(), parentParameters.RootSessionId, subroutineSessionId),
                 this.callbacks,
-                this.token)
+                parentParameters.Token)
             {
-                UserContext = this.UserContext,
+                UserContext = parentParameters.UserContext,
                 ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly,
                 InitializeSubroutineTree = this.InitializeSubroutineTree,
                 RootSessionId = parentParameters.RootSessionId,
                 TreeName = subroutineInput.TreeName,
-                TreeInput = subroutineInput.TreeInput
+                TreeInput = subroutineInput.TreeInput,
+                ScriptCache = parentParameters.ScriptCache
             };
 
             return new TreeWalkerSession(subroutineParameters);

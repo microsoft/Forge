@@ -43,7 +43,7 @@
             "ChildSelector": [
                 {
                     "Label": "Tardigrade_Success",
-                    "ShouldSelect": "C#|Session.GetLastActionResponse().Status == \"Success\"",
+                    "ShouldSelect": "C#|(await Session.GetLastActionResponseAsync()).Status == \"Success\"",
                     "Child": "Tardigrade_Success"
                 },
                 {
