@@ -305,24 +305,29 @@ namespace Microsoft.Forge.TreeWalker
                         this.walkTreeCts.Token.ThrowIfCancellationRequested();
                     }
 
-                    await this.Parameters.Callbacks.BeforeVisitNode(
-                        this.Parameters.SessionId,
-                        current,
-                        await this.EvaluateDynamicProperty(this.Schema.Tree[current].Properties, null),
-                        this.Parameters.UserContext,
-                        this.Parameters.TreeName,
-                        this.Parameters.RootSessionId,
-                        this.walkTreeCts.Token).ConfigureAwait(false);
+                    TreeNodeContext treeNodeContext = null;
+                    if (this.Parameters.CallbacksV2 != null)
+                    {
+                        // If applicable, use the new CallbacksV2 with ITreeWalkerCallbacksV2
+                        // Evaluate the dynamic properties that are used by the actionTask.
+                        treeNodeContext = new TreeNodeContext(
+                            this.Parameters.SessionId,
+                            treeNodeKey,
+                            await this.EvaluateDynamicProperty(this.Schema.Tree[current].Properties, null),
+                            this.Parameters.UserContext,
+                            this.walkTreeCts.Token,
+                            this.Parameters.TreeName,
+                            this.Parameters.RootSessionId,
+                            shouldSkipActionsInTreeNode:false
+                        );
 
-                    try
-                    {
-                        // Exceptions are thrown here if VisitNode hit a timeout, was cancelled, or failed.
-                        next = await this.VisitNode(current).ConfigureAwait(false);
+                        // Follow the previous Callbacks with ITreeWalkerCallbacks.
+                        await this.Parameters.CallbacksV2.BeforeVisitNode(treeNodeContext).ConfigureAwait(false);
                     }
-                    finally
+                    else
                     {
-                        // Always call this callback, whether or not visit node was successful.
-                        await this.Parameters.Callbacks.AfterVisitNode(
+                        // Follow the previous Callbacks with ITreeWalkerCallbacks.
+                        await this.Parameters.Callbacks.BeforeVisitNode(
                             this.Parameters.SessionId,
                             current,
                             await this.EvaluateDynamicProperty(this.Schema.Tree[current].Properties, null),
@@ -330,6 +335,33 @@ namespace Microsoft.Forge.TreeWalker
                             this.Parameters.TreeName,
                             this.Parameters.RootSessionId,
                             this.walkTreeCts.Token).ConfigureAwait(false);
+                    }
+
+                    try
+                    {
+                        // Exceptions are thrown here if VisitNode hit a timeout, was cancelled, or failed.
+                        bool skipAction = treeNodeContext != null && !treeNodeContext.ShouldSkipActionsInTreeNode;
+                        next = await this.VisitNode(current, skipAction).ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        if (treeNodeContext != null)
+                        {
+                            // Follow the previous Callbacks with ITreeWalkerCallbacks.
+                            await this.Parameters.CallbacksV2.AfterVisitNode(treeNodeContext).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            // Always call this callback, whether or not visit node was successful.
+                            await this.Parameters.Callbacks.AfterVisitNode(
+                            this.Parameters.SessionId,
+                            current,
+                            await this.EvaluateDynamicProperty(this.Schema.Tree[current].Properties, null),
+                            this.Parameters.UserContext,
+                            this.Parameters.TreeName,
+                            this.Parameters.RootSessionId,
+                            this.walkTreeCts.Token).ConfigureAwait(false);
+                        }
                     }
 
                     current = next;
@@ -406,6 +438,7 @@ namespace Microsoft.Forge.TreeWalker
         /// Visits a TreeNode in the ForgeTree, performing type-specific behavior as necessary before selecting the next child to visit.
         /// </summary>
         /// <param name="treeNodeKey">The TreeNode key to visit.</param>
+        /// <param name="skipAction">Specifies whether to skip all actions and do ChildSelector only.</param>
         /// <exception cref="TimeoutException">If the node-level timeout was hit.</exception>
         /// <exception cref="ActionTimeoutException">If the action-level timeout was hit.</exception>
         /// <exception cref="OperationCanceledException">If the cancellation token was triggered.</exception>
@@ -413,34 +446,56 @@ namespace Microsoft.Forge.TreeWalker
         /// <returns>The key of the next child to visit, or <c>null</c> if no match was found.</returns>
         public async Task<string> VisitNode(string treeNodeKey)
         {
+            return await this.VisitNode(treeNodeKey, skipAction: false);
+        }
+        
+        /// <summary>
+        /// Visits a TreeNode in the ForgeTree, performing type-specific behavior as necessary before selecting the next child to visit.
+        /// </summary>
+        /// <param name="treeNodeKey">The TreeNode key to visit.</param>
+        /// <param name="skipAction">Specifies whether to skip all actions and do ChildSelector only.</param>
+        /// <exception cref="TimeoutException">If the node-level timeout was hit.</exception>
+        /// <exception cref="ActionTimeoutException">If the action-level timeout was hit.</exception>
+        /// <exception cref="OperationCanceledException">If the cancellation token was triggered.</exception>
+        /// <exception cref="Exception">If an unexpected exception was thrown.</exception>
+        /// <returns>The key of the next child to visit, or <c>null</c> if no match was found.</returns>
+        public async Task<string> VisitNode(string treeNodeKey, bool skipAction)
+        {
             TreeNode treeNode = this.Schema.Tree[treeNodeKey];
 
-            // Do type-specific behavior.
-            switch (treeNode.Type)
+            if (!skipAction)
             {
-                case TreeNodeType.Leaf:
+                // Do type-specific behavior.
+                switch (treeNode.Type)
                 {
-                    await this.PerformLeafTypeBehavior(treeNode).ConfigureAwait(false);
+                    case TreeNodeType.Leaf:
+                        {
+                            await this.PerformLeafTypeBehavior(treeNode).ConfigureAwait(false);
+                            break;
+                        }
+                    case TreeNodeType.Subroutine:
+                        {
+                            // Exceptions are thrown here if the actions hit a timeout, were cancelled, or failed.
+                            await this.PerformSubroutineTypeBehavior(treeNode, treeNodeKey).ConfigureAwait(false);
+                            break;
+                        }
+                    case TreeNodeType.Action:
+                        {
+                            // Exceptions are thrown here if the actions hit a timeout, were cancelled, or failed.
+                            await this.PerformActionTypeBehavior(treeNode, treeNodeKey).ConfigureAwait(false);
+                            break;
+                        }
+                    default:
+                        {
+                            break;
+                        }
+                }
+            }
 
-                    // Leaf type can't have ChildSelector so we return here.
-                    return null;
-                }
-                case TreeNodeType.Subroutine:
-                {
-                    // Exceptions are thrown here if the actions hit a timeout, were cancelled, or failed.
-                    await this.PerformSubroutineTypeBehavior(treeNode, treeNodeKey).ConfigureAwait(false);
-                    break;
-                }
-                case TreeNodeType.Action:
-                {
-                    // Exceptions are thrown here if the actions hit a timeout, were cancelled, or failed.
-                    await this.PerformActionTypeBehavior(treeNode, treeNodeKey).ConfigureAwait(false);
-                    break;
-                }
-                default:
-                {
-                    break;
-                }
+            if (treeNode.Type == TreeNodeType.Leaf)
+            {
+                // Leaf type can't have ChildSelector so we return here.
+                return null;
             }
 
             // Return next child to visit, if possible.

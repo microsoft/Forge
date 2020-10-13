@@ -58,7 +58,7 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="System.Collections.Immutable" Version="1.2.0" />
-    <PackageReference Include="System.Reflection.Metadata" Version="1.2.0" >
+    <PackageReference Include="System.Reflection.Metadata" Version="1.2.0">
       <NoWarn>NU1605</NoWarn>
     </PackageReference>
     <PackageReference Include="System.IO" Version="4.3.0" />
@@ -90,7 +90,9 @@
     <Compile Include="src\IForgeDictionary.cs" />
     <Compile Include="src\ITreeSession.cs" />
     <Compile Include="src\ITreeWalkerCallbacks.cs" />
+    <Compile Include="src\ITreeWalkerCallbacksV2.cs" />
     <Compile Include="src\SubroutineAction.cs" />
+    <Compile Include="src\TreeNodeContext.cs" />
     <Compile Include="src\TreeWalkerParameters.cs" />
     <Compile Include="src\TreeWalkerSession.cs" />
   </ItemGroup>
