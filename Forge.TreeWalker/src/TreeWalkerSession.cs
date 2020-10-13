@@ -340,7 +340,7 @@ namespace Microsoft.Forge.TreeWalker
                     try
                     {
                         // Exceptions are thrown here if VisitNode hit a timeout, was cancelled, or failed.
-                        bool skipAction = treeNodeContext != null && !treeNodeContext.ShouldSkipActionsInTreeNode;
+                        bool skipAction = treeNodeContext != null && treeNodeContext.ShouldSkipActionsInTreeNode;
                         next = await this.VisitNode(current, skipAction).ConfigureAwait(false);
                     }
                     finally

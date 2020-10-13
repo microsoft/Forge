@@ -1,9 +1,9 @@
 //-----------------------------------------------------------------------
-// <copyright file="TreeWalkerUnitTests.cs" company="Microsoft">
+// <copyright file="TreeWalkerUnitTestsWithV1Callbacks.cs" company="Microsoft">
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 // <summary>
-//     Tests the TreeWalkerSession class.
+//     Tests the TreeWalkerSession class, with V1 callbacks. This file is a copy of the original "TreeWalkerUnitTests.cs"
 // </summary>
 //-----------------------------------------------------------------------
 
@@ -24,7 +24,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
     using Newtonsoft.Json;
 
     [TestClass]
-    public class TreeWalkerUnitTests
+    public class TreeWalkerUnitTestsWithV1Callbacks
     {
         private const string TardigradeSchemaPath = "test\\ExampleSchemas\\TardigradeSchema.json";
         private const string TestEvaluateInputTypeSchemaPath = "test\\ExampleSchemas\\TestEvaluateInputTypeSchema.json";
@@ -33,7 +33,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
 
         private Guid sessionId;
         private IForgeDictionary forgeState = new ForgeDictionary(new Dictionary<string, object>(), Guid.Empty, Guid.Empty);
-        private ITreeWalkerCallbacksV2 callbacksV2;             // 20201012, switch to V2 callback.
+        private ITreeWalkerCallbacks callbacks;
         private CancellationToken token;
         private TreeWalkerParameters parameters;
         private TreeWalkerSession session;
@@ -41,49 +41,19 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         private ConcurrentDictionary<string, Script<object>> scriptCache = new ConcurrentDictionary<string, Script<object>>();
 
 
-        public void TestInitialize(string jsonSchema, string treeName = null, bool shouldSkipActionsInTreeNode = false)
+        public void TestInitialize(string jsonSchema, string treeName = null)
         {
             // Initialize contexts, callbacks, and actions.
             this.sessionId = Guid.NewGuid();
             this.forgeState = new ForgeDictionary(new Dictionary<string, object>(), this.sessionId, this.sessionId);
-            TreeWalkerCallbacksV2 treeWalkerCallbacksV2 = new TreeWalkerCallbacksV2();
-            treeWalkerCallbacksV2.ShouldSkipActionsInTreeNode = shouldSkipActionsInTreeNode;
-            this.callbacksV2 = treeWalkerCallbacksV2;
+            this.callbacks = new TreeWalkerCallbacks();
             this.token = new CancellationTokenSource().Token;
 
             this.parameters = new TreeWalkerParameters(
                 this.sessionId,
                 jsonSchema,
                 this.forgeState,
-                this.callbacksV2,
-                this.token)
-            {
-                UserContext = new ForgeUserContext(),
-                ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly,
-                InitializeSubroutineTree = this.InitializeSubroutineTree,
-                TreeName = treeName,
-                Dependencies = new List<Type>() { typeof(FooEnum) },
-                ScriptCache = this.scriptCache
-            };
-
-            this.session = new TreeWalkerSession(this.parameters);
-        }
-
-        public void TestInitialize_WithV2Callbacks_InitializedAsV1(string jsonSchema, string treeName = null, bool shouldSkipActionsInTreeNode = false)
-        {
-            // Initialize contexts, callbacks, and actions.
-            this.sessionId = Guid.NewGuid();
-            this.forgeState = new ForgeDictionary(new Dictionary<string, object>(), this.sessionId, this.sessionId);
-            TreeWalkerCallbacksV2 treeWalkerCallbacksV2 = new TreeWalkerCallbacksV2();
-            treeWalkerCallbacksV2.ShouldSkipActionsInTreeNode = shouldSkipActionsInTreeNode;
-            ITreeWalkerCallbacks callbacksV1 = treeWalkerCallbacksV2;
-            this.token = new CancellationTokenSource().Token;
-
-            this.parameters = new TreeWalkerParameters(
-                this.sessionId,
-                jsonSchema,
-                this.forgeState,
-                callbacksV1,            // Passes in ITreeWalkerCallbacks as V1, expects TreeWalkerParameters will recognize the instance is actually V2 and uses it as V2; otherwise throw NotImplementedException
+                this.callbacks,
                 this.token)
             {
                 UserContext = new ForgeUserContext(),
@@ -102,14 +72,14 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             // Initialize contexts, callbacks, and actions.
             this.sessionId = Guid.NewGuid();
             this.forgeState = new ForgeDictionary(new Dictionary<string, object>(), this.sessionId, this.sessionId);
-            this.callbacksV2 = new TreeWalkerCallbacksV2();
+            this.callbacks = new TreeWalkerCallbacks();
             this.token = new CancellationTokenSource().Token;
 
             this.parameters = new TreeWalkerParameters(
                 this.sessionId,
                 forgeTree,
                 this.forgeState,
-                this.callbacksV2,
+                this.callbacks,
                 this.token)
             {
                 UserContext = new ForgeUserContext(),
@@ -231,32 +201,6 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             string actualStatus = this.session.Status;
             Assert.AreEqual("TimeoutOnAction", actualStatus, "Expected WalkTree to timeout on action because the Action threw exceptions with no Continuation flags set.");
         }
-
-        #region shouldSkipActionsInTreeNode
-
-        [TestMethod]
-        public void TestTreeWalkerSession_WalkTree_ActionThrowsException_TimeoutOnAction_Skip()
-        {
-            // Initialize TreeWalkerSession with a schema containing Action that throws exception.
-            this.TestInitialize(jsonSchema: ForgeSchemaHelper.ActionException_Fail, shouldSkipActionsInTreeNode: true);
-
-            // Test - WalkTree and expect the Status to be RanToCompletion, because it will skip any action including the one throwing TimeoutOnAction.
-            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
-            Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to run to completion.");
-        }
-
-        [TestMethod]
-        public void TestTreeWalkerSession_WalkTree_ActionThrowsException_TimeoutOnAction_Skip_V1_AutoCast_To_V2()
-        {
-            // Initialize TreeWalkerSession with a schema containing Action that throws exception.
-            this.TestInitialize_WithV2Callbacks_InitializedAsV1(jsonSchema: ForgeSchemaHelper.ActionException_Fail, shouldSkipActionsInTreeNode: true);
-
-            // Test - WalkTree and expect the Status to be RanToCompletion, because it will skip any action including the one throwing TimeoutOnAction.
-            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
-            Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to run to completion.");
-        }
-
-        #endregion shouldSkipActionsInTreeNode
 
         [TestMethod]
         public void TestTreeWalkerSession_WalkTree_ActionThrowsException_ContinuationOnRetryExhaustion()
@@ -1181,7 +1125,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                 subroutineSessionId,
                 forgeTrees[subroutineInput.TreeName],
                 new ForgeDictionary(new Dictionary<string, object>(), parentParameters.RootSessionId, subroutineSessionId),
-                this.callbacksV2,
+                this.callbacks,
                 parentParameters.Token)
             {
                 UserContext = parentParameters.UserContext,

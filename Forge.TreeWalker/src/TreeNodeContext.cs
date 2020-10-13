@@ -56,7 +56,8 @@ namespace Microsoft.Forge.TreeWalker
         /// <summary>
         /// Indicates whether the tree walker should skip all actions defined in this node, and proceed with ChildSelector.
         /// </summary>
-        public bool ShouldSkipActionsInTreeNode { get; private set; }
+        /// <remarks>Allow Public set for testing purpose.</remarks>
+        public bool ShouldSkipActionsInTreeNode { get; set; }
 
         /// <summary>
         /// Instantiates an TreeNodeContext object.

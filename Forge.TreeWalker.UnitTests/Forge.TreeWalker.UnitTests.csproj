@@ -72,11 +72,13 @@
     <Compile Include="test\ActionsAndCallbacks\TestEvaluateInputType_FailOnNonEmptyCtor_Action.cs" />
     <Compile Include="test\ActionsAndCallbacks\TestEvaluateInputTypeAction.cs" />
     <Compile Include="test\ActionsAndCallbacks\TreeWalkerCallbacks.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TreeWalkerCallbacksV2.cs" />
     <Compile Include="test\ExecutorUnitTests.cs" />
     <Compile Include="test\ExternalTestType.cs" />
     <Compile Include="test\ForgeSchemaHelper.cs" />
     <Compile Include="test\ForgeSchemaValidationTests.cs" />
     <Compile Include="test\TreeWalkerUnitTests.cs" />
+    <Compile Include="test\TreeWalkerUnitTestsWithV1Callbacks.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
