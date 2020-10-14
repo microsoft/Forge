@@ -78,7 +78,6 @@
     <Compile Include="test\ForgeSchemaHelper.cs" />
     <Compile Include="test\ForgeSchemaValidationTests.cs" />
     <Compile Include="test\TreeWalkerUnitTests.cs" />
-    <Compile Include="test\TreeWalkerUnitTestsWithV1Callbacks.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

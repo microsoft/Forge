@@ -41,5 +41,11 @@ namespace Microsoft.Forge.TreeWalker
         /// </summary>
         /// <returns>The ActionResponse data for the last executed tree action key if it exists, otherwise null.</returns>
         Task<ActionResponse> GetLastActionResponseAsync();
+
+        /// <summary>
+        /// Get the string context if the actions in this TreeNodes are skipped.
+        /// Usually, when there is no action skipped, the return value is null.
+        /// </summary>
+        string GetCurrentNodeSkipActionContext();
     }
 }

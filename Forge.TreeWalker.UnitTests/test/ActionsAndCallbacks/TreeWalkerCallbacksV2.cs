@@ -19,9 +19,10 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
     public class TreeWalkerCallbacksV2 : ITreeWalkerCallbacksV2
     {
         /// <summary>
-        /// Specified the value after callback.
+        /// Get the string context if the actions in this TreeNodes are skipped.
+        /// Usually, when there is no action skipped, the return value is null.
         /// </summary>
-        public bool ShouldSkipActionsInTreeNode { get; set; }
+        public string CurrentNodeSkipActionContext { get; set; }
 
         public async Task BeforeVisitNode(
             Guid sessionId,
@@ -45,7 +46,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                 treeNodeContext.TreeNodeKey,
                 serializeProperties)));
 
-            treeNodeContext.ShouldSkipActionsInTreeNode = this.ShouldSkipActionsInTreeNode;
+            treeNodeContext.CurrentNodeSkipActionContext = this.CurrentNodeSkipActionContext;
         }
 
         public Task AfterVisitNode(
@@ -70,7 +71,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                 treeNodeContext.TreeNodeKey,
                 serializeProperties)));
 
-            treeNodeContext.ShouldSkipActionsInTreeNode = this.ShouldSkipActionsInTreeNode;
+            treeNodeContext.CurrentNodeSkipActionContext = this.CurrentNodeSkipActionContext;
         }
     }
 }

@@ -51,6 +51,7 @@ namespace Microsoft.Forge.TreeWalker
         public IForgeDictionary ForgeState { get; private set; }
 
         /// <summary>
+        /// [DEPRECATED]
         /// The ITreeWalkerCallbacks interface defines the callback Tasks that are awaited while walking the tree.
         /// Prefers future callers to use the new ITreeWalkerCallbacksV2 CallbacksV2, and keep this ITreeWalkerCallbacks Callbacks for backward compatibility.
         /// </summary>
@@ -133,8 +134,10 @@ namespace Microsoft.Forge.TreeWalker
 
         #endregion
 
-        #region Constructor with ITreeWalkerCallbacks
+        #region Constructor with ITreeWalkerCallbacks, [DEPRECATED]
+
         /// <summary>
+        /// [DEPRECATED]
         /// Instantiates a TreeWalkerParameters object with the properties that are required to instantiate a TreeWalkerSession object.
         /// Note: Recommended to cache the deserialized ForgeTree in your app and use that to avoid Forge deserializing the JsonSchema each initialize.
         /// </summary>
@@ -164,6 +167,7 @@ namespace Microsoft.Forge.TreeWalker
         }
 
         /// <summary>
+        /// [DEPRECATED]
         /// Instantiates a TreeWalkerParameters object with the properties that are required to instantiate a TreeWalkerSession object.
         /// Note: Recommended to cache the deserialized ForgeTree in your app and use that to avoid Forge deserializing the JsonSchema each initialize.
         /// </summary>
@@ -191,9 +195,11 @@ namespace Microsoft.Forge.TreeWalker
             this.Token = token;
             this.TryUpgradeToITreeWalkerCallbacksV2(callbacks);
         }
+
         #endregion Constructor with ITreeWalkerCallbacks
 
         #region Constructor with ITreeWalkerCallbacksV2
+
         /*
          * For now, we have two sets of Constructor, one for ITreeWalkerCallbacks and one for ITreeWalkerCallbacksV2. Ideally, we want to ITreeWalkerCallbacksV2
          * only, as it has more extendability. During transition time, we support both.
@@ -256,8 +262,14 @@ namespace Microsoft.Forge.TreeWalker
             this.CallbacksV2 = callbacksV2;
             this.Token = token;
         }
+
         #endregion Constructor with ITreeWalkerCallbacksV2
 
+        /// <summary>
+        /// Tries to upcast the passed in ITreeWalkerCallbacks to ITreeWalkerCallbacksV2 if possible.
+        /// Because ITreeWalkerCallbacksV2 supports more advanced scenario and has more extendibility for future.
+        /// </summary>
+        /// <param name="callbacks"></param>
         private void TryUpgradeToITreeWalkerCallbacksV2(ITreeWalkerCallbacks callbacks)
         {
             if (callbacks is ITreeWalkerCallbacksV2)
