@@ -279,7 +279,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         #region shouldSkipActionsInTreeNode
 
         [TestMethod]
-        public void TestTreeWalkerSession_WalkTree_ActionThrowsException_TimeoutOnAction_Skip()
+        public void TestTreeWalkerSession_WalkTree_ActionThrowsException_TimeoutOnAction_Skip_Then_No_ChildSelector()
         {
             // Initialize TreeWalkerSession with a schema containing Action that throws exception.
             this.TestInitialize(jsonSchema: ForgeSchemaHelper.ActionException_Fail, currentNodeSkipActionContext: "Skipped");
@@ -287,6 +287,36 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             // Test - WalkTree and expect the Status to be RanToCompletion, because it will skip any action including the one throwing TimeoutOnAction.
             string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
             Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to run to completion.");
+            string lastTreeAction = this.session.GetLastTreeAction().GetAwaiter().GetResult();
+            Assert.AreEqual(null, lastTreeAction, "Expected session.GetLastTreeAction().");
+        }
+
+        [TestMethod]
+        public void TestTreeWalkerSession_WalkTree_ActionThrowsException_TimeoutOnAction_Skip_Then_ChildSelector_Matched()
+        {
+            // Initialize TreeWalkerSession with a schema containing Action that throws exception.
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.ActionException_ContinuationOnRetryExhaustion_And_Skip, currentNodeSkipActionContext: "Skipped");
+
+            // Test - WalkTree and expect the Status to be RanToCompletion, because it will skip any action including the one throwing TimeoutOnAction.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to run to completion.");
+            string currentTreeNode = this.session.GetCurrentTreeNode().GetAwaiter().GetResult();
+            Assert.AreEqual("TestDelayExceptionAction_TreeNode", currentTreeNode,
+                "Expected session.GetCurrentTreeNode() to be TestDelayExceptionAction_TreeNode due to Session.CurrentNodeSkipActionContext() == Skipped.");
+        }
+
+        [TestMethod]
+        public void TestTreeWalkerSession_WalkTree_ActionThrowsException_TimeoutOnAction_Skip_Then_ChildSelector_Not_Matched()
+        {
+            // Initialize TreeWalkerSession with a schema containing Action that throws exception.
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.ActionException_ContinuationOnRetryExhaustion_And_Skip, currentNodeSkipActionContext: "Sk_i_p_ped");
+
+            // Test - WalkTree and expect the Status to be RanToCompletion, because it will skip any action including the one throwing TimeoutOnAction.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to run to completion.");
+            string currentTreeNode = this.session.GetCurrentTreeNode().GetAwaiter().GetResult();
+            Assert.AreEqual("ReturnSessionIdAction", currentTreeNode,
+                "Expected session.GetCurrentTreeNode() to be ReturnSessionIdAction due to Session.CurrentNodeSkipActionContext() is not empty and != Skipped.");
         }
 
         [TestMethod]
