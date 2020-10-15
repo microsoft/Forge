@@ -24,18 +24,6 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         /// </summary>
         public string CurrentNodeSkipActionContext { get; set; }
 
-        public async Task BeforeVisitNode(
-            Guid sessionId,
-            string treeNodeKey,
-            dynamic properties,
-            dynamic userContext,
-            string treeName,
-            Guid rootSessionId,
-            CancellationToken token)
-        {
-            throw new NotImplementedException("must use V2 API");
-        }
-
         public async Task BeforeVisitNode(TreeNodeContext treeNodeContext)
         {
             string serializeProperties = JsonConvert.SerializeObject(treeNodeContext.Properties);
@@ -47,18 +35,6 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                 serializeProperties)));
 
             treeNodeContext.CurrentNodeSkipActionContext = this.CurrentNodeSkipActionContext;
-        }
-
-        public Task AfterVisitNode(
-            Guid sessionId,
-            string treeNodeKey,
-            dynamic properties,
-            dynamic userContext,
-            string treeName,
-            Guid rootSessionId,
-            CancellationToken token)
-        {
-            throw new NotImplementedException("must use V2 API");
         }
 
         public async Task AfterVisitNode(TreeNodeContext treeNodeContext)

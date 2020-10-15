@@ -53,7 +53,7 @@ namespace Microsoft.Forge.TreeWalker
         public Guid RootSessionId { get; private set; }
 
         /// <summary>
-        /// Indicates whether the tree walker should skip all actions defined in this node, and proceed with ChildSelector.
+        /// When set, the tree walker should skip all actions defined in this node, and proceed with ChildSelector.
         /// When not null or whitespace, the tree walker will skip all actions defined in the current tree node, and proceed to AfterVisitNode then ChildSelector.
         /// Update this property inside BeforeVisitNode if you wish to use this feature for the current tree node.
         /// The string context is available to check in the current TreeNode's ChildSelector via Session.GetCurrentNodeSkipActionContext().
@@ -65,14 +65,14 @@ namespace Microsoft.Forge.TreeWalker
         /// Instantiates an TreeNodeContext object.
         /// </summary>
         /// <param name="sessionId">The unique identifier for this tree walking session.</param>
-        /// <param name="treeNodeKey">The TreeNode's key.</param>
-        /// <param name="properties">The properties of this Tree node..</param>
-        /// <param name="userContext">Optional, the user context for this Tree node.</param>
+        /// <param name="treeNodeKey">The tree node's key.</param>
+        /// <param name="properties">The properties of this tree node.</param>
+        /// <param name="userContext">Optional, the user context for this tree node.</param>
         /// <param name="token">The cancellation token.</param>
         /// <param name="treeName">The name of the ForgeTree in the JsonSchema.</param>
         /// <param name="rootSessionId">The unique identifier for the root/parent tree walking session.</param>
         /// <param name="currentNodeSkipActionContext">
-        /// The string context if the actions in this TreeNodes are skipped. It is null when no skip. When it is not empty, proceed with ChildSelector.
+        /// The string context if the actions in this tree node are skipped. It is null when no skip. When it is not empty, proceed with ChildSelector.
         /// </param>
         public TreeNodeContext(
             Guid sessionId,
@@ -84,8 +84,6 @@ namespace Microsoft.Forge.TreeWalker
             Guid rootSessionId,
             string currentNodeSkipActionContext)
         {
-            // userContext is an optional parameter for TreeNode, so we don't throw ArgumentNullException when null.
-
             if (sessionId == null) throw new ArgumentNullException("sessionId");
             if (string.IsNullOrWhiteSpace(treeNodeKey)) throw new ArgumentNullException("treeNodeKey");
             if (token == null) throw new ArgumentNullException("token");

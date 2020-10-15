@@ -319,11 +319,11 @@ namespace Microsoft.Forge.TreeWalker
                         this.walkTreeCts.Token.ThrowIfCancellationRequested();
                     }
 
-                    TreeNodeContext treeNodeContext_BeforeVisitNode = null;
+                    TreeNodeContext treeNodeContext = null;
                     if (this.Parameters.CallbacksV2 != null)
                     {
                         // If applicable, use the new CallbacksV2 with ITreeWalkerCallbacksV2
-                        treeNodeContext_BeforeVisitNode = new TreeNodeContext(
+                        treeNodeContext = new TreeNodeContext(
                             this.Parameters.SessionId,
                             current,
                             await this.EvaluateDynamicProperty(this.Schema.Tree[current].Properties, null),
@@ -335,8 +335,8 @@ namespace Microsoft.Forge.TreeWalker
                         );
 
                         // Follow the previous Callbacks with ITreeWalkerCallbacks.
-                        await this.Parameters.CallbacksV2.BeforeVisitNode(treeNodeContext_BeforeVisitNode).ConfigureAwait(false);
-                        this.currentNodeSkipActionContext = treeNodeContext_BeforeVisitNode?.CurrentNodeSkipActionContext;
+                        await this.Parameters.CallbacksV2.BeforeVisitNode(treeNodeContext).ConfigureAwait(false);
+                        this.currentNodeSkipActionContext = treeNodeContext.CurrentNodeSkipActionContext;
                     }
                     else
                     {
@@ -358,10 +358,10 @@ namespace Microsoft.Forge.TreeWalker
                     }
                     finally
                     {
-                        if (treeNodeContext_BeforeVisitNode != null)
+                        if (this.Parameters.CallbacksV2 != null)
                         {
-                            // When treeNodeContext is not null, continues with the new ITreeWalkerCallbacksV2.
-                            TreeNodeContext treeNodeContext_AfterVisitNode = new TreeNodeContext(
+                            // When CallbacksV2 is not null, continues with the new ITreeWalkerCallbacksV2.
+                            treeNodeContext = new TreeNodeContext(
                                 this.Parameters.SessionId,
                                 current,
                                 await this.EvaluateDynamicProperty(this.Schema.Tree[current].Properties, null),
@@ -369,10 +369,10 @@ namespace Microsoft.Forge.TreeWalker
                                 this.walkTreeCts.Token,
                                 this.Parameters.TreeName,
                                 this.Parameters.RootSessionId,
-                                currentNodeSkipActionContext: null
+                                this.currentNodeSkipActionContext
                             );
 
-                            await this.Parameters.CallbacksV2.AfterVisitNode(treeNodeContext_AfterVisitNode).ConfigureAwait(false);
+                            await this.Parameters.CallbacksV2.AfterVisitNode(treeNodeContext).ConfigureAwait(false);
                         }
                         else
                         {
@@ -386,10 +386,11 @@ namespace Microsoft.Forge.TreeWalker
                             this.Parameters.RootSessionId,
                             this.walkTreeCts.Token).ConfigureAwait(false);
                         }
+
+                        this.currentNodeSkipActionContext = null;   // Clear the context of SkipAction and get ready for the next tree node.
                     }
 
                     current = next;
-                    this.currentNodeSkipActionContext = null;   // Clear the context of SkipAction and get ready for the next tree node.
 
                 } while (!string.IsNullOrWhiteSpace(current));
 
@@ -464,7 +465,6 @@ namespace Microsoft.Forge.TreeWalker
         /// Visits a TreeNode in the ForgeTree, performing type-specific behavior as necessary before selecting the next child to visit.
         /// </summary>
         /// <param name="treeNodeKey">The TreeNode key to visit.</param>
-        /// <param name="skipAction">Specifies whether to skip all actions and do ChildSelector only.</param>
         /// <exception cref="TimeoutException">If the node-level timeout was hit.</exception>
         /// <exception cref="ActionTimeoutException">If the action-level timeout was hit.</exception>
         /// <exception cref="OperationCanceledException">If the cancellation token was triggered.</exception>
@@ -476,7 +476,7 @@ namespace Microsoft.Forge.TreeWalker
 
             if (string.IsNullOrWhiteSpace(this.currentNodeSkipActionContext))
             {
-                // When this.currentNodeSkipActionContext, it means there is no SkipAction. Just follow the regular route to run Actions.
+                // Do not skip actions when this.currentNodeSkipActionContext is null or whitespace.
 
                 // Do type-specific behavior.
                 switch (treeNode.Type)

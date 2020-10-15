@@ -14,7 +14,7 @@ namespace Microsoft.Forge.TreeWalker
     /// <summary>
     /// The ITreeWalkerCallbacks interface defines the callback Tasks that are awaited while walking the tree.
     /// </summary>
-    public interface ITreeWalkerCallbacksV2 : ITreeWalkerCallbacks
+    public interface ITreeWalkerCallbacksV2
     {
         /// <summary>
         /// The callback Task that is awaited before visiting each node.

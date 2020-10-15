@@ -163,7 +163,7 @@ namespace Microsoft.Forge.TreeWalker
             this.ForgeTree = forgeTree;
             this.ForgeState = forgeState;
             this.Token = token;
-            this.TryUpgradeToITreeWalkerCallbacksV2(callbacks);
+            this.Callbacks = callbacks;
         }
 
         /// <summary>
@@ -193,7 +193,7 @@ namespace Microsoft.Forge.TreeWalker
             this.JsonSchema = jsonSchema;
             this.ForgeState = forgeState;
             this.Token = token;
-            this.TryUpgradeToITreeWalkerCallbacksV2(callbacks);
+            this.Callbacks = callbacks;
         }
 
         #endregion Constructor with ITreeWalkerCallbacks
@@ -264,25 +264,5 @@ namespace Microsoft.Forge.TreeWalker
         }
 
         #endregion Constructor with ITreeWalkerCallbacksV2
-
-        /// <summary>
-        /// Tries to upcast the passed in ITreeWalkerCallbacks to ITreeWalkerCallbacksV2 if possible.
-        /// Because ITreeWalkerCallbacksV2 supports more advanced scenario and has more extendibility for future.
-        /// </summary>
-        /// <param name="callbacks"></param>
-        private void TryUpgradeToITreeWalkerCallbacksV2(ITreeWalkerCallbacks callbacks)
-        {
-            if (callbacks is ITreeWalkerCallbacksV2)
-            {
-                ITreeWalkerCallbacksV2 callbacksV2 = callbacks as ITreeWalkerCallbacksV2;
-                if (callbacksV2 != null)
-                {
-                    this.CallbacksV2 = callbacksV2;
-                    return;
-                }
-            }
-
-            this.Callbacks = callbacks;
-        }
     }
 }
