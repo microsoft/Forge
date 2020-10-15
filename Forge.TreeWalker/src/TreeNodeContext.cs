@@ -54,7 +54,9 @@ namespace Microsoft.Forge.TreeWalker
 
         /// <summary>
         /// Indicates whether the tree walker should skip all actions defined in this node, and proceed with ChildSelector.
-        /// Only application and test cases should update this property. It will be decided inside BeforeVisitNode if we should skip the Actions.
+        /// When not null or whitespace, the tree walker will skip all actions defined in the current tree node, and proceed to AfterVisitNode then ChildSelector.
+        /// Update this property inside BeforeVisitNode if you wish to use this feature for the current tree node.
+        /// The string context is available to check in the current TreeNode's ChildSelector via Session.GetCurrentNodeSkipActionContext().
         /// </summary>
         /// <remarks>Allow Public set for testing purpose.</remarks>
         public string CurrentNodeSkipActionContext { get; set; }
