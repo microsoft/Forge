@@ -26,6 +26,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
     [TestClass]
     public class TreeWalkerUnitTests
     {
+
         private const string TardigradeSchemaPath = "test\\ExampleSchemas\\TardigradeSchema.json";
         private const string TestEvaluateInputTypeSchemaPath = "test\\ExampleSchemas\\TestEvaluateInputTypeSchema.json";
         private const string LeafNodeSummarySchemaPath = "test\\ExampleSchemas\\LeafNodeSummarySchema.json";
