@@ -19,13 +19,13 @@ namespace Microsoft.Forge.TreeWalker
         /// <summary>
         /// The callback Task that is awaited before visiting each node.
         /// </summary>
-        /// <param name="treeNodeContext">The TreeNode context holding relevant information for this Action.</param>
+        /// <param name="treeNodeContext">The tree node context holding relevant information about this tree node and session.</param>
         Task BeforeVisitNode(TreeNodeContext treeNodeContext);
 
         /// <summary>
         /// The callback Task that is awaited after visiting each node.
         /// </summary>
-        /// <param name="treeNodeContext">The TreeNode context holding relevant information for this Action.</param>
+        /// <param name="treeNodeContext">The tree node context holding relevant information about this tree node and session.</param>
         Task AfterVisitNode(TreeNodeContext treeNodeContext);
     }
 }

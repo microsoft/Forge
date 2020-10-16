@@ -162,8 +162,8 @@ namespace Microsoft.Forge.TreeWalker
             this.SessionId = sessionId;
             this.ForgeTree = forgeTree;
             this.ForgeState = forgeState;
-            this.Token = token;
             this.Callbacks = callbacks;
+            this.Token = token;
         }
 
         /// <summary>
@@ -192,8 +192,8 @@ namespace Microsoft.Forge.TreeWalker
             this.SessionId = sessionId;
             this.JsonSchema = jsonSchema;
             this.ForgeState = forgeState;
-            this.Token = token;
             this.Callbacks = callbacks;
+            this.Token = token;
         }
 
         #endregion Constructor with ITreeWalkerCallbacks
