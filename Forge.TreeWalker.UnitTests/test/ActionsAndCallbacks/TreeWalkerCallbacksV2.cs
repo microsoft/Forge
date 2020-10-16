@@ -19,7 +19,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
     public class TreeWalkerCallbacksV2 : ITreeWalkerCallbacksV2
     {
         /// <summary>
-        /// Get the string context if the actions in this TreeNodes are skipped.
+        /// Get the string context if the actions in this tree node are skipped.
         /// Usually, when there is no action skipped, the return value is null.
         /// </summary>
         public string CurrentNodeSkipActionContext { get; set; }

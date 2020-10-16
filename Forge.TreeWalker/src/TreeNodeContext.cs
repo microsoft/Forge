@@ -58,7 +58,6 @@ namespace Microsoft.Forge.TreeWalker
         /// Update this property inside BeforeVisitNode if you wish to use this feature for the current tree node.
         /// The string context is available to check in the current TreeNode's ChildSelector via Session.GetCurrentNodeSkipActionContext().
         /// </summary>
-        /// <remarks>Allow Public set for testing purpose.</remarks>
         public string CurrentNodeSkipActionContext { get; set; }
 
         /// <summary>

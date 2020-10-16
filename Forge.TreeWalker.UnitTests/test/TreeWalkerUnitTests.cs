@@ -33,7 +33,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
 
         private Guid sessionId;
         private IForgeDictionary forgeState = new ForgeDictionary(new Dictionary<string, object>(), Guid.Empty, Guid.Empty);
-        private ITreeWalkerCallbacksV2 callbacksV2;             // 20201012, switch to V2 callback.
+        private ITreeWalkerCallbacksV2 callbacksV2;
         private CancellationToken token;
         private TreeWalkerParameters parameters;
         private TreeWalkerSession session;
@@ -49,9 +49,11 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             this.callbacksV2 = new TreeWalkerCallbacksV2() { CurrentNodeSkipActionContext = currentNodeSkipActionContext };
             this.token = new CancellationTokenSource().Token;
 
+            ForgeTree forgeTree = JsonConvert.DeserializeObject<ForgeTree>(jsonSchema);
+
             this.parameters = new TreeWalkerParameters(
                 this.sessionId,
-                jsonSchema,
+                forgeTree,
                 this.forgeState,
                 this.callbacksV2,
                 this.token)
@@ -68,11 +70,11 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         }
 
         /// <summary>
-        /// Helper function to test V1 ITreeWalkerCallbacks
+        /// Helper function to test V1 ITreeWalkerCallbacks on the contructor accepting FileSchema.
         /// </summary>
-        /// <param name="jsonSchema"></param>
-        /// <param name="treeName"></param>
-        public void TestInitialize_WithV1Callbacks(string jsonSchema, string treeName = null)
+        /// <param name="jsonSchema">The json string content.</param>
+        /// <param name="treeName">The tree name.</param>
+        public void TestInitializeWithFile_WithV1Callbacks(string jsonSchema, string treeName = null)
         {
             // Initialize contexts, callbacks, and actions.
             this.sessionId = Guid.NewGuid();
@@ -93,6 +95,36 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                 TreeName = treeName,
                 Dependencies = new List<Type>() { typeof(FooEnum) },
                 ScriptCache = this.scriptCache
+            };
+
+            this.session = new TreeWalkerSession(this.parameters);
+        }
+
+        /// <summary>
+        /// Helper function to test V1 ITreeWalkerCallbacks on the contructor accepting ForgeTree.
+        /// </summary>
+        /// <param name="forgeTree">The ForgeTree object.</param>
+        /// <param name="treeName">The tree name.</param>
+        public void TestInitializeWithForgeTree_WithV1Callbacks(ForgeTree forgeTree, string treeName = null)
+        {
+            // Initialize contexts, callbacks, and actions.
+            this.sessionId = Guid.NewGuid();
+            this.forgeState = new ForgeDictionary(new Dictionary<string, object>(), this.sessionId, this.sessionId);
+            TreeWalkerCallbacks treeWalkerCallbacksV1 = new TreeWalkerCallbacks();
+            this.token = new CancellationTokenSource().Token;
+
+            this.parameters = new TreeWalkerParameters(
+                this.sessionId,
+                forgeTree,
+                this.forgeState,
+                treeWalkerCallbacksV1,
+                this.token)
+            {
+                UserContext = new ForgeUserContext(),
+                ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly,
+                InitializeSubroutineTree = this.InitializeSubroutineTree,
+                TreeName = treeName,
+                Dependencies = new List<Type>() { typeof(FooEnum) }
             };
 
             this.session = new TreeWalkerSession(this.parameters);
@@ -185,16 +217,26 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         }
 
         [TestMethod]
-        public void TestTreeWalkerSession_VisitNode_Success_WithV1Callbacks()
+        public void TestTreeWalkerSession_VisitNode_Success_InitializeWithFile_WithV1Callbacks()
         {
             string jsonSchema = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, TardigradeSchemaPath));
-            this.TestInitialize_WithV1Callbacks(jsonSchema);
+            this.TestInitializeWithFile_WithV1Callbacks(jsonSchema);
 
-            // Test - VisitNode and expect the first child to be returned.
-            string expected = "Tardigrade";
-            string actualNextTreeNodeKey = this.session.VisitNode("Container").GetAwaiter().GetResult();
+            // Test - WalkTree and expect the Status to be RanToCompletion.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to run to completion.");
+        }
 
-            Assert.AreEqual(expected, actualNextTreeNodeKey, "Expected VisitNode(Container) to return Tardigrade.");
+        [TestMethod]
+        public void TestTreeWalkerSession_VisitNode_Success_InitializeWithForgeTree_WithV1Callbacks()
+        {
+            string jsonSchema = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, TardigradeSchemaPath));
+            ForgeTree forgeTree = JsonConvert.DeserializeObject<ForgeTree>(jsonSchema);
+            this.TestInitializeWithForgeTree_WithV1Callbacks(forgeTree);
+
+            // Test - WalkTree and expect the Status to be RanToCompletion.
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to run to completion.");
         }
 
         [TestMethod]

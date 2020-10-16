@@ -139,7 +139,7 @@ namespace Microsoft.Forge.TreeWalker
         private bool hasSessionRehydrated;
 
         /// <summary>
-        /// The context value whether the actions in this TreeNodes are skipped.
+        /// The string context if the actions in the current tree node were skipped, or null if actions were not skipped.
         /// </summary>
         private string currentNodeSkipActionContext;
 
@@ -276,8 +276,7 @@ namespace Microsoft.Forge.TreeWalker
         }
 
         /// <summary>
-        /// Get the string context if the actions in this TreeNodes are skipped.
-        /// Usually, when there is no action skipped, the return value is null.
+        /// Gets the string context if the actions in the current tree node were skipped, or null if actions were not skipped.
         /// </summary>
         public string GetCurrentNodeSkipActionContext()
         {
@@ -334,7 +333,6 @@ namespace Microsoft.Forge.TreeWalker
                             currentNodeSkipActionContext:null
                         );
 
-                        // Follow the previous Callbacks with ITreeWalkerCallbacks.
                         await this.Parameters.CallbacksV2.BeforeVisitNode(treeNodeContext).ConfigureAwait(false);
                         this.currentNodeSkipActionContext = treeNodeContext.CurrentNodeSkipActionContext;
                     }
@@ -358,9 +356,11 @@ namespace Microsoft.Forge.TreeWalker
                     }
                     finally
                     {
+                        // Always call AfterVisitNode, even if VisitNode threw exception.
                         if (this.Parameters.CallbacksV2 != null)
                         {
-                            // When CallbacksV2 is not null, continues with the new ITreeWalkerCallbacksV2.
+                            // If applicable, use the new CallbacksV2 with ITreeWalkerCallbacksV2
+                            // Recreating the TreeNodeContext here to reevaluate TreeNode.Properties.
                             treeNodeContext = new TreeNodeContext(
                                 this.Parameters.SessionId,
                                 current,
@@ -376,7 +376,6 @@ namespace Microsoft.Forge.TreeWalker
                         }
                         else
                         {
-                            // Always call this callback, whether or not visit node was successful.
                             await this.Parameters.Callbacks.AfterVisitNode(
                             this.Parameters.SessionId,
                             current,
@@ -387,7 +386,8 @@ namespace Microsoft.Forge.TreeWalker
                             this.walkTreeCts.Token).ConfigureAwait(false);
                         }
 
-                        this.currentNodeSkipActionContext = null;   // Clear the context of SkipAction and get ready for the next tree node.
+                        // Clear the context of SkipAction before visiting next node, because it is only valid locally for this current tree node.
+                        this.currentNodeSkipActionContext = null;
                     }
 
                     current = next;

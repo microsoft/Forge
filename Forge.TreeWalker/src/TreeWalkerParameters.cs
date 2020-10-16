@@ -53,7 +53,7 @@ namespace Microsoft.Forge.TreeWalker
         /// <summary>
         /// [DEPRECATED]
         /// The ITreeWalkerCallbacks interface defines the callback Tasks that are awaited while walking the tree.
-        /// Prefers future callers to use the new ITreeWalkerCallbacksV2 CallbacksV2, and keep this ITreeWalkerCallbacks Callbacks for backward compatibility.
+        /// Prefers future callers to use the new ITreeWalkerCallbacksV2 CallbacksV2.
         /// </summary>
         public ITreeWalkerCallbacks Callbacks { get; private set; }
 
@@ -229,35 +229,6 @@ namespace Microsoft.Forge.TreeWalker
 
             this.SessionId = sessionId;
             this.ForgeTree = forgeTree;
-            this.ForgeState = forgeState;
-            this.CallbacksV2 = callbacksV2;
-            this.Token = token;
-        }
-
-        /// <summary>
-        /// Instantiates a TreeWalkerParameters object with the properties that are required to instantiate a TreeWalkerSession object.
-        /// Note: Recommended to cache the deserialized ForgeTree in your app and use that to avoid Forge deserializing the JsonSchema each initialize.
-        /// </summary>
-        /// <param name="sessionId">The unique identifier for this session.</param>
-        /// <param name="jsonSchema">The JSON schema.</param>
-        /// <param name="forgeState">The Forge state.</param>
-        /// <param name="callbacksV2">The callbacks object.</param>
-        /// <param name="token">The cancellation token.</param>
-        public TreeWalkerParameters(
-            Guid sessionId,
-            string jsonSchema,
-            IForgeDictionary forgeState,
-            ITreeWalkerCallbacksV2 callbacksV2,
-            CancellationToken token)
-        {
-            if (sessionId == Guid.Empty) throw new ArgumentNullException("sessionId");
-            if (string.IsNullOrWhiteSpace(jsonSchema)) throw new ArgumentNullException("jsonSchema");
-            if (forgeState == null) throw new ArgumentNullException("forgeState");
-            if (callbacksV2 == null) throw new ArgumentNullException("callbacksV2");
-            if (token == null) throw new ArgumentNullException("token");
-
-            this.SessionId = sessionId;
-            this.JsonSchema = jsonSchema;
             this.ForgeState = forgeState;
             this.CallbacksV2 = callbacksV2;
             this.Token = token;

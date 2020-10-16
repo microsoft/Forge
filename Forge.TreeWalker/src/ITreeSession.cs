@@ -43,7 +43,7 @@ namespace Microsoft.Forge.TreeWalker
         Task<ActionResponse> GetLastActionResponseAsync();
 
         /// <summary>
-        /// Gets the string context if the actions in the current TreeNode were skipped, or null if actions were not skipped.
+        /// Gets the string context if the actions in the current tree node were skipped, or null if actions were not skipped.
         /// </summary>
         string GetCurrentNodeSkipActionContext();
     }
