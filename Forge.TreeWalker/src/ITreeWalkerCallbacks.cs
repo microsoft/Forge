@@ -14,7 +14,9 @@ namespace Microsoft.Forge.TreeWalker
     using System.Threading.Tasks;
 
     /// <summary>
+    /// [DEPRECATED]
     /// The ITreeWalkerCallbacks interface defines the callback Tasks that are awaited while walking the tree.
+    /// Prefers future callers to use the new ITreeWalkerCallbacksV2.
     /// </summary>
     public interface ITreeWalkerCallbacks
     {

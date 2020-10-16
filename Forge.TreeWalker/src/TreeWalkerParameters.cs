@@ -51,9 +51,17 @@ namespace Microsoft.Forge.TreeWalker
         public IForgeDictionary ForgeState { get; private set; }
 
         /// <summary>
+        /// [DEPRECATED]
         /// The ITreeWalkerCallbacks interface defines the callback Tasks that are awaited while walking the tree.
+        /// Prefers future callers to use the new ITreeWalkerCallbacksV2 CallbacksV2.
         /// </summary>
         public ITreeWalkerCallbacks Callbacks { get; private set; }
+
+        /// <summary>
+        /// The ITreeWalkerCallbacksV2 interface defines the callback Tasks that are awaited while walking the tree.
+        /// V2 uses TreeNodeContext to wrap all the required input and output info.
+        /// </summary>
+        public ITreeWalkerCallbacksV2 CallbacksV2 { get; private set; }
 
         /// <summary>
         /// The cancellation token.
@@ -126,7 +134,10 @@ namespace Microsoft.Forge.TreeWalker
 
         #endregion
 
+        #region Constructor with ITreeWalkerCallbacks, [DEPRECATED]
+
         /// <summary>
+        /// [DEPRECATED]
         /// Instantiates a TreeWalkerParameters object with the properties that are required to instantiate a TreeWalkerSession object.
         /// Note: Recommended to cache the deserialized ForgeTree in your app and use that to avoid Forge deserializing the JsonSchema each initialize.
         /// </summary>
@@ -156,6 +167,7 @@ namespace Microsoft.Forge.TreeWalker
         }
 
         /// <summary>
+        /// [DEPRECATED]
         /// Instantiates a TreeWalkerParameters object with the properties that are required to instantiate a TreeWalkerSession object.
         /// Note: Recommended to cache the deserialized ForgeTree in your app and use that to avoid Forge deserializing the JsonSchema each initialize.
         /// </summary>
@@ -183,5 +195,45 @@ namespace Microsoft.Forge.TreeWalker
             this.Callbacks = callbacks;
             this.Token = token;
         }
+
+        #endregion Constructor with ITreeWalkerCallbacks
+
+        #region Constructor with ITreeWalkerCallbacksV2
+
+        /*
+         * For now, we have two sets of Constructor, one for ITreeWalkerCallbacks and one for ITreeWalkerCallbacksV2. Ideally, we want to ITreeWalkerCallbacksV2
+         * only, as it has more extendability. During transition time, we support both.
+         */
+
+        /// <summary>
+        /// Instantiates a TreeWalkerParameters object with the properties that are required to instantiate a TreeWalkerSession object.
+        /// Note: Recommended to cache the deserialized ForgeTree in your app and use that to avoid Forge deserializing the JsonSchema each initialize.
+        /// </summary>
+        /// <param name="sessionId">The unique identifier for this session.</param>
+        /// <param name="forgeTree">The ForgeTree for this session.</param>
+        /// <param name="forgeState">The Forge state.</param>
+        /// <param name="callbacks">The callbacks object.</param>
+        /// <param name="token">The cancellation token.</param>
+        public TreeWalkerParameters(
+            Guid sessionId,
+            ForgeTree forgeTree,
+            IForgeDictionary forgeState,
+            ITreeWalkerCallbacksV2 callbacksV2,
+            CancellationToken token)
+        {
+            if (sessionId == Guid.Empty) throw new ArgumentNullException("sessionId");
+            if (forgeTree == null) throw new ArgumentNullException("forgeTree");
+            if (forgeState == null) throw new ArgumentNullException("forgeState");
+            if (callbacksV2 == null) throw new ArgumentNullException("callbacksV2");
+            if (token == null) throw new ArgumentNullException("token");
+
+            this.SessionId = sessionId;
+            this.ForgeTree = forgeTree;
+            this.ForgeState = forgeState;
+            this.CallbacksV2 = callbacksV2;
+            this.Token = token;
+        }
+
+        #endregion Constructor with ITreeWalkerCallbacksV2
     }
 }

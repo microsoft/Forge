@@ -12,7 +12,7 @@ namespace Microsoft.Forge.TreeWalker
     using System.Threading.Tasks;
 
     /// <summary>
-    /// The ITreeSession interface holds accessor methods into the forgeState dictionary.
+    /// The ITreeSession interface holds accessor methods into the forgeState dictionary, and local TreeWalkerSession state.
     /// </summary>
     public interface ITreeSession
     {
@@ -41,5 +41,10 @@ namespace Microsoft.Forge.TreeWalker
         /// </summary>
         /// <returns>The ActionResponse data for the last executed tree action key if it exists, otherwise null.</returns>
         Task<ActionResponse> GetLastActionResponseAsync();
+
+        /// <summary>
+        /// Gets the string context if the actions in the current tree node were skipped, or null if actions were not skipped.
+        /// </summary>
+        string GetCurrentNodeSkipActionContext();
     }
 }

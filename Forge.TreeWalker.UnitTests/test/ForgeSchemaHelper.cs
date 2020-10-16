@@ -28,6 +28,56 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                 }
             }";
 
+        public const string ActionException_ContinuationOnRetryExhaustion_And_Skip = @"
+            {
+                ""Tree"": {
+                    ""Root"": {
+                        ""Type"": ""Action"",
+                        ""Actions"": {
+                            ""Root_TestDelayExceptionAction"": {
+                                ""Action"": ""TestDelayExceptionAction"",
+                                ""Input"": {
+                                    ""ThrowException"": true
+                                },
+                                ""ContinuationOnRetryExhaustion"": true
+                            }
+                        },
+                        ""ChildSelector"":
+                        [
+                            {
+                                ""Label"": ""WhenActionSkip_IsSkipped"",
+                                ""ShouldSelect"": ""C#|Session.GetCurrentNodeSkipActionContext() == \""Skipped\"""",
+                                ""Child"": ""TestDelayExceptionAction_TreeNode""
+                            },
+                            {
+                                ""Label"": ""WhenActionSkip_IsNotSkipped_ButNotEmpty"",
+                                ""ShouldSelect"": ""C#|!string.IsNullOrWhiteSpace(Session.GetCurrentNodeSkipActionContext()) && Session.GetCurrentNodeSkipActionContext() != \""Skipped\"""",
+                                ""Child"": ""ReturnSessionIdAction""
+                            }
+                        ]
+                    },
+                    ""TestDelayExceptionAction_TreeNode"": {
+                        ""Type"": ""Action"",
+                        ""Actions"": {
+                            ""TestDelayExceptionAction_0"": {
+                                ""Action"": ""TestDelayExceptionAction"",
+                                ""Input"": {
+                                    ""ThrowException"": false
+                                }
+                            }
+                        }
+                    },
+                    ""ReturnSessionIdAction"": {
+                        ""Type"": ""Action"",
+                            ""Actions"": {
+                            ""ReturnSessionIdAction_0"": {
+                                ""Action"": ""ReturnSessionIdAction""
+                            }
+                        }
+                    }
+                }
+            }";
+
         public const string ActionException_ContinuationOnRetryExhaustion = @"
             {
                 ""Tree"": {
