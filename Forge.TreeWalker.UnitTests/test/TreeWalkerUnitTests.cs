@@ -3,7 +3,7 @@
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 // <summary>
-//     Tests the TreeWalkerSession class. 
+//     Tests the TreeWalkerSession class.  
 // </summary>
 //-----------------------------------------------------------------------
 
