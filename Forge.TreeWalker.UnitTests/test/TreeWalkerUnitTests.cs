@@ -235,7 +235,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
 
         [TestMethod]
         public void TestTreeWalkerSession_VisitNode_NoTimeout_Success()
-        {
+        { 
             this.TestFromFileInitialize(filePath: TardigradeSchemaPath);
 
             // Test - VisitNode with no Timeout and execute an Action with no Timeout set. Confirm we do not throw exceptions.
