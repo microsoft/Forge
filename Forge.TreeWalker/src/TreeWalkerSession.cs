@@ -835,7 +835,7 @@ namespace Microsoft.Forge.TreeWalker
                 }
             }
 
-            // Retries are exhausted. Throw ActionTimeoutException with executeAction exception as innerException.
+            // Action timeout is reached. Throw ActionTimeoutException with executeAction exception as innerException.
             throw new ActionTimeoutException(
                 string.Format(
                     "Action did not complete successfully with timeout reached. TreeNodeKey: {0}, TreeActionKey: {1}, ActionName: {2}, RetryCount: {3}, RetryPolicy: {4}, Timeout: {5}",
