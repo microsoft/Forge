@@ -795,25 +795,21 @@ namespace Microsoft.Forge.TreeWalker
                         return;
                     }
 
-                    break;
+                    // Retries are exhausted. Throw ActionTimeoutException with executeAction exception as innerException.
+                    throw new ActionTimeoutException(
+                        string.Format(
+                            "Action did not complete successfully with retry attempts exhausted. TreeNodeKey: {0}, TreeActionKey: {1}, ActionName: {2}, RetryCount: {3}, RetryPolicy: {4}",
+                            treeNodeKey,
+                            treeActionKey,
+                            treeAction.Action,
+                            retryCount,
+                            retryPolicyType),
+                        innerException);
                 }
 
                 // Break out early if we would hit timeout before next retry.
                 if (actionTimeout != -1 && stopwatch.ElapsedMilliseconds + waitTime.TotalMilliseconds >= actionTimeout)
                 {
-                    // If the timeout is hit and the ContinuationOnTimeout flag is set, commit a new ActionResponse. 
-                    // with the status set to TimeoutOnAction and return.
-                    if (treeAction.ContinuationOnTimeout)
-                    {
-                        ActionResponse timeoutResponse = new ActionResponse
-                        {
-                            Status = "TimeoutOnAction"
-                        };
-
-                        await this.CommitActionResponse(treeActionKey, timeoutResponse).ConfigureAwait(false);
-                        return;
-                    }
-
                     break;
                 }
 
@@ -823,15 +819,32 @@ namespace Microsoft.Forge.TreeWalker
                 maxRetryCount--;
             }
 
-            // Retries are exhausted. Throw ActionTimeoutException with executeAction exception as innerException.
+            if (actionTimeout != -1 && stopwatch.ElapsedMilliseconds + waitTime.TotalMilliseconds >= actionTimeout)
+            {
+                // If the timeout is hit and the ContinuationOnTimeout flag is set, commit a new ActionResponse. 
+                // with the status set to TimeoutOnAction and return.
+                if (treeAction.ContinuationOnTimeout)
+                {
+                    ActionResponse timeoutResponse = new ActionResponse
+                    {
+                        Status = "TimeoutOnAction"
+                    };
+
+                    await this.CommitActionResponse(treeActionKey, timeoutResponse).ConfigureAwait(false);
+                    return;
+                }
+            }
+
+            // Action timeout is reached. Throw ActionTimeoutException with executeAction exception as innerException.
             throw new ActionTimeoutException(
                 string.Format(
-                    "Action did not complete successfully. TreeNodeKey: {0}, TreeActionKey: {1}, ActionName: {2}, RetryCount: {3}, RetryPolicy: {4}",
+                    "Action did not complete successfully with timeout reached. TreeNodeKey: {0}, TreeActionKey: {1}, ActionName: {2}, RetryCount: {3}, RetryPolicy: {4}, Timeout: {5}",
                     treeNodeKey,
                     treeActionKey,
                     treeAction.Action,
                     retryCount,
-                    retryPolicyType),
+                    retryPolicyType,
+                    actionTimeout),
                 innerException);
         }
 
