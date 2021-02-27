@@ -35,10 +35,7 @@
                         ],
                         "BoolDelegate": "C#|(Func<bool>)(() => {return UserContext.GetCount() == 1;})",
                         "BoolDelegateAsync": "C#|(Func<Task<bool>>)(async() => { return await UserContext.GetCountAsync() == 2; })",
-                        "StringDictionary": {
-                            "TestKey1": "C#|UserContext.Name",
-                            "TestKey2": "TestValue2"
-                        },
+                        "StringDictionary": "C#|UserContext.GetDictionary()",
                         "ObjectDictionary": {
                             "TestKey1": {
                                 "Name": "C#|UserContext.Name",
