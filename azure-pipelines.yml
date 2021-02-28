@@ -88,7 +88,7 @@ steps:
   inputs:
     ConnectedServiceName: 'Forge ESRP CodeSign2'
     FolderPath: '$(Build.SourcesDirectory)\Forge.TreeWalker\bin\Release'
-    Pattern: 'Microsoft.Forge.TreeWalker*.nupkg'
+    Pattern: 'Microsoft.Forge.TreeWalker*.symbols.nupkg'
     signConfigType: 'inlineSignParams'
     inlineOperation: |
       [ 
@@ -115,6 +115,6 @@ steps:
   displayName: 'NuGet push AzureArtifacts'
   inputs:
     command: push
-    packagesToPush: '$(Build.SourcesDirectory)\Forge.TreeWalker\bin\Release\Microsoft.Forge.TreeWalker*.nupkg'
+    packagesToPush: '$(Build.SourcesDirectory)\Forge.TreeWalker\bin\Release\Microsoft.Forge.TreeWalker*.symbols.nupkg'
     publishVstsFeed: 'ForgeArtifacts'
     allowPackageConflicts: true
