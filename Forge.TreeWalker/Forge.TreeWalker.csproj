@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <!--<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />-->
   <PropertyGroup>
     <ProjectGuid>{00FC1C22-6AE9-4F60-8A3E-05885BA34C9C}</ProjectGuid>
     <RootNamespace>Microsoft.Forge.TreeWalker</RootNamespace>
@@ -17,8 +16,6 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <PackageOutputPath>bin\Release</PackageOutputPath>
-    <!--<PublishRepositoryUrl>true</PublishRepositoryUrl>-->
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeSymbols>true</IncludeSymbols>
   </PropertyGroup>
   <ItemGroup>
@@ -30,9 +27,6 @@
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="3.8.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <!--<PackageReference Include="System.IO" Version="4.3.0" />
-    <PackageReference Include="System.Reflection" Version="4.3.0" />
-    <PackageReference Include="System.Runtime" Version="4.3.1" />-->
   </ItemGroup>
   <ItemGroup>
     <None Include="..\LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
@@ -44,8 +38,4 @@
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
   </ItemGroup>
-  <!--<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />-->
-  <!--<ItemGroup>
-    <PackageReference Include="Microsoft.CSharp" Version="$(MicrosoftCSharpVersion)" />
-  </ItemGroup>-->
 </Project>

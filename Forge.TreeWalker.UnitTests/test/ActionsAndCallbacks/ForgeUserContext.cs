@@ -48,7 +48,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             return Task.FromResult(2);
         }
 
-        public Dictionary<string, string> GetDictionary()
+        public IDictionary<string, string> GetDictionary()
         {
             return new Dictionary<string, string>()
             {
