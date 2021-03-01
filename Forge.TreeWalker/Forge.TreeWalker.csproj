@@ -1,104 +1,29 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{00FC1C22-6AE9-4F60-8A3E-05885BA34C9C}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.Forge.TreeWalker</RootNamespace>
     <AssemblyName>Microsoft.Forge.TreeWalker</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
     <Deterministic>true</Deterministic>
     <IsPackable>true</IsPackable>
     <Authors>Microsoft</Authors>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <PackageDescription>A Workflow Driver Solution Utilizing a Dynamic, Config-Driven Decision Tree.</PackageDescription>
+    <PackageDescription>A Generic Low-Code Framework Built on a Config-Driven Tree Walker.</PackageDescription>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/microsoft/Forge</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/microsoft/Forge</RepositoryUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
     <PackageOutputPath>bin\Release</PackageOutputPath>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <IncludeSymbols>true</IncludeSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.2.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="GitVersionTask" Version="5.0.1">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="1.3.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="1.3.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="1.3.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="1.3.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="1.3.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" Version="1.3.2" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="System.Collections.Immutable" Version="1.2.0" />
-    <PackageReference Include="System.Reflection.Metadata" Version="1.2.0">
-      <NoWarn>NU1605</NoWarn>
-    </PackageReference>
-    <PackageReference Include="System.IO" Version="4.3.0" />
-    <PackageReference Include="System.Reflection" Version="4.3.0" />
-    <PackageReference Include="System.Runtime" Version="4.3.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="3.8.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Threading.Tasks" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="contracts\ForgeTree.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="src\ActionContext.cs" />
-    <Compile Include="src\ActionDefinition.cs" />
-    <Compile Include="src\ActionResponse.cs" />
-    <Compile Include="src\BaseAction.cs" />
-    <Compile Include="src\ExpressionExecutor.cs" />
-    <Compile Include="src\ForgeActionAttribute.cs" />
-    <Compile Include="src\ForgeDictionary.cs" />
-    <Compile Include="src\ForgeExceptions.cs" />
-    <Compile Include="src\IForgeDictionary.cs" />
-    <Compile Include="src\ITreeSession.cs" />
-    <Compile Include="src\ITreeWalkerCallbacks.cs" />
-    <Compile Include="src\ITreeWalkerCallbacksV2.cs" />
-    <Compile Include="src\SubroutineAction.cs" />
-    <Compile Include="src\TreeNodeContext.cs" />
-    <Compile Include="src\TreeWalkerParameters.cs" />
-    <Compile Include="src\TreeWalkerSession.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="contracts\ForgeSchemaValidationRules.json" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="contracts\ForgeSchemaValidationRules.json">
@@ -107,5 +32,4 @@
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
