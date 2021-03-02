@@ -38,7 +38,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         private TreeWalkerParameters parameters;
         private TreeWalkerSession session;
         private Dictionary<string, ForgeTree> forgeTrees = new Dictionary<string, ForgeTree>();
-        private ConcurrentDictionary<string, Script<object>> scriptCache = new ConcurrentDictionary<string, Script<object>>();
+        private readonly ConcurrentDictionary<string, Script<object>> scriptCache = new ConcurrentDictionary<string, Script<object>>();
 
 
         public void TestInitialize(string jsonSchema, string treeName = null, string currentNodeSkipActionContext = null)
@@ -728,8 +728,10 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         {
             this.TestInitialize(jsonSchema: ForgeSchemaHelper.ExternalExecutors);
 
-            Dictionary<string, Func<string, CancellationToken, Task<object>>> externalExecutors = new Dictionary<string, Func<string, CancellationToken, Task<object>>>();
-	        externalExecutors.Add("External|", External);
+            Dictionary<string, Func<string, CancellationToken, Task<object>>> externalExecutors = new Dictionary<string, Func<string, CancellationToken, Task<object>>>
+            {
+                { "External|", External }
+            };
 
             this.parameters.ExternalExecutors = externalExecutors;
             this.session = new TreeWalkerSession(this.parameters);

@@ -144,7 +144,7 @@ namespace Microsoft.Forge.TreeWalker
             }
             catch
             {
-                return default(T);
+                return default;
             }
         }
 

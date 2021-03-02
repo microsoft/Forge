@@ -36,7 +36,7 @@ namespace Microsoft.Forge.TreeWalker
         /// The parentScriptTask kicks off initializing the Roslyn parentScript asynchronously, allowing ExpressionExecutor to construct very quickly.
         /// Initializing the Roslyn parentScript takes about 2 seconds. This time is saved if the application takes time to initialize before the first WalkTree call.
         /// </summary>
-        public Task parentScriptTask { get; private set; }
+        public Task ParentScriptTask { get; private set; }
 
         /// <summary>
         /// The parentScript that, upon initialization, gets Created, RunAsync, and added to the ScriptCache.
@@ -50,19 +50,19 @@ namespace Microsoft.Forge.TreeWalker
         /// <summary>
         /// List of external type dependencies needed to compile expressions.
         /// </summary>
-        private List<Type> dependencies;
+        private readonly List<Type> dependencies;
 
         /// <summary>
         /// The ScriptCache holds Roslyn Scripts that are created using parentScript.ContinueWith.
         /// This saves on memory and time since these continued Scripts use the already compiled parentScript as a base.
         /// The parentScript gets asynchronously compiled, ran, and cached on initialization.
         /// </summary>
-        private ConcurrentDictionary<string, Script<object>> scriptCache;
+        private readonly ConcurrentDictionary<string, Script<object>> scriptCache;
 
         /// <summary>
         /// Global parameters passed to Roslyn scripts that can be referenced inside expressions.
         /// </summary>
-        private CodeGenInputParams parameters;
+        private readonly CodeGenInputParams parameters;
 
         /// <summary>
         /// Instantiates the ExpressionExecutor class with objects that can be referenced in the schema.
@@ -126,7 +126,7 @@ namespace Microsoft.Forge.TreeWalker
         /// <returns>The T value of the evaluated code.</returns>
         public async Task<T> Execute<T>(string expression)
         {
-            await this.parentScriptTask;
+            await this.ParentScriptTask;
 
             Script<object> expressionScript = this.scriptCache.GetOrAdd(
                 expression,
@@ -146,13 +146,18 @@ namespace Microsoft.Forge.TreeWalker
             if (this.scriptCache.TryGetValue(ParentScriptCode, out this.parentScript))
             {
                 // The parentScript is already initialized.
-                this.parentScriptTask = Task.CompletedTask;
+                this.ParentScriptTask = Task.CompletedTask;
                 return;
             }
 
-            this.parentScriptTask = Task.Run(async () =>
+            this.ParentScriptTask = Task.Run(async () =>
             {
-                ScriptOptions scriptOptions = ScriptOptions.Default.WithMetadataResolver(new MissingResolver());
+                ScriptOptions scriptOptions = ScriptOptions.Default;
+#if NET462
+
+                // MissingResolver improvement not available in NetStandard. Only add to Net 462.
+                scriptOptions = ScriptOptions.Default.WithMetadataResolver(new MissingResolver());
+#endif
 
                 // Add references to required assemblies.
                 Assembly mscorlib = typeof(object).Assembly;

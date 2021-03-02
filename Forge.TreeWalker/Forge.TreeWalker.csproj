@@ -14,6 +14,7 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageOutputPath>bin\Release</PackageOutputPath>
     <IncludeSymbols>true</IncludeSymbols>
+    <PackageTags>Forge;TreeWalker;Roslyn;async;dynamic;generic;workflow engine;decision tree;config;stateful;low-code;tree visualization;workflow framework;JSON</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="GitVersionTask" Version="5.0.1">
