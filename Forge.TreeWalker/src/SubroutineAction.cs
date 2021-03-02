@@ -30,7 +30,7 @@ namespace Microsoft.Forge.TreeWalker
         /// The tree walker parameters of the parent tree walker session.
         /// Used to call InitializeSubroutineTree to get the initialized TreeWalkerSession for this Subroutine.
         /// </summary>
-        private TreeWalkerParameters parameters { get; set; }
+        private readonly TreeWalkerParameters parameters;
 
         /// <summary>
         /// Instantiates a SubroutineAction with the required parameters.

@@ -119,8 +119,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         public void TestExecutor_Success_CompileWithExternalDependencies()
         {
             this.UserContext.Foo = ExternalTestType.TestEnum;
-            List<Type> dependencies = new List<Type>();
-            dependencies.Add(typeof(ExternalTestType));
+            List<Type> dependencies = new List<Type> { typeof(ExternalTestType) };
             ExpressionExecutor ex = new ExpressionExecutor(session: null, userContext: this.UserContext, dependencies: dependencies);
             string expression = "UserContext.Foo.ToString() == ExternalTestType.TestEnum.ToString()";
             Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate a true expression.");
@@ -148,8 +147,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         {
             this.UserContext.Foo = ExternalTestType.TestEnum;
             this.UserContext.Bar = DiffNamespaceType.TestOne;
-            List<Type> dependencies = new List<Type>();
-            dependencies.Add(typeof(ExternalTestType));
+            List<Type> dependencies = new List<Type> { typeof(ExternalTestType) };
 
             ExpressionExecutor ex = new ExpressionExecutor(session: null, userContext: this.UserContext, dependencies: dependencies);
             string expression = "UserContext.Foo == ExternalTestType.TestEnum && UserContext.Bar == DiffNamespaceType.TestOne";
@@ -169,8 +167,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         {
             this.UserContext.Foo = ExternalTestType.TestEnum;
             this.UserContext.Bar = TestType.Test;
-            List<Type> dependencies = new List<Type>();
-            dependencies.Add(typeof(ExternalTestType));
+            List<Type> dependencies = new List<Type> { typeof(ExternalTestType) };
 
             ExpressionExecutor ex = new ExpressionExecutor(session: null, userContext: this.UserContext, dependencies: dependencies);
             string expression = "UserContext.Foo.ToString() == ExternalTestType.TestEnum.ToString() && UserContext.Bar.ToString() == TestType.Test.ToString()";
@@ -181,16 +178,17 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         public void TestExecutor_Success_CompileExpressionWithForgeDefaultDependenciesBeingPassedInExternally()
         {
             this.UserContext.Foo = "Foo";
-            List<Type> dependencies = new List<Type>();
+            List<Type> dependencies = new List<Type>
+            {
+                // Tasks dependency needed by Forge by default.
+                typeof(Task),
 
-            // Tasks dependency needed by Forge by default.
-            dependencies.Add(typeof(Task));
-
-            // Reflection dependency needed by Forge for runtime compilation.
-            dependencies.Add(typeof(Type));
+                // Reflection dependency needed by Forge for runtime compilation.
+                typeof(Type)
+            };
 
             // Default dependencies are expected to be tossed away internally in ExpressionExecutor. 
-            ExpressionExecutor ex = new ExpressionExecutor(session: null, userContext: this.UserContext);
+            ExpressionExecutor ex = new ExpressionExecutor(session: null, userContext: this.UserContext, dependencies: dependencies);
             string expression = "UserContext.Foo == \"Foo\"";
             Assert.IsTrue(ex.Execute<bool>(expression).GetAwaiter().GetResult(), "Expected ExpressionExecutor to successfully evaluate a true expression.");
         }
@@ -328,9 +326,11 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         [TestMethod]
         public void TestExecutor_TreeInputJObject_Success()
         {
-            JObject treeInput = new JObject();
-            treeInput["StringProperty"] = "TestValue";
-            treeInput["IntProperty"] = 10;
+            JObject treeInput = new JObject
+            {
+                ["StringProperty"] = "TestValue",
+                ["IntProperty"] = 10
+            };
 
             ExpressionExecutor ex = new ExpressionExecutor(session: null, userContext: this.UserContext, dependencies: null, scriptCache: null, treeInput: treeInput);
             string expression = "TreeInput.StringProperty == \"TestValue\" && TreeInput.IntProperty == 10";
@@ -355,16 +355,16 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             ConcurrentDictionary<string, Script<object>> scriptCache = new ConcurrentDictionary<string, Script<object>>();
             ExpressionExecutor ex = new ExpressionExecutor(session: null, userContext: this.UserContext, dependencies: null, scriptCache: scriptCache);
 
-            if (ex.parentScriptTask.IsCompleted)
+            if (ex.ParentScriptTask.IsCompleted)
             {
                 Assert.Fail("Do not expect parentScriptTask to be completed immediately after ExpressionExecutor is initialized.");
             }
 
             // Test - After ScriptCache is initialized with parentScript, subsuquent ExpressionExecutor initialization should happen quickly.
-            ex.parentScriptTask.Wait();
+            ex.ParentScriptTask.Wait();
             ex = new ExpressionExecutor(session: null, userContext: this.UserContext, dependencies: null, scriptCache: scriptCache);
 
-            if (!ex.parentScriptTask.IsCompleted)
+            if (!ex.ParentScriptTask.IsCompleted)
             {
                 Assert.Fail("Expect parentScriptTask to be completed on ExpressionExecutor initialize when using an already initialized scriptCache.");
             }
