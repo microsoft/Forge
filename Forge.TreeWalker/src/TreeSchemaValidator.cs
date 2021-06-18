@@ -8,10 +8,8 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,9 +19,9 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 
 
-namespace Microsoft.Forge.TreeWalker.UnitTests.test
+namespace Microsoft.Forge.TreeWalker
 {
-    class TreeSchemaValidator : ITreeSchemaValidator
+    public class TreeSchemaValidator : ITreeSchemaValidator
     {
         private JSchema ForgeSchemaValidationRules;
         public TreeSchemaValidator() => ForgeSchemaValidationRules = GetRulesFromPath("contracts\\ForgeSchemaValidationRules.json");

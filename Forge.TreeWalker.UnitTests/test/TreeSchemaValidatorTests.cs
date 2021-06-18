@@ -13,13 +13,11 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Microsoft.Forge.DataContracts;
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
     using Newtonsoft.Json.Schema;
-    using Microsoft.Forge.TreeWalker.UnitTests.test;
+    using Microsoft.Forge.TreeWalker;
     using System.Threading.Tasks;
 
     [TestClass]
