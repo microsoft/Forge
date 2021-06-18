@@ -1,0 +1,7 @@
+{
+    "Tree": {
+        "Root": {
+            "test": "this json is invalid on purpose"
+        }
+    }
+}

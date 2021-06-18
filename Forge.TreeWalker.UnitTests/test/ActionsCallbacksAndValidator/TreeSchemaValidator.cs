@@ -45,7 +45,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests.test
 
         public async Task<Tuple<bool, IList<string>>> ValidateSchemasString(string schemas)
         {
-            return await ValidateMultipleSchemasInString(schemas, ForgeSchemaValidationRules);
+            return await Task.Run(() => Validate(new List<object> { schemas }, ForgeSchemaValidationRules));
         }
 
         public async Task<Tuple<bool, IList<string>>> ValidateSchemaInPath(string path)
@@ -75,7 +75,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests.test
 
         public async Task<Tuple<bool, IList<string>>> ValidateSchemasString(string schemas, string rules)
         {
-            return await ValidateMultipleSchemasInString(schemas, rules);
+            return await Task.Run(() => Validate(new List<object> { schemas }, ForgeSchemaValidationRules));
         }
 
         public async Task<Tuple<bool, IList<string>>> ValidateSchemaInPath(string path, string rules)
@@ -100,7 +100,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests.test
 
         public async Task<Tuple<bool, IList<string>>> ValidateSchemasString(string schemas, JSchema rules)
         {
-            return await ValidateMultipleSchemasInString(schemas, rules);
+            return await Task.Run(() => Validate(new List<object> { schemas }, ForgeSchemaValidationRules));
         }
 
         public async Task<Tuple<bool, IList<string>>> ValidateSchemaInPath(string path, JSchema rules)
@@ -115,7 +115,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests.test
 
         public async Task<Tuple<bool, IList<string>>> ValidateSchemaString(string schema, JSchema rules)
         {
-            return await Task.Run(() => Validate(new List<object>{schema}, rules));
+            return await Task.Run(() => Validate(new List<object> { schema }, rules));
         }
 
         private static List<object> ConvertStringToSchemaList(string schemas, out bool success)
@@ -141,6 +141,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests.test
             try
             {
                 JSchema jRules;
+                //input rules could be string, Jschema type. Null means using Default rules
                 if (rules is null)
                     jRules = this.ForgeSchemaValidationRules;
                 else if (rules is JSchema)
@@ -148,14 +149,43 @@ namespace Microsoft.Forge.TreeWalker.UnitTests.test
                 else
                     jRules = JSchema.Parse((string)rules);
 
+                var schemaList = new List<JObject>();
                 foreach (var item in schemas)
                 {
-                    JObject schema;
+                    //schmeas type could be string or forgeTree
                     if (item is string)
-                        schema = JObject.Parse((string)item);
+                    {
+
+                        Dictionary<string, ForgeTree> forgeTrees = JsonConvert.DeserializeObject<Dictionary<string, ForgeTree>>((string)item);
+                        foreach (var kvp in forgeTrees)
+                        {
+                            ForgeTree forgeTree = kvp.Value;
+                            if (forgeTree.Tree == null)
+                            {
+                                // Deserialize into Dictionary does not throw exception but will have null "Tree" property if schema is just a ForgeTree.
+                                // try to deserialize string to forge tree directly
+                                JsonConvert.DeserializeObject<ForgeTree>((string)item);
+                                JObject schema = JObject.Parse((string)item);
+                                schemaList.Add(schema);
+                                break;
+                            }
+                            SerializeForgeTree(schemaList, forgeTree);
+                        }
+
+                    }
                     else
-                        schema = (JObject)JToken.FromObject(item);
-                    var validated = DoValidate(schema, jRules, out IList<ValidationError> errors);
+                    {
+                        SerializeForgeTree(schemaList, (ForgeTree)item);
+                    }
+                }
+                if (schemaList.Count == 0)
+                {
+                    errorList.Add("Can't find target schema to test or file type is not supported");
+                    return Task.FromResult(new Tuple<bool, IList<string>>(false, errorList));
+                }
+                foreach (var item in schemaList)
+                {
+                    var validated = DoValidate(item, jRules, out IList<ValidationError> errors);
                     if (!validated)
                     {
                         foreach (var error in errors)
@@ -169,9 +199,21 @@ namespace Microsoft.Forge.TreeWalker.UnitTests.test
             }
             catch (Exception e)
             {
-                errorList.Add(e.InnerException.Message);
+                errorList.Add(e.Message);
                 return Task.FromResult(new Tuple<bool, IList<string>>(false, errorList));
             }
+        }
+
+        private static void SerializeForgeTree(List<JObject> schemaList, ForgeTree forgeTree)
+        {
+            string stringSchema = JsonConvert.SerializeObject(
+                forgeTree,
+                new JsonSerializerSettings
+                {
+                    DefaultValueHandling = DefaultValueHandling.Ignore, // Prevent default values from getting added to serialized json schema.
+                    Converters = new List<JsonConverter> { new Newtonsoft.Json.Converters.StringEnumConverter() } // Use string enum values instead of numerical.
+                });
+            schemaList.Add(JObject.Parse((string)stringSchema));
         }
 
         private async Task<Tuple<bool, IList<string>>> GetschemaFromPathAndValidate(string path, object rules)
@@ -210,7 +252,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests.test
                 var jsonSchemaRules = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, path));
                 return JSchema.Parse(jsonSchemaRules);
             }
-            catch 
+            catch
             {
                 return null;
             }
@@ -230,14 +272,6 @@ namespace Microsoft.Forge.TreeWalker.UnitTests.test
                 schemaList.Add(schema);
             }
             return schemaList;
-        }
-        private async Task<Tuple<bool, IList<string>>> ValidateMultipleSchemasInString(string schemas, object rules)
-        {
-            List<object> schemaList = ConvertStringToSchemaList(schemas, out bool success);
-            if (success)
-                return await Task.Run(() => Validate(schemaList, rules));
-            else
-                return await Task.FromResult(new Tuple<bool, IList<string>>(false, new List<string> { "Can't not convert string to ForgeTree object" }));
         }
     }
 }

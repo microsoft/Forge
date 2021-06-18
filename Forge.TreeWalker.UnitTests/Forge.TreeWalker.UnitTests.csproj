@@ -44,6 +44,9 @@
     <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.11" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.3.2" />
     <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
+    <PackageReference Include="NUnit">
+      <Version>3.13.2</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -70,6 +73,7 @@
     <Compile Include="test\ExternalTestType.cs" />
     <Compile Include="test\ForgeSchemaHelper.cs" />
     <Compile Include="test\ForgeSchemaValidationTests.cs" />
+    <Compile Include="test\TreeSchemaValidatorTests.cs" />
     <Compile Include="test\TreeWalkerUnitTests.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -83,6 +87,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="test\ExampleSchemas\TestEvaluateInputTypeSchema.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="test\InvalidTestSchemas\InvalidTestSchema.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
