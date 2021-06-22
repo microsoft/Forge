@@ -26,19 +26,18 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         private string stringSchema;
         private string stringSchemaList;
         private ForgeTree treeSchema;
-        private List<ForgeTree> treeSchemaList;
+        private Dictionary<string, ForgeTree> treeSchemas;
         private string schemaPath;
         private string schemaDirectoryPath;
         private string stringRules;
         private JSchema jschemaRules;
-        private ITreeSchemaValidator validator;
-        private string invalidSchema;
+        private string invalidSchemaNotTree;
         private string invalidSchemaDirectoryPath;
+        private string invalidSchemaWithErrorContent;
 
         [TestInitialize]
         public void TestInitialize()
         {
-            validator = new TreeSchemaValidator();
             schemaPath = Path.Combine(Environment.CurrentDirectory, "test\\ExampleSchemas\\TardigradeSchema.json");
             schemaDirectoryPath = Path.Combine(Environment.CurrentDirectory, "test\\ExampleSchemas");
             stringRules = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "contracts\\ForgeSchemaValidationRules.json"));
@@ -46,149 +45,127 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             stringSchema = File.ReadAllText(schemaPath);
             stringSchemaList = "{ Tree1:" + stringSchema + ", Tree2:" + stringSchema + "}";
             treeSchema =  JsonConvert.DeserializeObject<ForgeTree>((string)stringSchema);
-            treeSchemaList = new List<ForgeTree> { treeSchema, treeSchema };
-            invalidSchema = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "test\\InvalidTestSchemas\\InvalidTestSchema.json"));
+            treeSchemas = new Dictionary<string, ForgeTree>();
+            treeSchemas.Add("tree1", treeSchema);
+            treeSchemas.Add("tree2", treeSchema);
+            treeSchemas.Add("tree3", treeSchema);
+            invalidSchemaNotTree = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "test\\InvalidTestSchemas\\InvalidTestSchema.json"));
+            invalidSchemaWithErrorContent = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "test\\InvalidTestSchemas\\InvalidTestSchemaErrorContent.json"));
             invalidSchemaDirectoryPath = "test\\ExampleSchemas\\TardigradeSchema.json";
         }
         [TestMethod]
-        public async Task Test_ValidateSchemaInForgeTreeWithDefaultRulesAsync()
+        public void Test_ValidateSchemaInForgeTreeWithCustomRulesInString()
         {
-            var res = await validator.ValidateSchema(treeSchema);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateSchema(treeSchema, stringRules, out List<string> errorList);
+            Assert.AreEqual(true, res);
+            Assert.AreEqual(0, errorList.Count);
         }
         [TestMethod]
-        public async Task Test_ValidateSchemaInForgeTreeWithCustomRulesInStringAsync()
+        public void Test_ValidateSchemaInForgeTreeWithCustomRulesInJSchema()
         {
-            var res = await validator.ValidateSchema(treeSchema, stringRules);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateSchema(treeSchema, jschemaRules, out List<string> errorList);
+            Assert.AreEqual(true, res);
+            Assert.AreEqual(0, errorList.Count);
         }
         [TestMethod]
-        public async Task Test_ValidateSchemaInForgeTreeWithCustomRulesInJSchemaAsync()
+        public void Test_ValidateSchemaInForgeTreeListWithCustomRulesInString()
         {
-            var res = await validator.ValidateSchema(treeSchema, jschemaRules);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateSchema(treeSchema, stringRules, out List<string> errorList);
+            Assert.AreEqual(true, res);
+            Assert.AreEqual(0, errorList.Count);
         }
         [TestMethod]
-        public async Task Test_ValidateSchemaInForgeTreeListWithDefaultRulesAsync()
+        public void Test_ValidateSchemaInForgeTreeListWithCustomRulesInJSchema()
         {
-            var res = await validator.ValidateSchemas(treeSchemaList);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateSchema(treeSchema, jschemaRules, out List<string> errorList);
+            Assert.AreEqual(true, res);
+            Assert.AreEqual(0, errorList.Count);
         }
         [TestMethod]
-        public async Task Test_ValidateSchemaInForgeTreeListWithCustomRulesInStringAsync()
+        public void Test_ValidateSchemaInStringWithCustomRulesInString()
         {
-            var res = await validator.ValidateSchema(treeSchema, stringRules);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateSchemaString(stringSchema, stringRules, out List<string> errorList);
+            Assert.AreEqual(true, res);
+            Assert.AreEqual(0, errorList.Count);
         }
         [TestMethod]
-        public async Task Test_ValidateSchemaInForgeTreeListWithCustomRulesInJSchemaAsync()
+        public void Test_ValidateSchemaInStringWithCustomRulesInJSchema()
         {
-            var res = await validator.ValidateSchema(treeSchema, jschemaRules);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateSchemaString(stringSchema, jschemaRules, out List<string> errorList);
+            Assert.AreEqual(true, res);
+            Assert.AreEqual(0, errorList.Count);
         }
         [TestMethod]
-        public async Task Test_ValidateSchemaInStringWithDefaultRulesAsync()
+        public void Test_ValidateSchemasInStringListWithCustomRulesInString()
         {
-            var res = await validator.ValidateSchemaString(stringSchema);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateSchemaString(stringSchemaList, stringRules, out List<string> errorList);
+            Assert.AreEqual(true, res);
+            Assert.AreEqual(0, errorList.Count);
         }
         [TestMethod]
-        public async Task Test_ValidateSchemaInStringWithCustomRulesInStringAsync()
+        public void Test_ValidateSchemasInStringListWithCustomRulesInJSchema()
         {
-            var res = await validator.ValidateSchemaString(stringSchema, stringRules);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateSchemaString(stringSchemaList, jschemaRules, out List<string> errorList);
+            Assert.AreEqual(true, res);
+            Assert.AreEqual(0, errorList.Count);
+        }
+
+        [TestMethod]
+        public void Test_ValidateSchemaFromPathWithCustomRulesInString()
+        {
+            var res = ForgeSchemaValidator.ValidateSchemaInPath(schemaPath, stringRules, out List<string> errorList);
+            Assert.AreEqual(true, res);
+            Assert.AreEqual(0, errorList.Count);
         }
         [TestMethod]
-        public async Task Test_ValidateSchemaInStringWithCustomRulesInJSchemaAsync()
+        public void Test_ValidateSchemaFromPathWithCustomRulesInJSchema()
         {
-            var res = await validator.ValidateSchemaString(stringSchema, jschemaRules);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateSchemaInPath(schemaPath, jschemaRules, out List<string> errorList);
+            Assert.AreEqual(true, res);
+            Assert.AreEqual(0, errorList.Count);
         }
         [TestMethod]
-        public async Task Test_ValidateSchemasInStringListWithDefaultRulesAsync()
+        public void Test_ValidateSchemasFromDirectoryListWithCustomRulesInString()
         {
-            var res = await validator.ValidateSchemasString(stringSchemaList);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateMultipleSchemasInPath(schemaDirectoryPath, stringRules, out List<string> errorList);
+            Assert.AreEqual(true, res);
+            Assert.AreEqual(0, errorList.Count);
         }
         [TestMethod]
-        public async Task Test_ValidateSchemasInStringListWithCustomRulesInStringAsync()
+        public void Test_ValidateSchemasFromDirectoryListWithCustomRulesInJSchema()
         {
-            var res = await validator.ValidateSchemasString(stringSchemaList, stringRules);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateMultipleSchemasInPath(schemaDirectoryPath, jschemaRules, out List<string> errorList);
+            Assert.AreEqual(true, res); 
+            Assert.AreEqual(0, errorList.Count);
         }
         [TestMethod]
-        public async Task Test_ValidateSchemasInStringListWithCustomRulesInJSchemaAsync()
+        public void Test_ValidateInvalidSchemaInString()
         {
-            var res = await validator.ValidateSchemasString(stringSchemaList, jschemaRules);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateSchemaString(invalidSchemaNotTree, jschemaRules, out List<string> errorList);
+            Assert.AreEqual(false, res);
+            Assert.AreEqual("Required property 'Type' not found in JSON. Path 'Tree.Root', line 5, position 9.", errorList.First());
         }
         [TestMethod]
-        public async Task Test_ValidateSchemaFromPathWithDefaultRulesAsync()
+        public void Test_ValidateInvalidSchemaDirectoryPath()
         {
-            var res = await validator.ValidateSchemaInPath(schemaPath);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateMultipleSchemasInPath(invalidSchemaDirectoryPath, jschemaRules,out List<string> errorList);
+            Assert.AreEqual(false, res);
+            Assert.AreEqual("The directory name is invalid.\r\n", errorList.First());
         }
         [TestMethod]
-        public async Task Test_ValidateSchemaFromPathWithCustomRulesInStringAsync()
+        public void Test_ValidateSchemaWithErrorContent()
         {
-            var res = await validator.ValidateSchemaInPath(schemaPath, stringRules);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
+            var res = ForgeSchemaValidator.ValidateSchemaString(invalidSchemaWithErrorContent, jschemaRules, out List<string> errorList);
+            Assert.AreEqual(false, res);
+            Assert.AreEqual("JSON is valid against no schemas from 'oneOf'. line: 3, position: 17", errorList.First());
         }
         [TestMethod]
-        public async Task Test_ValidateSchemaFromPathWithCustomRulesInJSchemaAsync()
+        public void Test_GetLinkedJSchemaRules()
         {
-            var res = await validator.ValidateSchemaInPath(schemaPath, jschemaRules);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
-        }
-        [TestMethod]
-        public async Task Test_ValidateSchemasFromDirectoryListWithDefaultRulesAsync()
-        {
-            var res = await validator.ValidateMultipleSchemasInPath(schemaDirectoryPath);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
-        }
-        [TestMethod]
-        public async Task Test_ValidateSchemasFromDirectoryListWithCustomRulesInStringAsync()
-        {
-            var res = await validator.ValidateMultipleSchemasInPath(schemaDirectoryPath, stringRules);
-            Assert.AreEqual(true, res.Item1);
-            Assert.AreEqual(0, res.Item2.Count);
-        }
-        [TestMethod]
-        public async Task Test_ValidateSchemasFromDirectoryListWithCustomRulesInJSchemaAsync()
-        {
-            var res = await validator.ValidateMultipleSchemasInPath(schemaDirectoryPath, jschemaRules);
-            Assert.AreEqual(true, res.Item1); 
-            Assert.AreEqual(0, res.Item2.Count);
-        }
-        [TestMethod]
-        public async Task Test_ValidateInvalidSchemaInStringAsync()
-        {
-            var res = await validator.ValidateSchemaString(invalidSchema);
-            Assert.AreEqual(false, res.Item1);
-            Assert.AreEqual("Required property 'Type' not found in JSON. Path 'Tree.Root', line 5, position 9.", res.Item2.First());
-        }
-        [TestMethod]
-        public async Task Test_ValidateInvalidSchemaDirectoryPathAsync()
-        {
-            var res = await validator.ValidateMultipleSchemasInPath(invalidSchemaDirectoryPath);
-            Assert.AreEqual(false, res.Item1);
-            Assert.AreEqual("Can not get schema in string from files in the given directory", res.Item2.First());
+            var linkedRules = ForgeSchemaValidator.GetLinkedJSchemaRules(stringRules, stringRules, "//ForgeSchemaValidationRules.json", out string error);
+            Assert.AreEqual("", error);
+            ForgeSchemaValidator.ValidateSchema(treeSchema, linkedRules, out List<string> errorList);
+            Assert.AreEqual(0, errorList.Count);
         }
     }
 }

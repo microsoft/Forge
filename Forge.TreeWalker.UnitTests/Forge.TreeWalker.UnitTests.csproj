@@ -44,30 +44,25 @@
     <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.11" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.3.2" />
     <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
-    <PackageReference Include="NUnit">
-      <Version>3.13.2</Version>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="test\ActionsCallbacksAndValidator\BaseCommonAction.cs" />
-    <Compile Include="test\ActionsCallbacksAndValidator\CollectDiagnosticsAction.cs" />
-    <Compile Include="test\ActionsCallbacksAndValidator\ForgeUserContext.cs" />
-    <Compile Include="test\ActionsCallbacksAndValidator\ReturnSessionIdAction.cs" />
-    <Compile Include="test\ActionsCallbacksAndValidator\RevisitAction.cs" />
-    <Compile Include="test\ActionsCallbacksAndValidator\TardigradeAction.cs" />
-    <Compile Include="test\ActionsCallbacksAndValidator\TestDelayExceptionAction.cs" />
-    <Compile Include="test\ActionsCallbacksAndValidator\TestEvaluateInputType_FailOnField_Action.cs" />
-    <Compile Include="test\ActionsCallbacksAndValidator\TestEvaluateInputType_FailOnNonEmptyCtor_Action.cs" />
-    <Compile Include="test\ActionsCallbacksAndValidator\TestEvaluateInputTypeAction.cs" />
-    <Compile Include="test\ActionsCallbacksAndValidator\TreeWalkerCallbacks.cs" />
-    <Compile Include="test\ActionsCallbacksAndValidator\TreeWalkerCallbacksV2.cs" />
+    <Compile Include="test\ActionsAndCallbacks\BaseCommonAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\CollectDiagnosticsAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\ForgeUserContext.cs" />
+    <Compile Include="test\ActionsAndCallbacks\ReturnSessionIdAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\RevisitAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TardigradeAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TestDelayExceptionAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TestEvaluateInputType_FailOnField_Action.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TestEvaluateInputType_FailOnNonEmptyCtor_Action.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TestEvaluateInputTypeAction.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TreeWalkerCallbacks.cs" />
+    <Compile Include="test\ActionsAndCallbacks\TreeWalkerCallbacksV2.cs" />
     <Compile Include="test\ExecutorUnitTests.cs" />
     <Compile Include="test\ExternalTestType.cs" />
     <Compile Include="test\ForgeSchemaHelper.cs" />
@@ -89,6 +84,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="test\InvalidTestSchemas\InvalidTestSchema.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="test\InvalidTestSchemas\InvalidTestSchemaErrorContent.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
