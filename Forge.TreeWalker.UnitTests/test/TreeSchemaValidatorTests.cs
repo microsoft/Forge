@@ -3,7 +3,7 @@
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 // <summary>
-//     Tests the TreeSchemaValidator class.
+//     Tests for the TreeSchemaValidator class.
 // </summary>
 //-----------------------------------------------------------------------
 
@@ -18,7 +18,6 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
     using Newtonsoft.Json;
     using Newtonsoft.Json.Schema;
     using Microsoft.Forge.TreeWalker;
-    using System.Threading.Tasks;
 
     [TestClass]
     public class TreeSchemaValidatorTests
@@ -53,59 +52,67 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             invalidSchemaWithErrorContent = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "test\\InvalidTestSchemas\\InvalidTestSchemaErrorContent.json"));
             invalidSchemaDirectoryPath = "test\\ExampleSchemas\\TardigradeSchema.json";
         }
+
         [TestMethod]
         public void Test_ValidateSchemaInForgeTreeWithCustomRulesInString()
         {
-            var res = ForgeSchemaValidator.ValidateSchema(treeSchema, stringRules, out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateSchema(treeSchema, stringRules, out List<string> errorList);
             Assert.AreEqual(true, res);
             Assert.AreEqual(0, errorList.Count);
         }
+
         [TestMethod]
         public void Test_ValidateSchemaInForgeTreeWithCustomRulesInJSchema()
         {
-            var res = ForgeSchemaValidator.ValidateSchema(treeSchema, jschemaRules, out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateSchema(treeSchema, jschemaRules, out List<string> errorList);
             Assert.AreEqual(true, res);
             Assert.AreEqual(0, errorList.Count);
         }
+
         [TestMethod]
         public void Test_ValidateSchemaInForgeTreeListWithCustomRulesInString()
         {
-            var res = ForgeSchemaValidator.ValidateSchema(treeSchema, stringRules, out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateSchema(treeSchema, stringRules, out List<string> errorList);
             Assert.AreEqual(true, res);
             Assert.AreEqual(0, errorList.Count);
         }
+
         [TestMethod]
         public void Test_ValidateSchemaInForgeTreeListWithCustomRulesInJSchema()
         {
-            var res = ForgeSchemaValidator.ValidateSchema(treeSchema, jschemaRules, out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateSchema(treeSchema, jschemaRules, out List<string> errorList);
             Assert.AreEqual(true, res);
             Assert.AreEqual(0, errorList.Count);
         }
+
         [TestMethod]
-        public void Test_ValidateSchemaInStringWithCustomRulesInString()
+        public void Test_ValidateSchemaInStringWithCustomRules()
         {
-            var res = ForgeSchemaValidator.ValidateSchemaString(stringSchema, stringRules, out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateSchemaString(stringSchema, stringRules, false, out List<string> errorList);
             Assert.AreEqual(true, res);
             Assert.AreEqual(0, errorList.Count);
         }
+
         [TestMethod]
         public void Test_ValidateSchemaInStringWithCustomRulesInJSchema()
         {
-            var res = ForgeSchemaValidator.ValidateSchemaString(stringSchema, jschemaRules, out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateSchemaString(stringSchema, jschemaRules, false, out List<string> errorList);
             Assert.AreEqual(true, res);
             Assert.AreEqual(0, errorList.Count);
         }
+
         [TestMethod]
         public void Test_ValidateSchemasInStringListWithCustomRulesInString()
         {
-            var res = ForgeSchemaValidator.ValidateSchemaString(stringSchemaList, stringRules, out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateSchemaString(stringSchemaList, stringRules, false, out List<string> errorList);
             Assert.AreEqual(true, res);
             Assert.AreEqual(0, errorList.Count);
         }
+
         [TestMethod]
         public void Test_ValidateSchemasInStringListWithCustomRulesInJSchema()
         {
-            var res = ForgeSchemaValidator.ValidateSchemaString(stringSchemaList, jschemaRules, out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateSchemaString(stringSchemaList, jschemaRules, false, out List<string> errorList);
             Assert.AreEqual(true, res);
             Assert.AreEqual(0, errorList.Count);
         }
@@ -113,59 +120,96 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         [TestMethod]
         public void Test_ValidateSchemaFromPathWithCustomRulesInString()
         {
-            var res = ForgeSchemaValidator.ValidateSchemaInPath(schemaPath, stringRules, out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateSchemaInPath(schemaPath, stringRules, false, out List<string> errorList);
             Assert.AreEqual(true, res);
             Assert.AreEqual(0, errorList.Count);
         }
+
         [TestMethod]
         public void Test_ValidateSchemaFromPathWithCustomRulesInJSchema()
         {
-            var res = ForgeSchemaValidator.ValidateSchemaInPath(schemaPath, jschemaRules, out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateSchemaInPath(schemaPath, jschemaRules, false, out List<string> errorList);
             Assert.AreEqual(true, res);
             Assert.AreEqual(0, errorList.Count);
         }
+
         [TestMethod]
         public void Test_ValidateSchemasFromDirectoryListWithCustomRulesInString()
         {
-            var res = ForgeSchemaValidator.ValidateMultipleSchemasInPath(schemaDirectoryPath, stringRules, out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateMultipleSchemasInPath(schemaDirectoryPath, stringRules, false, out List<string> errorList);
             Assert.AreEqual(true, res);
             Assert.AreEqual(0, errorList.Count);
         }
+
         [TestMethod]
         public void Test_ValidateSchemasFromDirectoryListWithCustomRulesInJSchema()
         {
-            var res = ForgeSchemaValidator.ValidateMultipleSchemasInPath(schemaDirectoryPath, jschemaRules, out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateMultipleSchemasInPath(schemaDirectoryPath, jschemaRules, false, out List<string> errorList);
             Assert.AreEqual(true, res); 
             Assert.AreEqual(0, errorList.Count);
         }
+
         [TestMethod]
         public void Test_ValidateInvalidSchemaInString()
         {
-            var res = ForgeSchemaValidator.ValidateSchemaString(invalidSchemaNotTree, jschemaRules, out List<string> errorList);
-            Assert.AreEqual(false, res);
-            Assert.AreEqual("Required property 'Type' not found in JSON. Path 'Tree.Root', line 5, position 9.", errorList.First());
+            bool res = ForgeSchemaValidator.ValidateSchemaString(stringSchema, jschemaRules, false, out List<string> errorList);
+            Assert.AreEqual(true, res);
+            Assert.AreEqual(0, errorList.Count);
         }
+
         [TestMethod]
         public void Test_ValidateInvalidSchemaDirectoryPath()
         {
-            var res = ForgeSchemaValidator.ValidateMultipleSchemasInPath(invalidSchemaDirectoryPath, jschemaRules,out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateMultipleSchemasInPath(invalidSchemaDirectoryPath, jschemaRules, false, out List<string> errorList);
             Assert.AreEqual(false, res);
             Assert.AreEqual("The directory name is invalid.\r\n", errorList.First());
         }
+
         [TestMethod]
         public void Test_ValidateSchemaWithErrorContent()
         {
-            var res = ForgeSchemaValidator.ValidateSchemaString(invalidSchemaWithErrorContent, jschemaRules, out List<string> errorList);
+            bool res = ForgeSchemaValidator.ValidateSchemaString(invalidSchemaWithErrorContent, jschemaRules, false, out List<string> errorList);
             Assert.AreEqual(false, res);
             Assert.AreEqual("JSON is valid against no schemas from 'oneOf'. line: 3, position: 17", errorList.First());
         }
+
+        [TestMethod]
+        public void Test_ValidateInvalidSchemaAsDictionary()
+        {
+            bool res = ForgeSchemaValidator.ValidateSchemaString(invalidSchemaWithErrorContent, jschemaRules, true, out List<string> errorList);
+            Assert.AreEqual(false, res);
+            Assert.AreEqual("JSON is valid against no schemas from 'oneOf'. line: 3, position: 17", errorList.First());
+        }
+
+        [TestMethod]
+        public void Test_ValidateValidSchemaAsDictionary()
+        {
+            bool res = ForgeSchemaValidator.ValidateSchemaString(invalidSchemaWithErrorContent, jschemaRules, true, out List<string> errorList);
+            Assert.AreEqual(false, res);
+            Assert.AreEqual("JSON is valid against no schemas from 'oneOf'. line: 3, position: 17", errorList.First());
+        }
+
+        [TestMethod]
+        public void Test_ValidateSchemasFromDirectoryListAsDictionaryWithCustomRulesInString()
+        {
+            bool res = ForgeSchemaValidator.ValidateMultipleSchemasInPath(schemaDirectoryPath, stringRules, true, out List<string> errorList);
+            Assert.AreEqual(false, res);
+            Assert.AreEqual("An item with the same key has already been added.", errorList.First());
+        }
+
         [TestMethod]
         public void Test_GetLinkedJSchemaRules()
         {
-            var linkedRules = ForgeSchemaValidator.GetLinkedJSchemaRules(stringRules, stringRules, "//ForgeSchemaValidationRules.json", out string error);
-            Assert.AreEqual("", error);
-            ForgeSchemaValidator.ValidateSchema(treeSchema, linkedRules, out List<string> errorList);
-            Assert.AreEqual(0, errorList.Count);
+            try
+            {
+                JSchema linkedRules = ForgeSchemaValidator.GetLinkedJSchemaRules(stringRules, stringRules, "//ForgeSchemaValidationRules.json");
+                ForgeSchemaValidator.ValidateSchema(treeSchema, linkedRules, out List<string> errorList);
+                Assert.AreEqual(0, errorList.Count);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Expected no exception, but got: " + ex.Message);
+            }      
         }
     }
 }

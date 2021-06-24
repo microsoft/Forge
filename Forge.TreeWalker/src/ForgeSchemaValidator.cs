@@ -3,200 +3,170 @@
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 // <summary>
-//     The ForgeSchemaValidator class implements the ITreeSchemaValidator interface.
+//     The ForgeSchemaValidator class.
 // </summary>
 //-----------------------------------------------------------------------
+
 namespace Microsoft.Forge.TreeWalker
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Threading.Tasks;
     using Microsoft.Forge.DataContracts;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using Newtonsoft.Json.Schema;
+
     /// <summary>
-    /// The ForgeSchemaValidator class implements the validation method that tests input schemas with custom rules from input.
+    /// The ForgeSchemaValidator class implements the validation method that tests input schemas with input custom rules.
     /// </summary>
     public static class ForgeSchemaValidator
     {
+
         /// <summary>
-        /// The GetLinkedJSchema method that creates the linked rules in JSchema.
+        /// Linked rules in JSchema type.
         /// </summary>
         /// <param name="childRules">The rules to be included in the parent rules</param>
         /// <param name="parentRules">The parent rules to absorb the child rules</param>
         /// <param name="referenceUri">The address of childRules</param>
-        /// <returns>The result of schema combination. ErrorMessage would be set if it throw exceptions</returns>
-        public static JSchema GetLinkedJSchemaRules(string childRules, string parentRules, string referenceUri, out string errorMessage)
+        /// <returns>The result of schema combination.</returns>
+        public static JSchema GetLinkedJSchemaRules(string childRules, string parentRules, string referenceUri)
         {
-            try
-            {
-                JSchemaPreloadedResolver resolver = new JSchemaPreloadedResolver();
-                resolver.Add(new Uri(referenceUri), childRules);
-                errorMessage = "";
-                return JSchema.Parse(parentRules, resolver);
-            }
-            catch(Exception e)
-            {
-                errorMessage = e.Message;
-                return null;
-            }
+            JSchemaPreloadedResolver resolver = new JSchemaPreloadedResolver();
+            resolver.Add(new Uri(referenceUri), childRules);
+
+            return JSchema.Parse(parentRules, resolver);
         }
 
         /// <summary>
-        /// The validate task that validate the input schema with custom rules in string.
+        /// Validates the ForgeTree schema with the given rules.
         /// </summary>
         /// <param name="schema">The schema to be validated</param>
-        /// <param name="rules">The rules used to validate input schemas</param>
-        /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateSchema(ForgeTree schema, string rules, out List<string> errorList)
+        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
+        /// /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
+        public static bool ValidateSchema(ForgeTree schema, object rules, out List<string> errorList)
         {
-            return Validate(new List<JObject> { SerializeForgeTree(schema) }, JSchema.Parse(rules), out errorList);
+            return Validate(new List<JObject> { SerializeToJObject(schema) }, rules, out errorList);
         }
+
         /// <summary>
-        /// The validate task that validate the input schema with custom rules in string.
-        /// </summary>
-        /// <param name="schema">The schema to be validated</param>
-        /// <param name="rules">The rules used to validate input schemas</param>
-        /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateSchema(ForgeTree schema, JSchema rules, out List<string> errorList)
-        {
-            return Validate(new List<JObject> { SerializeForgeTree(schema) }, rules, out errorList);
-        }
-        /// <summary>
-        /// The validate task that validate multiple input schemas with custom rules in string.
+        /// Validates single or multiple schemas in Dictionary with the given rules.
         /// </summary>
         /// <param name="schemas">The schemas to be validated</param>
-        /// <param name="rules">The rules used to validate input schemas</param>
+        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
+        /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary</param>        
         /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateSchemas(Dictionary<string, ForgeTree> schemas, string rules, out List<string> errorList)
+        public static bool ValidateSchemas(Dictionary<string, ForgeTree> schemas, object rules, bool validateAsDictionary, out List<string> errorList)
         {
-            return Validate(ConvertDictionaryToForgeTreeList(schemas), JSchema.Parse(rules), out errorList);
+            return Validate(ConvertDictionaryToJObjectList(schemas, validateAsDictionary), rules, out errorList);
         }
+
         /// <summary>
-        /// The validate task that check the input schema in string with custom rules in string.
+        /// Validates single or multiple schemas in string with the given rules.
         /// </summary>
         /// <param name="schema">The schema to be validated</param>
-        /// <param name="rules">The rules used to validate input schemas</param>
+        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
+        /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary</param>
         /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateSchemaString(string schema, string rules, out List<string> errorList)
+        public static bool ValidateSchemaString(string schema, object rules, bool validateAsDictionary, out List<string> errorList)
         {
-            var schemaList = ConvertStringToJObjectList(schema, out errorList);
-            return CheckConvertErrorAndValidate(JSchema.Parse(rules), ref errorList, schemaList);
+            List<JObject> schemaList = ConvertStringToJObjectList(schema, out errorList, validateAsDictionary);
+
+            return CheckConvertErrorAndValidate(rules, ref errorList, schemaList);
         }
 
         /// <summary>
-        /// The validate task that validate the schema in the input file path with custom rules in string.
+        /// Validates single or multiple schemas from input path with the given rules.        
         /// </summary>
         /// <param name="path">The path that contains a schema file</param>
-        /// <param name="rules">The rules used to validate input schemas</param>
+        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
+        /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary</param>
         /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateSchemaInPath(string path, string rules, out List<string> errorList)
+        public static bool ValidateSchemaInPath(string path, object rules, bool validateAsDictionary, out List<string> errorList)
         {
-            var schemas = GetSchemaFromPath(path, out errorList);
-            return CheckConvertErrorAndValidate(JSchema.Parse(rules), ref errorList, schemas);
-        }
+            List<JObject> schemas = GetSchemaFromPath(path, out errorList, validateAsDictionary);
 
-        /// <summary>
-        /// The validate task that validate all schemas in a directory with custom rules in string.
-        /// </summary>
-        /// <param name="path">The path that contains a schemas directory</param>
-        /// <param name="rules">The rules used to validate input schemas</param>
-        /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateMultipleSchemasInPath(string path, string rules, out List<string> errorList)
-        {
-            var schemas = GetAllSchemasInDirectory(path, out errorList);
-            return CheckConvertErrorAndValidate(JSchema.Parse(rules), ref errorList, schemas);
-        }
-        /// <summary>
-        /// The validate task that validate multiple input schemas with custom rules in JSchema.
-        /// </summary>
-        /// <param name="schemas">The schemas to be validated</param>
-        /// <param name="rules">The rules used to validate input schemas</param>
-        /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateSchemas(Dictionary<string, ForgeTree> schemas, JSchema rules, out List<string> errorList)
-        {
-            return Validate(ConvertDictionaryToForgeTreeList(schemas), rules, out errorList);
-        }
-        /// <summary>
-        /// The validate task that validate the schema in the input file path with custom rules in JSchema.
-        /// </summary>
-        /// <param name="path">The path that contains a schema file</param>
-        /// <param name="rules">The rules used to validate input schemas</param>
-        /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateSchemaInPath(string path, JSchema rules, out List<string> errorList)
-        {
-            var schema = GetSchemaFromPath(path, out errorList);
-            return CheckConvertErrorAndValidate(rules, ref errorList, schema);
-        }
-        /// <summary>
-        /// The validate task that validate all schemas in a directory with custom rules in JSchema.
-        /// </summary>
-        /// <param name="path">The path that contains a schemas directory</param>
-        /// <param name="rules">The rules used to validate input schemas</param>
-        /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateMultipleSchemasInPath(string path, JSchema rules, out List<string> errorList)
-        {
-            var schemas = GetAllSchemasInDirectory(path, out errorList);
             return CheckConvertErrorAndValidate(rules, ref errorList, schemas);
         }
 
         /// <summary>
-        /// The validate task that check the input schema in string with custom rules in JSchema.
+        /// Validates single or multiple schemas from input path with the given rules.
         /// </summary>
-        /// <param name="schema">The schema to be validated</param>
-        /// <param name="rules">The rules used to validate input schemas</param>
+        /// <param name="path">The path that contains a schemas directory</param>
+        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
+        /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary</param>
         /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateSchemaString(string schema, JSchema rules, out List<string> errorList)
+        public static bool ValidateMultipleSchemasInPath(string path, object rules, bool validateAsDictionary, out List<string> errorList)
         {
-            var schemaList = ConvertStringToJObjectList(schema, out errorList);
-            if (errorList.Count > 0)
-            {
-                return false;
-            }
-            var res = Validate(schemaList, rules, out errorList); 
-            return res;
+            List<JObject> schemas = GetAllSchemasInDirectory(path, out errorList, validateAsDictionary);
+
+            return CheckConvertErrorAndValidate(rules, ref errorList, schemas);
         }
 
-        private static List<JObject> ConvertDictionaryToForgeTreeList(Dictionary<string, ForgeTree> schemas)
+
+        private static List<JObject> ConvertDictionaryToJObjectList(Dictionary<string, ForgeTree> schemas, bool validateAsDictionary)
         {
-            var schemaList = new List<JObject>();
-            foreach (var item in schemas.Values)
-                schemaList.Add(SerializeForgeTree(item));
+            List<JObject> schemaList = new List<JObject>();
+            
+            if (validateAsDictionary)
+            {
+                schemaList.Add(SerializeToJObject(schemas));
+            }
+            else
+            {
+                foreach (ForgeTree item in schemas.Values)
+                {
+                    schemaList.Add(SerializeToJObject(item));
+                }
+            }
+
             return schemaList;
         }
 
-        private static List<JObject> ConvertStringToJObjectList(string schema, out List<string> errorList)
+        private static List<JObject> ConvertStringToJObjectList(string schema, out List<string> errorList, bool validateAsDictionary)
         {
-            var schemaList = new List<JObject>();
+            List<JObject> schemaList = new List<JObject>();
             errorList = new List<string>();
+
             try
             {
+                //There could be three possible cases:
+                //1. TreeName mapped to the ForgeTree in the dictionary and custom rules handle dictionary.
+                //2. There are only ForgeTree without matching forge tree name custom rules handle ForgeTree list.
                 Dictionary<string, ForgeTree> forgeTrees = JsonConvert.DeserializeObject<Dictionary<string, ForgeTree>>(schema);
-                foreach (var kvp in forgeTrees)
+
+                if (validateAsDictionary)
                 {
-                    ForgeTree forgeTree = kvp.Value;
-                    if (forgeTree.Tree == null)
+                    schemaList.Add(JObject.Parse(schema));
+                }
+                else
+                {
+                    foreach (KeyValuePair<string, ForgeTree> kvp in forgeTrees)
                     {
-                        // Deserialize into Dictionary does not throw exception but will have null "Tree" property if schema is just a ForgeTree.
-                        // try to deserialize string to forge tree directly
-                        JsonConvert.DeserializeObject<ForgeTree>(schema);
-                        JObject res = JObject.Parse(schema);
-                        schemaList.Add(res);
-                        break;
+                        ForgeTree forgeTree = kvp.Value;
+
+                        if (forgeTree.Tree == null)
+                        {
+                            // Deserialize into Dictionary does not throw exception but will have null "Tree" property if schema is just a ForgeTree.
+                            // try to deserialize string to forge tree directly
+                            JsonConvert.DeserializeObject<ForgeTree>(schema);
+                            schemaList.Add(JObject.Parse(schema));
+                            break;
+                        }
+
+                        schemaList.Add(SerializeToJObject(forgeTree));
                     }
-                    schemaList.Add(SerializeForgeTree(forgeTree));
                 }
             }
             catch (Exception e)
             {
                 errorList.Add(e.Message);
             }
+
             return schemaList;
         }
 
-        private static JObject SerializeForgeTree(ForgeTree forgeTree)
+        private static JObject SerializeToJObject(object forgeTree)
         {
             string stringSchema = JsonConvert.SerializeObject(
                 forgeTree,
@@ -205,79 +175,130 @@ namespace Microsoft.Forge.TreeWalker
                     DefaultValueHandling = DefaultValueHandling.Ignore, // Prevent default values from getting added to serialized json schema.
                     Converters = new List<JsonConverter> { new Newtonsoft.Json.Converters.StringEnumConverter() } // Use string enum values instead of numerical.
                 });
+
             return JObject.Parse(stringSchema);
         }
 
-        private static List<JObject> GetSchemaFromPath(string path, out List<string> errorList)
+        private static List<JObject> GetSchemaFromPath(string path, out List<string> errorList, bool validateAsDictionary)
         {
             errorList = new List<string>();
+
             try
             {
-                var schema = File.ReadAllText(path);
-                var res = ConvertStringToJObjectList(schema, out List<string> convertError);
+                string schema = File.ReadAllText(path);
+
+                List<JObject> res = ConvertStringToJObjectList(schema, out List<string> convertError, validateAsDictionary);
                 errorList = convertError;
+
                 return res;
             }
             catch (Exception e)
             {
                 errorList.Add(e.Message);
+
                 return new List<JObject>();
             }
         }
 
-        private static List<JObject> GetAllSchemasInDirectory(string path, out List<string> errorList)
+        private static List<JObject> GetAllSchemasInDirectory(string path, out List<string> errorList, bool validateAsDictionary)
         {
-            var schemaList = new List<JObject>();
+            List<JObject> schemaList = new List<JObject>();
             errorList = new List<string>();
+
             try
             {
                 string[] Files = Directory.GetFiles(path);
-                var schemalist = new List<object>();
-                foreach (string file in Files)
-                {
-                    var schemasInFile = GetSchemaFromPath(file, out errorList);
-                    if (errorList.Count > 0)
+                List<object> schemalist = new List<object>();
+
+                if (validateAsDictionary) {
+                    Dictionary<string, ForgeTree> combinedDictionary = new Dictionary<string, ForgeTree>();
+                    
+                    foreach (string file in Files) 
                     {
-                        break;
+                        string schema = File.ReadAllText(file);
+                        Dictionary<string, ForgeTree> schemaDictionary = JsonConvert.DeserializeObject<Dictionary<string, ForgeTree>>(schema);
+                        
+                        foreach (KeyValuePair<string, ForgeTree> item in schemaDictionary) 
+                        {
+                            combinedDictionary.Add(item.Key, item.Value);
+                        }
                     }
-                    schemasInFile.ForEach(n => schemaList.Add(n));
+
+                    return new List<JObject> { SerializeToJObject(combinedDictionary) };
+                }
+                else
+                {
+                    foreach (string file in Files)
+                    {
+                        List<JObject> schemasInFile = GetSchemaFromPath(file, out errorList, validateAsDictionary);
+
+                        if (errorList.Count > 0)
+                        {
+                            break;
+                        }
+
+                        schemasInFile.ForEach(n => schemaList.Add(n));
+                    }
                 }
             }
             catch (Exception e)
             {
                 errorList.Add(e.Message);
             }
+
             return schemaList;
         }
 
-        private static bool CheckConvertErrorAndValidate(JSchema rules, ref List<string> errorList, List<JObject> schemaList)
+        private static bool CheckConvertErrorAndValidate(Object rules, ref List<string> errorList, List<JObject> schemaList)
         {
             if (errorList.Count > 0)
             {
                 return false;
             }
+
             return Validate(schemaList, rules, out errorList);
         }
 
-        private static bool Validate(List<JObject> schemas, JSchema rules, out List<string> errorList)
+        private static bool Validate(List<JObject> schemas, Object rules, out List<string> errorList)
         {
             errorList = new List<string>();
+            JSchema jSchemaRules = null;
+
+            if (rules is string)
+            {
+                jSchemaRules = JSchema.Parse((string)rules);
+            }
+            else if (rules is JSchema)
+            {
+                jSchemaRules = (JSchema)rules;
+            }
+            else 
+            {
+                errorList.Add("Rules type could only be string or JSchema");
+
+                return false;
+            }
+
             if (schemas.Count == 0)
             {
                 errorList.Add("Can't find target schema to test or file type is not supported");
+
                 return false;
             }
-            foreach (var schema in schemas)
+
+            foreach (JObject schema in schemas)
             {
-                if (!schema.IsValid(rules, out IList<ValidationError> errorDetail))
+                if (!schema.IsValid(jSchemaRules, out IList<ValidationError> errorDetail))
                 {
-                    foreach (var error in errorDetail)
+                    foreach (ValidationError error in errorDetail)
                     {
                         errorList.Add(error.Message + " line: " + error.LineNumber + ", position: " + error.LinePosition);
                     }
+
                     return false;
                 }
             }
+
             return true;
         }
     }
