@@ -12,7 +12,8 @@
             },
             "ChildSelector": [
                 {
-                    "Child": "LeafNodeSummaryTest"
+                    "Child": "LeafNodeSummaryTest",
+                    "Lable": "Lable"
                 }
             ]
         },
@@ -20,8 +21,7 @@
             "Type": "Leaf",
             "Actions": {
                 "LeafNodeSummaryTest_LeafNodeSummaryAction": {
-                    "Action": "LeafNodeSummaryAction",
-                    "Input": "C#|Session.GetLastActionResponse()"
+                    "Action": "LeafNodeSummaryAction"
                 }
             }
         }

@@ -44,7 +44,7 @@ namespace Microsoft.Forge.TreeWalker
         /// <param name="schema">The schema to be validated</param>
         /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
         /// /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateSchema(ForgeTree schema, object rules, out List<string> errorList)
+        public static bool ValidateSchemaAsForgeTree(ForgeTree schema, object rules, out IList<ValidationError> errorList)
         {
             return Validate(new List<JObject> { SerializeToJObject(schema) }, rules, out errorList);
         }
@@ -56,7 +56,7 @@ namespace Microsoft.Forge.TreeWalker
         /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
         /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary</param>        
         /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateSchemas(Dictionary<string, ForgeTree> schemas, object rules, bool validateAsDictionary, out List<string> errorList)
+        public static bool ValidateSchemaAsForgeTreeDictionary(Dictionary<string, ForgeTree> schemas, object rules, bool validateAsDictionary, out IList<ValidationError> errorList)
         {
             return Validate(ConvertDictionaryToJObjectList(schemas, validateAsDictionary), rules, out errorList);
         }
@@ -68,11 +68,11 @@ namespace Microsoft.Forge.TreeWalker
         /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
         /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary</param>
         /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateSchemaString(string schema, object rules, bool validateAsDictionary, out List<string> errorList)
+        public static bool ValidateSchemaAsString(string schema, object rules, bool validateAsDictionary, out IList<ValidationError> errorList)
         {
-            List<JObject> schemaList = ConvertStringToJObjectList(schema, out errorList, validateAsDictionary);
+            List<JObject> schemaList = ConvertStringToJObjectList(schema, validateAsDictionary);
 
-            return CheckConvertErrorAndValidate(rules, ref errorList, schemaList);
+            return Validate(schemaList, rules, out errorList);
         }
 
         /// <summary>
@@ -82,11 +82,11 @@ namespace Microsoft.Forge.TreeWalker
         /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
         /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary</param>
         /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateSchemaInPath(string path, object rules, bool validateAsDictionary, out List<string> errorList)
+        public static bool ValidateSchemaFromPath(string path, object rules, bool validateAsDictionary, out IList<ValidationError> errorList)
         {
-            List<JObject> schemas = GetSchemaFromPath(path, out errorList, validateAsDictionary);
+            List<JObject> schemas = GetSchemaFromPath(path, validateAsDictionary);
 
-            return CheckConvertErrorAndValidate(rules, ref errorList, schemas);
+            return Validate(schemas, rules, out errorList);
         }
 
         /// <summary>
@@ -96,18 +96,18 @@ namespace Microsoft.Forge.TreeWalker
         /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
         /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary</param>
         /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
-        public static bool ValidateMultipleSchemasInPath(string path, object rules, bool validateAsDictionary, out List<string> errorList)
+        public static bool ValidateSchemaFromDirectory(string path, object rules, bool validateAsDictionary, out IList<ValidationError> errorList)
         {
-            List<JObject> schemas = GetAllSchemasInDirectory(path, out errorList, validateAsDictionary);
+            List<JObject> schemas = GetAllSchemasInDirectory(path, validateAsDictionary);
 
-            return CheckConvertErrorAndValidate(rules, ref errorList, schemas);
+            return Validate(schemas, rules, out errorList);
         }
 
 
         private static List<JObject> ConvertDictionaryToJObjectList(Dictionary<string, ForgeTree> schemas, bool validateAsDictionary)
         {
             List<JObject> schemaList = new List<JObject>();
-            
+
             if (validateAsDictionary)
             {
                 schemaList.Add(SerializeToJObject(schemas));
@@ -123,44 +123,37 @@ namespace Microsoft.Forge.TreeWalker
             return schemaList;
         }
 
-        private static List<JObject> ConvertStringToJObjectList(string schema, out List<string> errorList, bool validateAsDictionary)
+        private static List<JObject> ConvertStringToJObjectList(string schema, bool validateAsDictionary)
         {
             List<JObject> schemaList = new List<JObject>();
-            errorList = new List<string>();
 
-            try
+            //There could be three possible cases:
+            //1. TreeName mapped to the ForgeTree in the dictionary and custom rules handle dictionary.
+            //2. There are only ForgeTree without matching forge tree name custom rules handle ForgeTree list.
+            //3. The string schema that could be deserialized as a ForgeTree should be parsed directly
+            Dictionary<string, ForgeTree> forgeTrees = JsonConvert.DeserializeObject<Dictionary<string, ForgeTree>>(schema);
+
+            if (validateAsDictionary)
             {
-                //There could be three possible cases:
-                //1. TreeName mapped to the ForgeTree in the dictionary and custom rules handle dictionary.
-                //2. There are only ForgeTree without matching forge tree name custom rules handle ForgeTree list.
-                Dictionary<string, ForgeTree> forgeTrees = JsonConvert.DeserializeObject<Dictionary<string, ForgeTree>>(schema);
-
-                if (validateAsDictionary)
-                {
-                    schemaList.Add(JObject.Parse(schema));
-                }
-                else
-                {
-                    foreach (KeyValuePair<string, ForgeTree> kvp in forgeTrees)
-                    {
-                        ForgeTree forgeTree = kvp.Value;
-
-                        if (forgeTree.Tree == null)
-                        {
-                            // Deserialize into Dictionary does not throw exception but will have null "Tree" property if schema is just a ForgeTree.
-                            // try to deserialize string to forge tree directly
-                            JsonConvert.DeserializeObject<ForgeTree>(schema);
-                            schemaList.Add(JObject.Parse(schema));
-                            break;
-                        }
-
-                        schemaList.Add(SerializeToJObject(forgeTree));
-                    }
-                }
+                schemaList.Add(JObject.Parse(schema));
             }
-            catch (Exception e)
+            else
             {
-                errorList.Add(e.Message);
+                foreach (KeyValuePair<string, ForgeTree> kvp in forgeTrees)
+                {
+                    ForgeTree forgeTree = kvp.Value;
+
+                    if (forgeTree.Tree == null)
+                    {
+                        // Deserialize into Dictionary does not throw exception but will have null "Tree" property if schema is just a ForgeTree.
+                        // try to deserialize string to forge tree directly
+                        JsonConvert.DeserializeObject<ForgeTree>(schema);
+                        schemaList.Add(JObject.Parse(schema));
+                        break;
+                    }
+
+                    schemaList.Add(SerializeToJObject(forgeTree));
+                }
             }
 
             return schemaList;
@@ -179,90 +172,59 @@ namespace Microsoft.Forge.TreeWalker
             return JObject.Parse(stringSchema);
         }
 
-        private static List<JObject> GetSchemaFromPath(string path, out List<string> errorList, bool validateAsDictionary)
+        private static List<JObject> GetSchemaFromPath(string path, bool validateAsDictionary)
         {
-            errorList = new List<string>();
+            string schema = File.ReadAllText(path);
+            List<JObject> res = ConvertStringToJObjectList(schema, validateAsDictionary);
 
-            try
-            {
-                string schema = File.ReadAllText(path);
-
-                List<JObject> res = ConvertStringToJObjectList(schema, out List<string> convertError, validateAsDictionary);
-                errorList = convertError;
-
-                return res;
-            }
-            catch (Exception e)
-            {
-                errorList.Add(e.Message);
-
-                return new List<JObject>();
-            }
+            return res;
         }
 
-        private static List<JObject> GetAllSchemasInDirectory(string path, out List<string> errorList, bool validateAsDictionary)
+        private static List<JObject> GetAllSchemasInDirectory(string path, bool validateAsDictionary)
         {
             List<JObject> schemaList = new List<JObject>();
-            errorList = new List<string>();
+            string[] files = Directory.GetFiles(path);
+            List<object> schemalist = new List<object>();
 
-            try
+            if (validateAsDictionary)
             {
-                string[] Files = Directory.GetFiles(path);
-                List<object> schemalist = new List<object>();
+                Dictionary<string, ForgeTree> combinedDictionary = new Dictionary<string, ForgeTree>();
 
-                if (validateAsDictionary) {
-                    Dictionary<string, ForgeTree> combinedDictionary = new Dictionary<string, ForgeTree>();
-                    
-                    foreach (string file in Files) 
-                    {
-                        string schema = File.ReadAllText(file);
-                        Dictionary<string, ForgeTree> schemaDictionary = JsonConvert.DeserializeObject<Dictionary<string, ForgeTree>>(schema);
-                        
-                        foreach (KeyValuePair<string, ForgeTree> item in schemaDictionary) 
-                        {
-                            combinedDictionary.Add(item.Key, item.Value);
-                        }
-                    }
-
-                    return new List<JObject> { SerializeToJObject(combinedDictionary) };
-                }
-                else
+                foreach (string file in files)
                 {
-                    foreach (string file in Files)
+                    string schema = File.ReadAllText(file);
+                    Dictionary<string, ForgeTree> schemaDictionary = JsonConvert.DeserializeObject<Dictionary<string, ForgeTree>>(schema);
+
+                    foreach (KeyValuePair<string, ForgeTree> kvp in schemaDictionary)
                     {
-                        List<JObject> schemasInFile = GetSchemaFromPath(file, out errorList, validateAsDictionary);
-
-                        if (errorList.Count > 0)
-                        {
-                            break;
-                        }
-
-                        schemasInFile.ForEach(n => schemaList.Add(n));
+                        combinedDictionary.Add(kvp.Key, kvp.Value);
                     }
                 }
+
+                return new List<JObject> { SerializeToJObject(combinedDictionary) };
             }
-            catch (Exception e)
+            else
             {
-                errorList.Add(e.Message);
+                foreach (string file in files)
+                {
+                    List<JObject> schemasInFile = GetSchemaFromPath(file, validateAsDictionary);
+                    schemasInFile.ForEach(n => schemaList.Add(n));
+                }
             }
 
             return schemaList;
         }
 
-        private static bool CheckConvertErrorAndValidate(Object rules, ref List<string> errorList, List<JObject> schemaList)
+        /// <summary>
+        /// Validate the input Schemas in JObject against rules in JSchema and return the validation error list. 
+        /// </summary>
+        /// <param name="schemas">One or serveral schemas to be validated. The number of JObjects depends on the input and three cases mentioned in ConvertStringToJObjectList method</param>
+        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
+        /// <returns>The result of schema validation. The errorList is the origin error message from IsValid method</returns>
+        private static bool Validate(List<JObject> schemas, object rules, out IList<ValidationError> errorList)
         {
-            if (errorList.Count > 0)
-            {
-                return false;
-            }
-
-            return Validate(schemaList, rules, out errorList);
-        }
-
-        private static bool Validate(List<JObject> schemas, Object rules, out List<string> errorList)
-        {
-            errorList = new List<string>();
-            JSchema jSchemaRules = null;
+            JSchema jSchemaRules = new JSchema();
+            errorList = new List<ValidationError>();
 
             if (rules is string)
             {
@@ -272,29 +234,16 @@ namespace Microsoft.Forge.TreeWalker
             {
                 jSchemaRules = (JSchema)rules;
             }
-            else 
-            {
-                errorList.Add("Rules type could only be string or JSchema");
-
-                return false;
-            }
 
             if (schemas.Count == 0)
             {
-                errorList.Add("Can't find target schema to test or file type is not supported");
-
                 return false;
             }
 
             foreach (JObject schema in schemas)
             {
-                if (!schema.IsValid(jSchemaRules, out IList<ValidationError> errorDetail))
+                if (!schema.IsValid(jSchemaRules, out errorList))
                 {
-                    foreach (ValidationError error in errorDetail)
-                    {
-                        errorList.Add(error.Message + " line: " + error.LineNumber + ", position: " + error.LinePosition);
-                    }
-
                     return false;
                 }
             }

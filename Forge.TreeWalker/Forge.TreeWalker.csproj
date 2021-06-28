@@ -17,6 +17,10 @@
     <PackageTags>Forge;TreeWalker;Roslyn;async;dynamic;generic;workflow engine;decision tree;config;stateful;low-code;tree visualization;workflow framework;JSON</PackageTags>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="contracts\ForgeSchemaDictionaryValidationRules.json" />
+    <None Remove="contracts\ForgeSchemaValidationRules.json" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="GitVersionTask" Version="5.0.1">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -28,10 +32,15 @@
     <None Include="..\LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="contracts\ForgeSchemaValidationRules.json">
-      <Pack>true</Pack>
+    <Content Include="contracts\ForgeSchemaDictionaryValidationRules.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
+      <Pack>true</Pack>
+    </Content>
+    <Content Include="contracts\ForgeSchemaValidationRules.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <Pack>true</Pack>
     </Content>
   </ItemGroup>
 </Project>
