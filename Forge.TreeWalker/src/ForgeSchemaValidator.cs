@@ -197,6 +197,11 @@ namespace Microsoft.Forge.TreeWalker
 
                     foreach (KeyValuePair<string, ForgeTree> kvp in schemaDictionary)
                     {
+                        if (kvp.Value.Tree == null)
+                        {
+                            throw new NullReferenceException("Can not deserialize the schema as dictionary in file: " + file);
+                        }
+
                         combinedDictionary.Add(kvp.Key, kvp.Value);
                     }
                 }
@@ -226,13 +231,17 @@ namespace Microsoft.Forge.TreeWalker
             JSchema jSchemaRules = new JSchema();
             errorList = new List<ValidationError>();
 
-            if (rules is string)
+            if (rules is string && !string.IsNullOrWhiteSpace((string)rules))
             {
                 jSchemaRules = JSchema.Parse((string)rules);
             }
             else if (rules is JSchema)
             {
                 jSchemaRules = (JSchema)rules;
+            }
+            else 
+            {
+                throw new ArgumentException("Rules argument could only be a non-empty string or a JSchema");
             }
 
             if (schemas.Count == 0)

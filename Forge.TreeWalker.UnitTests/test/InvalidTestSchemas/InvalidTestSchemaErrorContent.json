@@ -21,7 +21,7 @@
             "Type": "Leaf",
             "Actions": {
                 "LeafNodeSummaryTest_LeafNodeSummaryAction": {
-                    "Action": "LeafNodeSummaryAction"
+                    "Action": "NoInputAction"
                 }
             }
         }
