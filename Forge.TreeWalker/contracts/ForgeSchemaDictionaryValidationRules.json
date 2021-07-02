@@ -8,24 +8,16 @@
     "additionalProperties": false,
     "definitions": {
         "ForgeTreeDefinition": {
-            "additionalProperties": false,
+            "type": "object",
             "properties": {
                 "Tree": {
-                    "$ref": "#/definitions/TreeDefinition"
+                    "$ref": "file://ForgeSchemaValidationRules.json#/definitions/TreeDefinition"
                 },
                 "RootTreeNodeKey": {
                     "type": "string"
                 }
             },
-            "type": "object"
-        },
-        "TreeDefinition": {
-            "type": "object",
-            "patternProperties": {
-                ".*?": {
-                    "$dynamicRef": "file://ForgeSchemaValidationRules.json#/definitions/TreeDefinition"
-                }
-            }
+            "additionalProperties": false
         }
     }
 }

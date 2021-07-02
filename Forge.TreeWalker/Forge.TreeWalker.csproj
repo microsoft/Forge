@@ -1,42 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<RootNamespace>Microsoft.Forge.TreeWalker</RootNamespace>
-		<AssemblyName>Microsoft.Forge.TreeWalker</AssemblyName>
-		<TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
-		<Deterministic>true</Deterministic>
-		<IsPackable>true</IsPackable>
-		<Authors>Microsoft</Authors>
-		<Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-		<PackageDescription>A Generic Low-Code Framework Built on a Config-Driven Tree Walker.</PackageDescription>
-		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-		<PackageProjectUrl>https://github.com/microsoft/Forge</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/microsoft/Forge</RepositoryUrl>
-		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-		<PackageOutputPath>bin\Release</PackageOutputPath>
-		<IncludeSymbols>true</IncludeSymbols>
-		<PackageTags>Forge;TreeWalker;Roslyn;async;dynamic;generic;workflow engine;decision tree;config;stateful;low-code;tree visualization;workflow framework;JSON</PackageTags>
-	</PropertyGroup>
-	<ItemGroup>
-		<PackageReference Include="GitVersionTask" Version="5.0.1">
-			<PrivateAssets>all</PrivateAssets>
-		</PackageReference>
-		<PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="3.8.0" />
-		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-		<PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.11" />
-	</ItemGroup>
-	<ItemGroup>
-		<None Include="..\LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
-	</ItemGroup>
-	<ItemGroup>
-		<Content Include="contracts\ForgeSchemaDictionaryValidationRules.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<PackageCopyToOutput>true</PackageCopyToOutput>
-			<Pack>true</Pack>
-		</Content>
-		<Content Include="contracts\ForgeSchemaValidationRules.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<PackageCopyToOutput>true</PackageCopyToOutput>
-			<Pack>true</Pack>
-		</Content>
-	</ItemGroup>
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Forge.TreeWalker</RootNamespace>
+    <AssemblyName>Microsoft.Forge.TreeWalker</AssemblyName>
+    <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
+    <Deterministic>true</Deterministic>
+    <IsPackable>true</IsPackable>
+    <Authors>Microsoft</Authors>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageDescription>A Generic Low-Code Framework Built on a Config-Driven Tree Walker.</PackageDescription>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/microsoft/Forge</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/microsoft/Forge</RepositoryUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageOutputPath>bin\Release</PackageOutputPath>
+    <IncludeSymbols>true</IncludeSymbols>
+    <PackageTags>Forge;TreeWalker;Roslyn;async;dynamic;generic;workflow engine;decision tree;config;stateful;low-code;tree visualization;workflow framework;JSON</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="GitVersionTask" Version="5.0.1">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="3.8.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+	<PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.11" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="contracts\ForgeSchemaDictionaryValidationRules.json">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  <PackageCopyToOutput>true</PackageCopyToOutput>
+	  <Pack>true</Pack>
+	</Content>
+	<Content Include="contracts\ForgeSchemaValidationRules.json">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  <PackageCopyToOutput>true</PackageCopyToOutput>
+	  <Pack>true</Pack>
+	</Content>
+  </ItemGroup>
 </Project>

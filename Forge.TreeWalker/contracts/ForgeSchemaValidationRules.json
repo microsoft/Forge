@@ -175,7 +175,7 @@
                 }
             },
             "additionalProperties": false,
-            "required": [ "Label", "Child" ]
+            "required": [ "Child" ]
         },
         "RetryPolicy": {
             "type": "object",

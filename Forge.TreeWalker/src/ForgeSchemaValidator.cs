@@ -30,7 +30,7 @@ namespace Microsoft.Forge.TreeWalker
         /// <param name="parentRules">The parent rules to absorb the child rules</param>
         /// <param name="referenceUri">The address of childRules</param>
         /// <returns>The result of schema combination.</returns>
-        public static JSchema GetLinkedJSchemaRules(string childRules, string parentRules, string referenceUri)
+        public static JSchema GetLinkedJSchemaRules(string parentRules, string childRules, string referenceUri)
         {
             JSchemaPreloadedResolver resolver = new JSchemaPreloadedResolver();
             resolver.Add(new Uri(referenceUri), childRules);

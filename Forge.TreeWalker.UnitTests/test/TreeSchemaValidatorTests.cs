@@ -29,6 +29,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         private string schemaDirectoryPath;
         private string stringRules;
         private string rulesForDictionary;
+        private JSchema linkedRulesForDictionary;
         private JSchema jschemaRules;
         private string invalidSchemaDirectoryPath;
         private string invalidSchemaWithErrorContent;
@@ -41,6 +42,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             schemaDirectoryPath = Path.Combine(Environment.CurrentDirectory, "test\\ExampleSchemas");
             stringRules = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "contracts\\ForgeSchemaValidationRules.json"));
             rulesForDictionary = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "contracts\\ForgeSchemaDictionaryValidationRules.json"));
+            linkedRulesForDictionary = ForgeSchemaValidator.GetLinkedJSchemaRules(rulesForDictionary, stringRules, "//ForgeSchemaValidationRules.json");
             jschemaRules = JSchema.Parse(stringRules);
             forgeTreeAsString = File.ReadAllText(forgeTreeFromPath);
             forgeTreeDictionaryAsString = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "test\\ExampleSchemas\\SubroutineSchema.json"));
@@ -58,8 +60,9 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         {
             try
             {
-                JSchema linkedRules = ForgeSchemaValidator.GetLinkedJSchemaRules(stringRules, stringRules, "//ForgeSchemaValidationRules.json");
-                ForgeSchemaValidator.ValidateSchemaAsForgeTree(treeSchema, linkedRules, out IList<ValidationError> errorList);
+                JSchema linkedRules = ForgeSchemaValidator.GetLinkedJSchemaRules(rulesForDictionary, stringRules, "//ForgeSchemaValidationRules.json");
+                bool res = ForgeSchemaValidator.ValidateSchemaAsForgeTreeDictionary(treeSchemas, linkedRules, true, out IList<ValidationError> errorList);
+                Assert.IsTrue(res);
             }
             catch (Exception ex)
             {
@@ -71,7 +74,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         public void Test_ValidateSchemaAsForgeTree_WithRulesAsString()
         {
             bool res = ForgeSchemaValidator.ValidateSchemaAsForgeTree(treeSchema, stringRules, out IList<ValidationError> errorList);
-            Assert.AreEqual(true, res);
+            Assert.IsTrue(res);
             Assert.AreEqual(0, errorList.Count);
         }
 
@@ -79,7 +82,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         public void Test_ValidateSchemaAsForgeTree_WithRulesAsJSchema()
         {
             bool res = ForgeSchemaValidator.ValidateSchemaAsForgeTree(treeSchema, jschemaRules, out IList<ValidationError> errorList);
-            Assert.AreEqual(true, res);
+            Assert.IsTrue(res);
             Assert.AreEqual(0, errorList.Count);
         }
 
@@ -87,15 +90,15 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         public void Test_ValidateSchemaAsForgeTreeDictionary_WithoutValidateAsDictionary()
         {
             bool res = ForgeSchemaValidator.ValidateSchemaAsForgeTreeDictionary(treeSchemas, stringRules, false, out IList<ValidationError> errorList);
-            Assert.AreEqual(true, res);
+            Assert.IsTrue(res);
             Assert.AreEqual(0, errorList.Count);
         }
 
         [TestMethod]
         public void Test_ValidateSchemaAsForgeTreeDictionary_WithValidateAsDictionary()
         {
-            bool res = ForgeSchemaValidator.ValidateSchemaAsForgeTreeDictionary(treeSchemas, rulesForDictionary, true, out IList<ValidationError> errorList);
-            Assert.AreEqual(true, res);
+            bool res = ForgeSchemaValidator.ValidateSchemaAsForgeTreeDictionary(treeSchemas, linkedRulesForDictionary, true, out IList<ValidationError> errorList);
+            Assert.IsTrue(res);
             Assert.AreEqual(0, errorList.Count);
         }
 
@@ -103,15 +106,15 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         public void Test_ValidateSchemaAsString_WithForgeTree()
         {
             bool res = ForgeSchemaValidator.ValidateSchemaAsString(forgeTreeAsString, stringRules, false, out IList<ValidationError> errorList);
-            Assert.AreEqual(true, res);
+            Assert.IsTrue(res);
             Assert.AreEqual(0, errorList.Count);
         }
 
         [TestMethod]
         public void Test_ValidateSchemaAsString_WithValidateAsDictionary()
         {
-            bool res = ForgeSchemaValidator.ValidateSchemaAsString(forgeTreeDictionaryAsString, rulesForDictionary, true, out IList<ValidationError> errorList);
-            Assert.AreEqual(true, res);
+            bool res = ForgeSchemaValidator.ValidateSchemaAsString(forgeTreeDictionaryAsString, linkedRulesForDictionary, true, out IList<ValidationError> errorList);
+            Assert.IsTrue(res);
             Assert.AreEqual(0, errorList.Count);
         }
 
@@ -119,7 +122,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         public void Test_ValidateSchemaFromPath_WithoutValidateAsDictionary()
         {
             bool res = ForgeSchemaValidator.ValidateSchemaFromPath(forgeTreeFromPath, stringRules, false, out IList<ValidationError> errorList);
-            Assert.AreEqual(true, res);
+            Assert.IsTrue(res);
             Assert.AreEqual(0, errorList.Count);
         }
 
@@ -127,14 +130,14 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         public void Test_ValidateSchemasFromDirectory_WithValidateAsSeparateFiles()
         {
             bool res = ForgeSchemaValidator.ValidateSchemaFromDirectory(schemaDirectoryPath, stringRules, false, out IList<ValidationError> errorList);
-            Assert.AreEqual(true, res);
+            Assert.IsTrue(res);
             Assert.AreEqual(0, errorList.Count);
         }
 
         [TestMethod]
         public void Test_GetLinkedJSchemaRules_WithInvalidUrl__Fail()
         {
-            Assert.ThrowsException<UriFormatException>(() => ForgeSchemaValidator.GetLinkedJSchemaRules(stringRules, stringRules, "//"));
+            Assert.ThrowsException<JSchemaReaderException>(() => ForgeSchemaValidator.GetLinkedJSchemaRules(rulesForDictionary, stringRules, "//nameImadeup.json"));
         }
 
         [TestMethod]
@@ -158,9 +161,15 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         }
 
         [TestMethod]
-        public void Test_ValidateSchemaFromDirectory_WithValidateAsDictionary_DirectoryContainsForgeTrees_Fail()
+        public void Test_ValidateSchemaFromDirectory_WithValidateAsDictionary_DirectoryContainsForgeTree_Fail()
         {
-            Assert.ThrowsException<NullReferenceException>(() => ForgeSchemaValidator.ValidateSchemaFromDirectory(schemaDirectoryPath, rulesForDictionary, true, out IList<ValidationError> errorList));
+            Assert.ThrowsException<NullReferenceException>(() => ForgeSchemaValidator.ValidateSchemaFromDirectory(schemaDirectoryPath, linkedRulesForDictionary, true, out IList<ValidationError> errorList));
+        }
+
+        [TestMethod]
+        public void Test_ValidateSchemaAsForgeTreeDictionary_WithRulesUnlinked_Fail()
+        {
+            Assert.ThrowsException<JSchemaReaderException>(() => ForgeSchemaValidator.ValidateSchemaAsForgeTreeDictionary(treeSchemas, rulesForDictionary, true, out IList<ValidationError> errorList));
         }
     }
 }
