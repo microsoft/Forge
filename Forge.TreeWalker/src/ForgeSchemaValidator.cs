@@ -22,14 +22,14 @@ namespace Microsoft.Forge.TreeWalker
     /// </summary>
     public static class ForgeSchemaValidator
     {
-
         /// <summary>
-        /// Linked rules in JSchema type.
+        /// Links parent JSON schema validation rules with child rules through the referenceUri.
+        /// See ForgeSchemaValidatorTests for examples.
         /// </summary>
-        /// <param name="childRules">The rules to be included in the parent rules</param>
-        /// <param name="parentRules">The parent rules to absorb the child rules</param>
-        /// <param name="referenceUri">The address of childRules</param>
-        /// <returns>The result of schema combination.</returns>
+        /// <param name="childRules">The childRules that get referenced by the parentRules.</param>
+        /// <param name="parentRules">The parentRules that get validated against and link to the childRules.</param>
+        /// <param name="referenceUri">The reference URI in parentRules pointing to the childRules.</param>
+        /// <returns>The parentRules linked with the childRules through the referenceUri.</returns>
         public static JSchema GetLinkedJSchemaRules(string parentRules, string childRules, string referenceUri)
         {
             JSchemaPreloadedResolver resolver = new JSchemaPreloadedResolver();
@@ -41,9 +41,10 @@ namespace Microsoft.Forge.TreeWalker
         /// <summary>
         /// Validates the ForgeTree schema with the given rules.
         /// </summary>
-        /// <param name="schema">The schema to be validated</param>
-        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
-        /// /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
+        /// <param name="schema">The schema to be validated.</param>
+        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type.</param>
+        /// <param name="errorList">The errorList that contains ValidationError objects created in schema validation.</param>
+        /// <returns>The result of schema validation.</returns>
         public static bool ValidateSchemaAsForgeTree(ForgeTree schema, object rules, out IList<ValidationError> errorList)
         {
             return Validate(new List<JObject> { SerializeToJObject(schema) }, rules, out errorList);
@@ -52,10 +53,11 @@ namespace Microsoft.Forge.TreeWalker
         /// <summary>
         /// Validates single or multiple schemas in Dictionary with the given rules.
         /// </summary>
-        /// <param name="schemas">The schemas to be validated</param>
-        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
-        /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary</param>        
-        /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
+        /// <param name="schemas">The schemas to be validated.</param>
+        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type.</param>
+        /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary.</param>
+        /// <param name="errorList">The errorList that contains ValidationError objects created in schema validation.</param>
+        /// <returns>The result of schema validation.</returns>
         public static bool ValidateSchemaAsForgeTreeDictionary(Dictionary<string, ForgeTree> schemas, object rules, bool validateAsDictionary, out IList<ValidationError> errorList)
         {
             return Validate(ConvertDictionaryToJObjectList(schemas, validateAsDictionary), rules, out errorList);
@@ -64,10 +66,11 @@ namespace Microsoft.Forge.TreeWalker
         /// <summary>
         /// Validates single or multiple schemas in string with the given rules.
         /// </summary>
-        /// <param name="schema">The schema to be validated</param>
-        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
-        /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary</param>
-        /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
+        /// <param name="schema">The schema to be validated.</param>
+        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type.</param>
+        /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary.</param>
+        /// <param name="errorList">The errorList that contains ValidationError objects created in schema validation.</param>
+        /// <returns>The result of schema validation.</returns>
         public static bool ValidateSchemaAsString(string schema, object rules, bool validateAsDictionary, out IList<ValidationError> errorList)
         {
             List<JObject> schemaList = ConvertStringToJObjectList(schema, validateAsDictionary);
@@ -76,12 +79,13 @@ namespace Microsoft.Forge.TreeWalker
         }
 
         /// <summary>
-        /// Validates single or multiple schemas from input path with the given rules.        
+        /// Validates single or multiple schemas from input path with the given rules.
         /// </summary>
-        /// <param name="path">The path that contains a schema file</param>
-        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
-        /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary</param>
-        /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
+        /// <param name="path">The path that contains a schema file.</param>
+        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type.</param>
+        /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary.</param>
+        /// <param name="errorList">The errorList that contains ValidationError objects created in schema validation.</param>
+        /// <returns>The result of schema validation.</returns>
         public static bool ValidateSchemaFromPath(string path, object rules, bool validateAsDictionary, out IList<ValidationError> errorList)
         {
             List<JObject> schemas = GetSchemaFromPath(path, validateAsDictionary);
@@ -90,19 +94,19 @@ namespace Microsoft.Forge.TreeWalker
         }
 
         /// <summary>
-        /// Validates single or multiple schemas from input path with the given rules.
+        /// Validates single or multiple schemas from all files under the directory path, with the given rules.
         /// </summary>
-        /// <param name="path">The path that contains a schemas directory</param>
-        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
-        /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary</param>
-        /// <returns>The result of schema validation. The errorList would contain error message if validation fails</returns>
+        /// <param name="path">The path that contains a schemas directory.</param>
+        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type.</param>
+        /// <param name="validateAsDictionary">True if the custom rules is to handle the whole dictionary.</param>
+        /// <param name="errorList">The errorList that contains ValidationError objects created in schema validation.</param>
+        /// <returns>The result of schema validation.</returns>
         public static bool ValidateSchemaFromDirectory(string path, object rules, bool validateAsDictionary, out IList<ValidationError> errorList)
         {
             List<JObject> schemas = GetAllSchemasInDirectory(path, validateAsDictionary);
 
             return Validate(schemas, rules, out errorList);
         }
-
 
         private static List<JObject> ConvertDictionaryToJObjectList(Dictionary<string, ForgeTree> schemas, bool validateAsDictionary)
         {
@@ -114,9 +118,9 @@ namespace Microsoft.Forge.TreeWalker
             }
             else
             {
-                foreach (ForgeTree item in schemas.Values)
+                foreach (ForgeTree forgeTree in schemas.Values)
                 {
-                    schemaList.Add(SerializeToJObject(item));
+                    schemaList.Add(SerializeToJObject(forgeTree));
                 }
             }
 
@@ -127,10 +131,10 @@ namespace Microsoft.Forge.TreeWalker
         {
             List<JObject> schemaList = new List<JObject>();
 
-            //There could be three possible cases:
-            //1. TreeName mapped to the ForgeTree in the dictionary and custom rules handle dictionary.
-            //2. There are only ForgeTree without matching forge tree name custom rules handle ForgeTree list.
-            //3. The string schema that could be deserialized as a ForgeTree should be parsed directly
+            // There could be three possible cases:
+            // 1. schema is a Dictionary<string, ForgeTree> and should be validated as a dictionary.
+            // 2. schema is a Dictionary<string, ForgeTree> and should be validated as individual ForgeTree's.
+            // 3. schema is a ForgeTree and shoudl be validated as a single ForgeTree.
             Dictionary<string, ForgeTree> forgeTrees = JsonConvert.DeserializeObject<Dictionary<string, ForgeTree>>(schema);
 
             if (validateAsDictionary)
@@ -146,7 +150,7 @@ namespace Microsoft.Forge.TreeWalker
                     if (forgeTree.Tree == null)
                     {
                         // Deserialize into Dictionary does not throw exception but will have null "Tree" property if schema is just a ForgeTree.
-                        // try to deserialize string to forge tree directly
+                        // Try to deserialize string into ForgeTree directly.
                         JsonConvert.DeserializeObject<ForgeTree>(schema);
                         schemaList.Add(JObject.Parse(schema));
                         break;
@@ -184,7 +188,6 @@ namespace Microsoft.Forge.TreeWalker
         {
             List<JObject> schemaList = new List<JObject>();
             string[] files = Directory.GetFiles(path);
-            List<object> schemalist = new List<object>();
 
             if (validateAsDictionary)
             {
@@ -223,9 +226,9 @@ namespace Microsoft.Forge.TreeWalker
         /// <summary>
         /// Validate the input Schemas in JObject against rules in JSchema and return the validation error list. 
         /// </summary>
-        /// <param name="schemas">One or serveral schemas to be validated. The number of JObjects depends on the input and three cases mentioned in ConvertStringToJObjectList method</param>
-        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type</param>
-        /// <returns>The result of schema validation. The errorList is the origin error message from IsValid method</returns>
+        /// <param name="schemas">One or serveral schemas to be validated. The number of JObjects depends on the input and three cases mentioned in ConvertStringToJObjectList method.</param>
+        /// <param name="rules">The rules used to validate input schemas is only allowed in string or JSchema type.</param>
+        /// <returns>The result of schema validation. The errorList is the origin error message from IsValid method.</returns>
         private static bool Validate(List<JObject> schemas, object rules, out IList<ValidationError> errorList)
         {
             JSchema jSchemaRules = new JSchema();
@@ -239,9 +242,9 @@ namespace Microsoft.Forge.TreeWalker
             {
                 jSchemaRules = (JSchema)rules;
             }
-            else 
+            else
             {
-                throw new ArgumentException("Rules argument could only be a non-empty string or a JSchema");
+                throw new ArgumentException("Rules argument must be a JSchema or a string that can be parsed into a JSchema.");
             }
 
             if (schemas.Count == 0)
