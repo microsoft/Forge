@@ -9,13 +9,13 @@
 
 namespace Microsoft.Forge.TreeWalker
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
     using Microsoft.Forge.DataContracts;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using Newtonsoft.Json.Schema;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
 
     /// <summary>
     /// The ForgeSchemaValidator class implements the validation method that tests input schemas with input custom rules.
@@ -26,8 +26,8 @@ namespace Microsoft.Forge.TreeWalker
         /// Links parent JSON schema validation rules with child rules through the referenceUri.
         /// See ForgeSchemaValidatorTests for examples.
         /// </summary>
-        /// <param name="childRules">The childRules that get referenced by the parentRules.</param>
         /// <param name="parentRules">The parentRules that get validated against and link to the childRules.</param>
+        /// <param name="childRules">The childRules that get referenced by the parentRules.</param>
         /// <param name="referenceUri">The reference URI in parentRules pointing to the childRules.</param>
         /// <returns>The parentRules linked with the childRules through the referenceUri.</returns>
         public static JSchema GetLinkedJSchemaRules(string parentRules, string childRules, string referenceUri)
@@ -134,7 +134,7 @@ namespace Microsoft.Forge.TreeWalker
             // There could be three possible cases:
             // 1. schema is a Dictionary<string, ForgeTree> and should be validated as a dictionary.
             // 2. schema is a Dictionary<string, ForgeTree> and should be validated as individual ForgeTree's.
-            // 3. schema is a ForgeTree and shoudl be validated as a single ForgeTree.
+            // 3. schema is a ForgeTree and should be validated as a single ForgeTree.
             Dictionary<string, ForgeTree> forgeTrees = JsonConvert.DeserializeObject<Dictionary<string, ForgeTree>>(schema);
 
             if (validateAsDictionary)
