@@ -67,6 +67,7 @@
     <Compile Include="test\ExternalTestType.cs" />
     <Compile Include="test\ForgeSchemaHelper.cs" />
     <Compile Include="test\ForgeSchemaValidationTests.cs" />
+    <Compile Include="test\ForgeSchemaValidatorTests.cs" />
     <Compile Include="test\TreeWalkerUnitTests.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -80,6 +81,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="test\ExampleSchemas\TestEvaluateInputTypeSchema.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="test\InvalidTestSchemas\InvalidTestSchema.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="test\InvalidTestSchemas\InvalidTestSchemaErrorContent.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -22,15 +22,21 @@
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="3.8.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.11" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="contracts\ForgeSchemaValidationRules.json">
-      <Pack>true</Pack>
+    <Content Include="contracts\ForgeSchemaDictionaryValidationRules.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
+      <Pack>true</Pack>
+    </Content>
+    <Content Include="contracts\ForgeSchemaValidationRules.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <Pack>true</Pack>
     </Content>
   </ItemGroup>
 </Project>

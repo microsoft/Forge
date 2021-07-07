@@ -1,0 +1,12 @@
+{
+    "Tree": {
+        "Root": {
+            "Type": "Leaf",
+            "Actions": {
+                "LeafActionWithoutRequiredActionInput": {
+                    "Action": "LeafNodeSummaryAction"
+                }
+            }
+        }
+    }
+}

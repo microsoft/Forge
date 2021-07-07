@@ -1,0 +1,23 @@
+{
+    "type": "object",
+    "patternProperties": {
+        ".*?": {
+            "$ref": "#/definitions/ForgeTreeDefinition"
+        }
+    },
+    "additionalProperties": false,
+    "definitions": {
+        "ForgeTreeDefinition": {
+            "type": "object",
+            "properties": {
+                "Tree": {
+                    "$ref": "file://ForgeSchemaValidationRules.json#/definitions/TreeDefinition"
+                },
+                "RootTreeNodeKey": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
