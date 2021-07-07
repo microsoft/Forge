@@ -9,15 +9,15 @@
 
 namespace Microsoft.Forge.TreeWalker.UnitTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
     using Microsoft.Forge.DataContracts;
     using Microsoft.Forge.TreeWalker;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Schema;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
 
     [TestClass]
     public class ForgeSchemaValidatorTests

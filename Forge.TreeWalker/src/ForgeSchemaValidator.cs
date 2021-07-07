@@ -9,13 +9,13 @@
 
 namespace Microsoft.Forge.TreeWalker
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
     using Microsoft.Forge.DataContracts;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using Newtonsoft.Json.Schema;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
 
     /// <summary>
     /// The ForgeSchemaValidator class implements the validation method that tests input schemas with input custom rules.
