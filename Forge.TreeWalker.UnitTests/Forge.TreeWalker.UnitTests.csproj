@@ -54,6 +54,7 @@
     <Compile Include="test\ActionsAndCallbacks\BaseCommonAction.cs" />
     <Compile Include="test\ActionsAndCallbacks\CollectDiagnosticsAction.cs" />
     <Compile Include="test\ActionsAndCallbacks\ForgeUserContext.cs" />
+    <Compile Include="test\ActionsAndCallbacks\GetCurrentTimeStampAction.cs" />
     <Compile Include="test\ActionsAndCallbacks\ReturnSessionIdAction.cs" />
     <Compile Include="test\ActionsAndCallbacks\RevisitAction.cs" />
     <Compile Include="test\ActionsAndCallbacks\TardigradeAction.cs" />

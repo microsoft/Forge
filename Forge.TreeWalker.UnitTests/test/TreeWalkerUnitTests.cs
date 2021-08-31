@@ -500,10 +500,69 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         public void TestTreeWalkerSession_WalkTree_NoChildMatched()
         {
             this.TestInitialize(jsonSchema: ForgeSchemaHelper.NoChildMatch);
-
             // Test - WalkTree and expect the Status to be NoChildMatched.
             string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
             Assert.AreEqual("RanToCompletion_NoChildMatched", actualStatus, "Expected WalkTree to end with NoChildMatched status.");
+        }
+
+        [TestMethod]
+        public void TestReexecutingNode_WithRetryCurrentTreeNodeActionsFlag_Success()
+        {
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.ReExecuteNodeSchema);
+
+            this.session.WalkTree("Root").GetAwaiter().GetResult();
+            string time1 = session.GetLastActionResponse().Status;
+
+            this.session = new TreeWalkerSession(new TreeWalkerParameters(
+                this.sessionId,
+                parameters.ForgeTree,
+                parameters.ForgeState,
+                this.callbacksV2,
+                this.token)
+            {
+                UserContext = new ForgeUserContext(),
+                ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly,
+                InitializeSubroutineTree = this.InitializeSubroutineTree,
+                Dependencies = new List<Type>() { typeof(FooEnum) },
+                ScriptCache = this.scriptCache
+            });
+
+            this.session.WalkTree("Root").GetAwaiter().GetResult();
+            string time2 = session.GetLastActionResponse().Status;
+
+            Assert.IsTrue(time1 == time2);
+
+        }
+
+        [TestMethod]
+        public void TestReexecutingNode_WithoutRetryCurrentTreeNodeActionsFlag_Success()
+        {
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.ReExecuteNodeSchema);
+            this.session.Parameters.RetryCurrentTreeNodeActions = true;
+
+            this.session.WalkTree("Root").GetAwaiter().GetResult();
+            string time1 = session.GetLastActionResponse().Status;
+
+            this.session = new TreeWalkerSession(new TreeWalkerParameters(
+                this.sessionId,
+                parameters.ForgeTree,
+                parameters.ForgeState,
+                this.callbacksV2,
+                this.token)
+            {
+                UserContext = new ForgeUserContext(),
+                ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly,
+                InitializeSubroutineTree = this.InitializeSubroutineTree,
+                Dependencies = new List<Type>() { typeof(FooEnum) },
+                ScriptCache = this.scriptCache,
+                RetryCurrentTreeNodeActions = true
+            });
+
+            this.session.WalkTree("Root").GetAwaiter().GetResult();
+            string time2 = session.GetLastActionResponse().Status;
+
+            Assert.IsFalse(time1 == time2);
+
         }
 
         #endregion WalkTree
