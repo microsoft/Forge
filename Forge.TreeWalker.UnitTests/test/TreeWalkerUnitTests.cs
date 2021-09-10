@@ -507,8 +507,6 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         }
 
         [TestMethod]
-        // WalkTree twice without the RetryCurrentTreeNodeActions flag set.
-        // Expect the Action to not get re-executed since the ActionResponse already exists and we are rehydrating.
         public void TestReexecutingNode_WithoutRetryCurrentTreeNodeActionsFlag_Success()
         {
             this.TestInitialize(jsonSchema: ForgeSchemaHelper.ReExecuteNodeSchema);
