@@ -506,63 +506,41 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         }
 
         [TestMethod]
-        public void TestReexecutingNode_WithRetryCurrentTreeNodeActionsFlag_Success()
+        // WalkTree twice without the RetryCurrentTreeNodeActions flag set.
+        // Expect the Action to not get re-executed since the ActionResponse already exists and we are rehydrating.
+        public void TestReexecutingNode_WithoutRetryCurrentTreeNodeActionsFlag_Success()
         {
             this.TestInitialize(jsonSchema: ForgeSchemaHelper.ReExecuteNodeSchema);
 
             this.session.WalkTree("Root").GetAwaiter().GetResult();
-            string time1 = session.GetLastActionResponse().Status;
+            int count1 = (int)session.GetLastActionResponse().Output;
 
-            this.session = new TreeWalkerSession(new TreeWalkerParameters(
-                this.sessionId,
-                parameters.ForgeTree,
-                parameters.ForgeState,
-                this.callbacksV2,
-                this.token)
-            {
-                UserContext = new ForgeUserContext(),
-                ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly,
-                InitializeSubroutineTree = this.InitializeSubroutineTree,
-                Dependencies = new List<Type>() { typeof(FooEnum) },
-                ScriptCache = this.scriptCache
-            });
+            this.session = new TreeWalkerSession(this.parameters);
 
             this.session.WalkTree("Root").GetAwaiter().GetResult();
-            string time2 = session.GetLastActionResponse().Status;
+            int count2 = (int)session.GetLastActionResponse().Output;
 
-            Assert.IsTrue(time1 == time2);
-
+            Assert.IsTrue(count1 == count2);
         }
 
         [TestMethod]
-        public void TestReexecutingNode_WithoutRetryCurrentTreeNodeActionsFlag_Success()
+        // WalkTree twice with the RetryCurrentTreeNodeActions flag set.
+        // Expect the Action to get re-executed even when the ActionResponse already exists and we are rehydrating.
+        public void TestReexecutingNode_WithRetryCurrentTreeNodeActionsFlag_Success()
         {
             this.TestInitialize(jsonSchema: ForgeSchemaHelper.ReExecuteNodeSchema);
             this.session.Parameters.RetryCurrentTreeNodeActions = true;
 
             this.session.WalkTree("Root").GetAwaiter().GetResult();
-            string time1 = session.GetLastActionResponse().Status;
+            int count1 = (int)session.GetLastActionResponse().Output;
 
-            this.session = new TreeWalkerSession(new TreeWalkerParameters(
-                this.sessionId,
-                parameters.ForgeTree,
-                parameters.ForgeState,
-                this.callbacksV2,
-                this.token)
-            {
-                UserContext = new ForgeUserContext(),
-                ForgeActionsAssembly = typeof(CollectDiagnosticsAction).Assembly,
-                InitializeSubroutineTree = this.InitializeSubroutineTree,
-                Dependencies = new List<Type>() { typeof(FooEnum) },
-                ScriptCache = this.scriptCache,
-                RetryCurrentTreeNodeActions = true
-            });
+            this.parameters.RetryCurrentTreeNodeActions = true;
+            this.session = new TreeWalkerSession(this.parameters);
 
             this.session.WalkTree("Root").GetAwaiter().GetResult();
-            string time2 = session.GetLastActionResponse().Status;
+            int count2 = (int)session.GetLastActionResponse().Output;
 
-            Assert.IsFalse(time1 == time2);
-
+            Assert.IsFalse(count1 == count2);
         }
 
         #endregion WalkTree

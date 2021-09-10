@@ -133,7 +133,7 @@ namespace Microsoft.Forge.TreeWalker
         public object TreeInput { get; set; }
 
         /// <summary>
-        /// Flag that will allow forge to re-execute the Node upon re-hydration.
+        /// Flag that allows Forge to re-execute the current TreeNode's Actions upon rehydration.
         /// </summary>
         public bool RetryCurrentTreeNodeActions { get; set; }
 

@@ -514,13 +514,13 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
                     ""Root"": {
                         ""Type"": ""Action"",
                         ""Actions"": {
-                            ""Root_GetCurrentTimeStampAction"": {
-                                ""Action"": ""GetCurrentTimeStamp""
+                            ""Root_RevisitAction"": {
+                                ""Action"": ""RevisitAction""
                             }
                         },
                         ""ChildSelector"": [
                             {
-                                ""ShouldSelect"": ""C#|Session.GetLastActionResponse().StatusCode == 0"",
+                                ""ShouldSelect"": ""C#|(int)Session.GetLastActionResponse().Output > 2"",
                                 ""Child"": ""Root""
                             }
                         ]

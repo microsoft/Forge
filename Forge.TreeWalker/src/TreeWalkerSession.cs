@@ -1122,7 +1122,7 @@ namespace Microsoft.Forge.TreeWalker
         {
             List<KeyValuePair<string, object>> itemsToPersist = new List<KeyValuePair<string, object>>();
 
-            // Handle revisit/cycle case if this node has been previously completed and we aren't rehydrating.
+            // Handle revisit/cycle case if this node has been previously completed and we are rehydrated or the override flag is set.
             if (treeNode.Actions != null && (this.hasSessionRehydrated || this.Parameters.RetryCurrentTreeNodeActions))
             {
                 // Check if all actions already have an action response.
