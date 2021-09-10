@@ -508,6 +508,27 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             }
         ";
 
+        public const string ReExecuteNodeSchema = @"
+            {
+                ""Tree"": {
+                    ""Root"": {
+                        ""Type"": ""Action"",
+                        ""Actions"": {
+                            ""Root_RevisitAction"": {
+                                ""Action"": ""RevisitAction""
+                            }
+                        },
+                        ""ChildSelector"": [
+                            {
+                                ""ShouldSelect"": ""C#|(int)Session.GetLastActionResponse().Output > 2"",
+                                ""Child"": ""Root""
+                            }
+                        ]
+                    }
+                }
+            }
+        ";
+
         public const string Cycle_SubroutineActionUsesDifferentSessionId = @"
             {
                 ""RootTree"": {

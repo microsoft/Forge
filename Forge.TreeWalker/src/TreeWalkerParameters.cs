@@ -132,6 +132,11 @@ namespace Microsoft.Forge.TreeWalker
         /// </summary>
         public object TreeInput { get; set; }
 
+        /// <summary>
+        /// Flag that allows Forge to re-execute the current TreeNode's Actions upon rehydration.
+        /// </summary>
+        public bool RetryCurrentTreeNodeActions { get; set; }
+
         #endregion
 
         #region Constructor with ITreeWalkerCallbacks, [DEPRECATED]
