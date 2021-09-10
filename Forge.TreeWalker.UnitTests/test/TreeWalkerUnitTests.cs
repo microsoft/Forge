@@ -500,6 +500,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         public void TestTreeWalkerSession_WalkTree_NoChildMatched()
         {
             this.TestInitialize(jsonSchema: ForgeSchemaHelper.NoChildMatch);
+
             // Test - WalkTree and expect the Status to be NoChildMatched.
             string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
             Assert.AreEqual("RanToCompletion_NoChildMatched", actualStatus, "Expected WalkTree to end with NoChildMatched status.");
@@ -512,6 +513,8 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         {
             this.TestInitialize(jsonSchema: ForgeSchemaHelper.ReExecuteNodeSchema);
 
+            // Test - WalkTree twice without the RetryCurrentTreeNodeActions flag set.
+            //        Expect the Action to not get re-executed since the ActionResponse already exists and we are rehydrating.
             this.session.WalkTree("Root").GetAwaiter().GetResult();
             int count1 = (int)session.GetLastActionResponse().Output;
 
@@ -524,13 +527,13 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         }
 
         [TestMethod]
-        // WalkTree twice with the RetryCurrentTreeNodeActions flag set.
-        // Expect the Action to get re-executed even when the ActionResponse already exists and we are rehydrating.
         public void TestReexecutingNode_WithRetryCurrentTreeNodeActionsFlag_Success()
         {
             this.TestInitialize(jsonSchema: ForgeSchemaHelper.ReExecuteNodeSchema);
             this.session.Parameters.RetryCurrentTreeNodeActions = true;
 
+            // Test - WalkTree twice with the RetryCurrentTreeNodeActions flag set.
+            //        Expect the Action to get re-executed even when the ActionResponse already exists and we are rehydrating.
             this.session.WalkTree("Root").GetAwaiter().GetResult();
             int count1 = (int)session.GetLastActionResponse().Output;
 
