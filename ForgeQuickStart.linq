@@ -1,10 +1,12 @@
 <Query Kind="Program">
   <NuGetReference>Microsoft.Forge.TreeWalker</NuGetReference>
-  <Namespace>Microsoft.Forge.TreeWalker</Namespace>
   <Namespace>System.Collections.Concurrent</Namespace>
-  <Namespace>Microsoft.CodeAnalysis.Scripting</Namespace>
   <Namespace>System.Threading.Tasks</Namespace>
+  <Namespace>Microsoft.CodeAnalysis.Scripting</Namespace>
   <Namespace>Microsoft.Forge.Attributes</Namespace>
+  <Namespace>Microsoft.Forge.DataContracts</Namespace>
+  <Namespace>Microsoft.Forge.TreeWalker</Namespace>
+  <Namespace>Newtonsoft.Json</Namespace>
 </Query>
 
 //
@@ -18,18 +20,18 @@
 //
 void Main()
 {
-	this.HandleRequest();
+    this.HandleRequest();
 }
 
 public void HandleRequest()
 {
-	// Initialize a TreeWalkerSession, walk the provided ForgeTree schema starting at the "Root" node, and print the results.
-	Console.WriteLine(string.Format("OnBeforeWalkTree - TreeNodeKey: {0}", "Root"));
+    // Initialize a TreeWalkerSession, walk the provided ForgeTree schema starting at the "Root" node, and print the results.
+    Console.WriteLine("OnBeforeWalkTree - TreeNodeKey: Root");
 
-	TreeWalkerSession session = this.InitializeSession(jsonSchema: TestForgeSchema);
-	string result = session.WalkTree("Root").GetAwaiter().GetResult();
+    TreeWalkerSession session = this.InitializeSession(jsonSchema: TestForgeSchema);
+    string result = session.WalkTree("Root").GetAwaiter().GetResult();
 
-	Console.WriteLine(string.Format("OnAfterWalkTree - TreeNodeKey: {0}, TreeWalkerStatus: {1}", session.GetCurrentTreeNode().Result, result));
+    Console.WriteLine($"OnAfterWalkTree - TreeNodeKey: {session.GetCurrentTreeNode().Result}, TreeWalkerStatus: {result}");
 }
 
 //
@@ -39,30 +41,31 @@ public void HandleRequest()
 //
 public TreeWalkerSession InitializeSession(string jsonSchema)
 {
-	// Initialize required properties.
-	Guid sessionId = Guid.NewGuid();
-	IForgeDictionary forgeState = new ForgeDictionary(new Dictionary<string, object>(), sessionId, sessionId);
-	ITreeWalkerCallbacks callbacks = new TreeWalkerCallbacks();
-	CancellationToken token = new CancellationTokenSource().Token;
+    // Initialize required properties.
+    Guid sessionId = Guid.NewGuid();
+    ForgeTree forgeTree = JsonConvert.DeserializeObject<ForgeTree>(jsonSchema);
+    IForgeDictionary forgeState = new ForgeDictionary(new Dictionary<string, object>(), sessionId, sessionId);
+    ITreeWalkerCallbacksV2 callbacks = new TreeWalkerCallbacks();
+    CancellationToken token = new CancellationTokenSource().Token;
 
-	// Initialize optional properties
-	ForgeUserContext userContext = new ForgeUserContext("Container");
-	Assembly forgeActionsAssembly = typeof(TardigradeAction).Assembly;
-	ConcurrentDictionary<string, Script<object>> scriptCache = new ConcurrentDictionary<string, Script<object>>();
+    // Initialize optional properties
+    ForgeUserContext userContext = new ForgeUserContext("Container");
+    Assembly forgeActionsAssembly = typeof(TardigradeAction).Assembly;
+    ConcurrentDictionary<string, Script<object>> scriptCache = new ConcurrentDictionary<string, Script<object>>();
 
-	TreeWalkerParameters parameters = new TreeWalkerParameters(
-		sessionId,
-		jsonSchema,
-		forgeState,
-		callbacks,
-		token)
-	{
-		UserContext = userContext,
-		ForgeActionsAssembly = forgeActionsAssembly,
-		ScriptCache = scriptCache
-	};
+    TreeWalkerParameters parameters = new TreeWalkerParameters(
+        sessionId,
+        forgeTree,
+        forgeState,
+        callbacks,
+        token)
+    {
+        UserContext = userContext,
+        ForgeActionsAssembly = forgeActionsAssembly,
+        ScriptCache = scriptCache
+    };
 
-	return new TreeWalkerSession(parameters);
+    return new TreeWalkerSession(parameters);
 }
 
 //
@@ -72,17 +75,17 @@ public TreeWalkerSession InitializeSession(string jsonSchema)
 //
 public class ForgeUserContext
 {
-	public string ResourceType { get; set; }
+    public string ResourceType { get; set; }
 
-	public ForgeUserContext(string resourceType)
-	{
-		this.ResourceType = resourceType;
-	}
+    public ForgeUserContext(string resourceType)
+    {
+        this.ResourceType = resourceType;
+    }
 
-	public string GetResourceType()
-	{
-		return this.ResourceType;
-	}
+    public string GetResourceType()
+    {
+        return this.ResourceType;
+    }
 }
 
 //
@@ -137,20 +140,17 @@ public const string TestForgeSchema = @"
 [ForgeAction(InputType: typeof(TardigradeInput))]
 public class TardigradeAction : BaseAction
 {
-	public override Task<ActionResponse> RunAction(ActionContext actionContext)
-	{
-		TardigradeInput input = (TardigradeInput)actionContext.ActionInput ?? new TardigradeInput();
-		Console.WriteLine(string.Format("OnExecuteAction - TreeNodeKey: {0}, ActionName: {1}, ActionInput: {2}",
-										actionContext.TreeNodeKey,
-										actionContext.ActionName,
-										input.Reason));
-		return Task.FromResult(new ActionResponse() { Status = "Success" });
-	}
+    public override Task<ActionResponse> RunAction(ActionContext actionContext)
+    {
+        TardigradeInput input = (TardigradeInput)actionContext.ActionInput ?? new TardigradeInput();
+        Console.WriteLine($"OnExecuteAction - TreeNodeKey: {actionContext.TreeNodeKey}, ActionName: {actionContext.ActionName}, ActionInput: {input.Reason}");
+        return Task.FromResult(new ActionResponse() { Status = "Success" });
+    }
 }
 
 public class TardigradeInput
 {
-	public string Reason { get; set; } = "DefaultValue";
+    public string Reason { get; set; } = "DefaultValue";
 }
 
 //
@@ -160,29 +160,15 @@ public class TardigradeInput
 //
 // More details here: https://github.com/microsoft/Forge/wiki/How-To:-Use-Forge-in-my-Application#ITreeWalkerCallbacks-Callbacks
 //
-public class TreeWalkerCallbacks : ITreeWalkerCallbacks
+public class TreeWalkerCallbacks : ITreeWalkerCallbacksV2
 {
-	public async Task BeforeVisitNode(
-		Guid sessionId,
-		string treeNodeKey,
-		dynamic properties,
-		dynamic userContext,
-		string treeName,
-		Guid rootSessionId,
-		CancellationToken token)
-	{
-		Console.WriteLine(string.Format("OnBeforeVisitNode - TreeNodeKey: {0}", treeNodeKey));
-	}
+    public async Task BeforeVisitNode(TreeNodeContext treeNodeContext)
+    {
+        Console.WriteLine($"OnBeforeVisitNode - TreeNodeKey: {treeNodeContext.TreeNodeKey}");
+    }
 
-	public async Task AfterVisitNode(
-		Guid sessionId,
-		string treeNodeKey,
-		dynamic properties,
-		dynamic userContext,
-		string treeName,
-		Guid rootSessionId,
-		CancellationToken token)
-	{
-		Console.WriteLine(string.Format("OnAfterVisitNode - TreeNodeKey: {0}", treeNodeKey));
-	}
+    public async Task AfterVisitNode(TreeNodeContext treeNodeContext)
+    {
+        Console.WriteLine($"OnAfterVisitNode - TreeNodeKey: {treeNodeContext.TreeNodeKey}");
+    }
 }
