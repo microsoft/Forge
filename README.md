@@ -4,6 +4,10 @@
 
 _Please use the Issues tab for questions, feature requests, bug reports, etc.. Thank you!_
 
+_Check out the [Forge QuickStart Guide](https://github.com/microsoft/Forge/wiki/Forge-QuickStart-Guide) to get hands-on experience running a complete Forge implementation locally in under 60 seconds!_
+
+_4/15/2022: Check out the Beta release of the ForgeEditor Web version! https://forge-editor.microsoft.com/ or https://aka.ms/forge-editor._
+
 ## What is Forge?
 Forge is a generic low-code framework built on a config-driven tree walker. Forge is a great library for developers wanting to build and run their own low-code workflow engine from inside their application.
 
@@ -17,8 +21,6 @@ Key Differentiators:
 
 * ***Define your own Actions.*** Forge makes it easy to write simple C# classes that can be executed as Actions from the tree.
 
-* ***Instantiate sessions with different state*** from your application depending on the trigger.
-
 * ***Give Forge scoped access into your application.*** Expose data models, internal classes, service clients, etc. to Forge and then access them directly from the tree.
 
 * ***Roslyn integration*** allows you to replace hardcoded JSON property values in the tree with C# code-snippets. Forge dynamically executes these at runtime to fetch realtime data. For example, fetch data from your application to give as input to an Action.
@@ -26,6 +28,8 @@ Key Differentiators:
 * ***Calls back to your application with objects from the tree.*** Forge dynamically creates objects defined on the tree and passes them to callbacks and Actions. Callbacks before and after visiting each node provide more places to plug in code.
 
 * ***Built-in persistence interface*** allows tree walker sessions to rehydrate without missing a beat.
+
+* ***Instantiate sessions with different state*** from your application depending on the trigger.
 
 * ***Facilitates ecosystem building*** with clearly differentiated contributors: application owner, tree authors, and action authors. Application owners can use Forge to build their own workflow framework for their service. Different teams can then use their framework to author actions and trees.
 
@@ -57,7 +61,7 @@ Forge has 3 major components: ForgeTree, TreeWalker, and ForgeEditor.
 
 * **TreeWalker** takes in the ForgeTree and other parameters, and walks the tree to completion. It calls application-defined callbacks and actions, passing in dynamically evaluated properties from the ForgeTree. The TreeWalker makes decisions at runtime about the path it walks by utilizing Roslyn to evaluate C# code-snippets from the ForgeTree.
 
-* **ForgeEditor** is coming to GitHub soon (currently only available internally to Microsoft). ForgeEditor is an Electron application that allows you to visualize and edit the ForgeTree in a clean UI experience. It contains features such as: tree visualization, buttons to create/delete TreeNodes, auto-complete when editing JSON file, text highlighting when hovering over TreeNode, evaluates ForgeSchemaValidationRules while editing, Diagnose mode, etc..
+* **ForgeEditor** Web version is available at https://forge-editor.microsoft.com/ or https://aka.ms/forge-editor. ForgeEditor is an Electron application that allows you to visualize and edit the ForgeTree in a clean UI experience. It contains features such as: tree visualization, buttons to create/delete TreeNodes, auto-complete when editing JSON file, text highlighting when hovering over TreeNode, etc..
 
 ![](images/ForgeEditorImage.PNG)
 
@@ -66,8 +70,8 @@ Forge has 3 major components: ForgeTree, TreeWalker, and ForgeEditor.
 * ***Versatility***: Once you understand the tree, you can easily add or update nodes, actions, child selectors, paths, etc..
 * ***Extensibility***: The dynamic objects and properties allow for new functionality to be seamlessly piped into the tree model. For example, adding [rate limits](https://github.com/microsoft/Forge/wiki/Extending-Forge-for-your-Application#RateLimiting) to the BeforeVisitNode callback.
 * ***Velocity***: Updating and deploying ForgeTree schema files is much quicker/easier than deploying code. Allows for hot-pushing updates while your application is running. New behaviors that would take weeks to add to legacy codebases turns into minutes/hours with Forge.
-* ***Debuggability***: Add logging to the built-in callbacks before and after visiting each node and inside Actions. This allows users to view statistics on their historical data. Statistics can also be viewed in ForgeEditor as a heatmap to highlight "hot" nodes/paths.
-* ***Model Verification***: It can be easy to typo an Action name or other property in the ForgeTree since they are JSON strings. To help with that, Forge includes the ForgeSchemaValidationRules.json file containing JSON schema rules for ForgeTrees. These rules can be augmented to contain application-specific properties/values, such as enforcing a set of known ForgeActions and ActionInputs. These rules are used in ForgeEditor to help auto-complete properties and highlight typos.
+* ***Debuggability***: Add logging to the built-in callbacks before and after visiting each node and inside Actions. This allows users to view statistics on their historical data. Statistics can also be viewed in ForgeEditor as a heatmap to highlight "hot" nodes/paths _(internal application only)_.
+* ***Model Verification***: It can be easy to typo an Action name or other property in the ForgeTree since they are JSON strings. To help with that, Forge includes the ForgeSchemaValidationRules.json file containing JSON schema rules for ForgeTrees. These rules can be augmented to contain application-specific properties/values, such as enforcing a set of known ForgeActions and ActionInputs. These rules are used in ForgeEditor to help auto-complete properties and highlight typos _(internal application only)_.
 * ***Stateful (optional)***: The IForgeDictionary is used to cache state while Forge walks the tree. This can be implemented by the application to be stateful if desired, but a Dictionary implementation is built-in. This allows applications to pick up where they left off after a failover.
 
 ## User Story: Azure-Compute Repair Manager
