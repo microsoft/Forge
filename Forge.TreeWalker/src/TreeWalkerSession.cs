@@ -544,7 +544,7 @@ namespace Microsoft.Forge.TreeWalker
                 }
                 catch (Exception e)
                 {
-                    throw new Exception($"An error occurred while evaluating 'ShouldSelect' expression: '{cs.ShouldSelect}' in the ChildSelector with child '{cs.Child}': '{e.Message}'.", e);
+                    throw new Exception($"An error occurred while casting 'ShouldSelect' expression: '{cs.ShouldSelect}' in the ChildSelector with child '{cs.Child}': '{e.Message}'.", e);
                 }
             }
 
