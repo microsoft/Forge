@@ -534,9 +534,16 @@ namespace Microsoft.Forge.TreeWalker
                 {
                     return cs.Child;
                 }
-                if ((bool)await this.EvaluateDynamicProperty(cs.ShouldSelect, typeof(bool)).ConfigureAwait(false))
+                try
                 {
-                    return cs.Child;
+                    if ((bool)await EvaluateDynamicProperty(cs.ShouldSelect, typeof(bool)).ConfigureAwait(false))
+                    {
+                        return cs.Child;
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"An error occurred while evaluating 'ShouldSelect' expression: '{cs.ShouldSelect}' in the ChildSelector with child '{cs.Child}': '{e.Message}'.", e);
                 }
             }
 
