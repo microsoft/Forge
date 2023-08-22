@@ -534,7 +534,7 @@ namespace Microsoft.Forge.TreeWalker
                 {
                     return cs.Child;
                 }
-                var evaluationResult = await EvaluateDynamicProperty(cs.ShouldSelect, typeof(bool)).ConfigureAwait(false);
+                var evaluationResult = await this.EvaluateDynamicProperty(cs.ShouldSelect, typeof(bool)).ConfigureAwait(false);
                 try
                 {
                     if ((bool)evaluationResult)
@@ -544,7 +544,7 @@ namespace Microsoft.Forge.TreeWalker
                 }
                 catch (Exception e)
                 {
-                    throw new Exception($"An error occurred while casting 'ShouldSelect' expression: '{cs.ShouldSelect}' in the ChildSelector with child '{cs.Child}': '{e.Message}'.", e);
+                    throw new Exception($"An error occurred while casting 'ShouldSelect' expression: '{cs.ShouldSelect}' in the ChildSelector with child '{cs.Child}'. Exception: '{e.Message}'.", e);
                 }
             }
 
