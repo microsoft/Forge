@@ -534,9 +534,10 @@ namespace Microsoft.Forge.TreeWalker
                 {
                     return cs.Child;
                 }
+                var evaluationResult = await EvaluateDynamicProperty(cs.ShouldSelect, typeof(bool)).ConfigureAwait(false);
                 try
                 {
-                    if ((bool)await EvaluateDynamicProperty(cs.ShouldSelect, typeof(bool)).ConfigureAwait(false))
+                    if ((bool)evaluationResult)
                     {
                         return cs.Child;
                     }
