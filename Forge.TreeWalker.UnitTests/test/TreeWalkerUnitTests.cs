@@ -468,17 +468,25 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             // This gives us time to start WalkTree before calling CancelWalkTree.
             this.TestInitialize(jsonSchema: ForgeSchemaHelper.ActionDelay_ContinuationOnTimeout_RetryPolicy_TimeoutInAction);
 
-            // Test - WalkTree then CancelWalkTree while WalkTree is running and expect the Status to be Cancelled.
+            // Test - WalkTree then CancelWalkTree while WalkTree is running and expect the Status to be either:
+            //   1. CancelledBeforeExecution if TaskCanceledException is thrown from WalkTree. This happens when the ForgeAction gets canceled and honored by Forge.
+            //   2. Cancelled if OperationCanceledException is thrown from WalkTree. This happens when some other Task wins the race to get cancelled first, such as nodeTimeoutTask.
             Task<string> task = this.session.WalkTree("Root");
             Thread.Sleep(25);
             this.session.CancelWalkTree();
-            Assert.ThrowsException<OperationCanceledException>(() => 
+
+            try
             {
                 string temp = task.GetAwaiter().GetResult();
-            }, "Expected WalkTree to throw exception after calling CancelWalkTree.");
+                Assert.Fail("Expected WalkTree to throw exception after calling CancelWalkTree.");
+            }
+            catch { }
 
             string actualStatus = this.session.Status;
-            Assert.AreEqual("Cancelled", actualStatus, "Expected WalkTree to be cancelled after calling CancelWalkTree.");
+            if (actualStatus != "Cancelled" && actualStatus != "CancelledBeforeExecution")
+            {
+                Assert.Fail($"Expected WalkTree to be Cancelled or CancelledBeforeExecution after calling CancelWalkTree, but it was {actualStatus}.");
+            }
         }
 
         [TestMethod]
