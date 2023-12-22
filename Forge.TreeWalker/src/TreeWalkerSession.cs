@@ -714,6 +714,9 @@ namespace Microsoft.Forge.TreeWalker
             ActionDefinition actionDefinition,
             CancellationToken token)
         {
+            // Ensure ForgeActions run in parallel by yielding back the task.
+            await Task.Yield();
+
             // Initialize values. Default infinite timeout. Default RetryPolicyType.None.
             int retryCount = 0;
             Exception innerException = null;
