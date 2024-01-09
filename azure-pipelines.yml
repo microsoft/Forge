@@ -6,11 +6,6 @@ pool:
   timeoutInMinutes: 10
 
 steps:
-- task: UseDotNet@2
-  inputs:
-    packageType: 'runtime'
-    version: '2.1.23'
-
 - task: NuGetCommand@2
   displayName: 'NuGet restore'
   inputs:
@@ -37,7 +32,16 @@ steps:
     platform: 'Any CPU'
     configuration: Release
     msbuildArgs: '-t:pack'
-    
+
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '6.0.100'
+- task: UseDotNet@2
+  inputs:
+    packageType: 'runtime'
+    version: '2.1.23'
+
 - task: EsrpCodeSigning@1
   displayName: 'ESRP CodeSigning - Authenticode'
   inputs:
