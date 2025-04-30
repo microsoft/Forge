@@ -42,13 +42,20 @@ steps:
     packageType: 'runtime'
     version: '2.1.23'
 
-- task: EsrpCodeSigning@1
-  displayName: 'ESRP CodeSigning - Authenticode'
+- task: EsrpCodeSigning@5
+  displayName: 'ESRP CodeSigning - Authenticode MI'
   inputs:
-    ConnectedServiceName: 'Forge ESRP CodeSign2'
+    ConnectedServiceName: 'ForgeServiceConnection'
+    UseMSIAuthentication: true
+    AppRegistrationClientId: 'ee5bddcd-7e6d-40c7-a645-8f0be9da4e24'
+    AppRegistrationTenantId: '33e01921-4d64-4f8c-a055-5bdaffd5e33d'
+    EsrpClientId: 'ec6597cc-b900-43a4-9d2b-ffc5cc4f8c56'
+    AuthAKVName: 'ForgeKeyVault2'
+    AuthSignCertName: 'ForgeKeyVault2Certificate'
+    ServiceEndpointUrl: 'https://api.esrp.microsoft.com/api/v2'
+    signConfigType: 'inlineSignParams'
     FolderPath: '$(Build.SourcesDirectory)\Forge.TreeWalker\bin\Release'
     Pattern: 'Microsoft.Forge.TreeWalker.dll'
-    signConfigType: 'inlineSignParams'
     OpusName: 'Microsoft Forge TreeWalker'
     OpusInfo: 'https://www.github.com/microsoft/forge'
     inlineOperation: |
@@ -92,13 +99,20 @@ steps:
              "toolVersion": "1.0"
          }]
 
-- task: EsrpCodeSigning@1
-  displayName: 'ESRP CodeSigning - NuGet'
+- task: EsrpCodeSigning@5
+  displayName: 'ESRP CodeSigning - NuGet MI'
   inputs:
-    ConnectedServiceName: 'Forge ESRP CodeSign2'
+    ConnectedServiceName: 'ForgeServiceConnection'
+    UseMSIAuthentication: true
+    AppRegistrationClientId: 'ee5bddcd-7e6d-40c7-a645-8f0be9da4e24'
+    AppRegistrationTenantId: '33e01921-4d64-4f8c-a055-5bdaffd5e33d'
+    EsrpClientId: 'ec6597cc-b900-43a4-9d2b-ffc5cc4f8c56'
+    AuthAKVName: 'ForgeKeyVault2'
+    AuthSignCertName: 'ForgeKeyVault2Certificate'
+    ServiceEndpointUrl: 'https://api.esrp.microsoft.com/api/v2'
+    signConfigType: 'inlineSignParams'
     FolderPath: '$(Build.SourcesDirectory)\Forge.TreeWalker\bin\Release'
     Pattern: 'Microsoft.Forge.TreeWalker*.symbols.nupkg'
-    signConfigType: 'inlineSignParams'
     inlineOperation: |
       [ 
          {
