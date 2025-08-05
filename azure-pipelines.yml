@@ -45,7 +45,7 @@ steps:
 - task: EsrpCodeSigning@5
   displayName: 'ESRP CodeSigning - Authenticode MI'
   inputs:
-    ConnectedServiceName: 'ForgeServiceConnection'
+    ConnectedServiceName: 'ForgeManagedIdentity'
     UseMSIAuthentication: true
     AppRegistrationClientId: 'ee5bddcd-7e6d-40c7-a645-8f0be9da4e24'
     AppRegistrationTenantId: '33e01921-4d64-4f8c-a055-5bdaffd5e33d'
@@ -102,7 +102,7 @@ steps:
 - task: EsrpCodeSigning@5
   displayName: 'ESRP CodeSigning - NuGet MI'
   inputs:
-    ConnectedServiceName: 'ForgeServiceConnection'
+    ConnectedServiceName: 'ForgeManagedIdentity'
     UseMSIAuthentication: true
     AppRegistrationClientId: 'ee5bddcd-7e6d-40c7-a645-8f0be9da4e24'
     AppRegistrationTenantId: '33e01921-4d64-4f8c-a055-5bdaffd5e33d'
