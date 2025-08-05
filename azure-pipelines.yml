@@ -139,5 +139,5 @@ steps:
   inputs:
     command: push
     packagesToPush: '$(Build.SourcesDirectory)\Forge.TreeWalker\bin\Release\Microsoft.Forge.TreeWalker*.symbols.nupkg'
-    publishVstsFeed: 'https://msazure.pkgs.visualstudio.com/_packaging/ForgeArtifacts/nuget/v3/index.json'
+    publishVstsFeed: 'https://msazure.pkgs.visualstudio.com/One/_packaging/ForgeArtifacts/nuget/v3/index.json'
     allowPackageConflicts: true
