@@ -1,6 +1,10 @@
 trigger:
 - master
 
+pr:
+- main
+- feature/*
+
 pool:
   vmImage: 'windows-latest'
   timeoutInMinutes: 10
