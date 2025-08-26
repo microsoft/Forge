@@ -30,6 +30,7 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         private const string TestEvaluateInputTypeSchemaPath = "test\\ExampleSchemas\\TestEvaluateInputTypeSchema.json";
         private const string LeafNodeSummarySchemaPath = "test\\ExampleSchemas\\LeafNodeSummarySchema.json";
         private const string SubroutineSchemaPath = "test\\ExampleSchemas\\SubroutineSchema.json";
+        private const string TestInvalidActionSchemaPath = "test\\InvalidTestSchemas\\InvalidActionTestSchema.json";
 
         private Guid sessionId;
         private IForgeDictionary forgeState = new ForgeDictionary(new Dictionary<string, object>(), Guid.Empty, Guid.Empty);
@@ -256,6 +257,22 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             // Test - WalkTree and expect the Status to be RanToCompletion.
             string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
             Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to run to completion.");
+        }
+
+        [TestMethod]
+        public void TestTreeWalkerSession_FailsDueToInvalidAction_Failure()
+        {
+            this.TestFromFileInitialize(filePath: TestInvalidActionSchemaPath);
+
+            // Test - WalkTree and fail to execute an invalid Action.
+            string actual;
+            Assert.ThrowsException<InvalidActionException>(() =>
+            {
+                actual = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            }, "Expected WalkTree to fail because the schema contained an action name that does not exist in ForgeActionsAssembly.");
+
+            string actualStatus = this.session.Status;
+            Assert.AreEqual("Failed_InvalidAction", actualStatus, "Expected WalkTree to fail because the schema contained an action name that does not exist in ForgeActionsAssembly.");
         }
 
         [TestMethod]

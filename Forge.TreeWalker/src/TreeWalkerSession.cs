@@ -13,6 +13,7 @@ namespace Microsoft.Forge.TreeWalker
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using System.Reflection;
     using System.Text.RegularExpressions;
     using System.Threading;
@@ -435,6 +436,10 @@ namespace Microsoft.Forge.TreeWalker
             {
                 this.Status = "Failed_EvaluateDynamicProperty";
             }
+            catch (InvalidActionException)
+            {
+                this.Status = "Failed_InvalidAction";
+            }
             catch (Exception)
             {
                 // TODO: Consider checking the exception for specific Data entry and setting Status to that.
@@ -641,6 +646,11 @@ namespace Microsoft.Forge.TreeWalker
                 {
                     preCheck_ContainsNoSubroutineActions = false;
                     break;
+                }
+
+                if (!this.actionsMap.ContainsKey(treeAction.Action))
+                {
+                    throw new InvalidActionException("Action " + treeAction.Action + " does not exist in the given ForgeActionsAssembly. TreeNodeKey: " + treeNodeKey);
                 }
             }
 

@@ -85,6 +85,9 @@
     <None Include="test\ExampleSchemas\TestEvaluateInputTypeSchema.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="test\InvalidTestSchemas\InvalidActionTestSchema.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="test\InvalidTestSchemas\InvalidTestSchema.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
