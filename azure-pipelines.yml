@@ -5,6 +5,16 @@ pr:
 - master
 - feature/*
 
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/master
+
+extends:
+  template: GovernedTemplates/v1/BuildPipeline.yml@templates
+
 pool:
   vmImage: 'windows-latest'
   timeoutInMinutes: 10
