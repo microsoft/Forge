@@ -79,13 +79,13 @@ namespace Microsoft.Forge.TreeWalker.ForgeExceptions
     /// <summary>
     /// Exception thrown when action is not found in the assembly.
     /// </summary>
-    public class InvalidActionException : Exception
+    public class ActionNotFoundException : Exception
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="InvalidActionException"/> class.
+        /// Initializes a new instance of the <see cref="ActionNotFoundException"/> class.
         /// </summary>
         /// <param name="message">The message.</param>
-        public InvalidActionException(string message)
+        public ActionNotFoundException(string message)
             : base(message)
         {
         }

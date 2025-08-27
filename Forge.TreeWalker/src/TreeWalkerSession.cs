@@ -435,9 +435,9 @@ namespace Microsoft.Forge.TreeWalker
             {
                 this.Status = "Failed_EvaluateDynamicProperty";
             }
-            catch (InvalidActionException)
+            catch (ActionNotFoundException)
             {
-                this.Status = "Failed_InvalidAction";
+                this.Status = "Failed_ActionNotFound";
             }
             catch (Exception)
             {
@@ -649,7 +649,7 @@ namespace Microsoft.Forge.TreeWalker
 
                 if (!this.actionsMap.ContainsKey(treeAction.Action))
                 {
-                    throw new InvalidActionException("Action " + treeAction.Action + " does not exist in the given ForgeActionsAssembly. TreeNodeKey: " + treeNodeKey);
+                    throw new ActionNotFoundException("Action " + treeAction.Action + " does not exist in the given ForgeActionsAssembly. TreeNodeKey: " + treeNodeKey);
                 }
             }
 

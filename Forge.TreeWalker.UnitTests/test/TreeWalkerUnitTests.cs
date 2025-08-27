@@ -260,19 +260,19 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         }
 
         [TestMethod]
-        public void TestTreeWalkerSession_FailsDueToInvalidAction_Failure()
+        public void TestTreeWalkerSession_FailsDueToActionNotFoundException_Failure()
         {
             this.TestFromFileInitialize(filePath: TestInvalidActionSchemaPath);
 
-            // Test - WalkTree and fail to execute an invalid Action.
+            // Test - WalkTree and fail due to ActionNotFoundException.
             string actual;
-            Assert.ThrowsException<InvalidActionException>(() =>
+            Assert.ThrowsException<ActionNotFoundException>(() =>
             {
                 actual = this.session.WalkTree("Root").GetAwaiter().GetResult();
             }, "Expected WalkTree to fail because the schema contained an action name that does not exist in ForgeActionsAssembly.");
 
             string actualStatus = this.session.Status;
-            Assert.AreEqual("Failed_InvalidAction", actualStatus, "Expected WalkTree to fail because the schema contained an action name that does not exist in ForgeActionsAssembly.");
+            Assert.AreEqual("Failed_ActionNotFound", actualStatus, "Expected WalkTree to fail because the schema contained an action name that does not exist in ForgeActionsAssembly.");
         }
 
         [TestMethod]
