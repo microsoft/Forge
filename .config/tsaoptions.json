@@ -1,0 +1,8 @@
+{
+    "codebaseName":  "Forge",
+    "instanceUrl":  "https://msazure.visualstudio.com",
+    "projectName":  "One",
+    "areaPath":  "One\\Azure Compute\\OneFleet Node\\Availability Platform\\Forge",
+    "TSADocumentation": "https://aka.ms/OBTSA",
+    "notificationAliases": ["forge"]
+}
