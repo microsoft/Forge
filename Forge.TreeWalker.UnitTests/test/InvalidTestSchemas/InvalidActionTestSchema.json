@@ -1,0 +1,12 @@
+{
+    "Tree": {
+        "Root": {
+            "Type": "Action",
+            "Actions": {
+                "Root_InvalidActionName": {
+                    "Action": "InvalidActionName"
+                }
+            }
+        }
+    }
+}

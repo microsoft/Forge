@@ -435,6 +435,10 @@ namespace Microsoft.Forge.TreeWalker
             {
                 this.Status = "Failed_EvaluateDynamicProperty";
             }
+            catch (ActionNotFoundException)
+            {
+                this.Status = "Failed_ActionNotFound";
+            }
             catch (Exception)
             {
                 // TODO: Consider checking the exception for specific Data entry and setting Status to that.
@@ -641,6 +645,11 @@ namespace Microsoft.Forge.TreeWalker
                 {
                     preCheck_ContainsNoSubroutineActions = false;
                     break;
+                }
+
+                if (!this.actionsMap.ContainsKey(treeAction.Action))
+                {
+                    throw new ActionNotFoundException("Action " + treeAction.Action + " does not exist in the given ForgeActionsAssembly. TreeNodeKey: " + treeNodeKey);
                 }
             }
 
