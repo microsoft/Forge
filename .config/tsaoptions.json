@@ -4,5 +4,5 @@
     "projectName":  "One",
     "areaPath":  "One\\Azure Compute\\OneFleet Node\\Availability Platform\\Forge",
     "TSADocumentation": "https://aka.ms/OBTSA",
-    "notificationAliases": ["anvil"]
+    "notificationAliases": ["ForgeTreeWalker@microsoft.com"]
 }
