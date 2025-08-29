@@ -2,7 +2,7 @@
     "codebaseName":  "Forge",
     "instanceUrl":  "https://msazure.visualstudio.com",
     "projectName":  "One",
-    "areaPath":  "One\\Azure Compute\\OneFleet Node\\Availability Platform\\Forge",
+    "areaPath":  "One\\Azure Compute\\OneFleet Node\\Availability Platform\\Anvil",
     "TSADocumentation": "https://aka.ms/OBTSA",
     "notificationAliases": ["ForgeTreeWalker@microsoft.com"]
 }
