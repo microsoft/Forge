@@ -81,6 +81,11 @@ namespace Microsoft.Forge.TreeWalker
         public static string DefaultTreeName = "RootTree";
 
         /// <summary>
+        /// Cached MethodInfo for BaseAction.RunAction to avoid per-execution reflection overhead.
+        /// </summary>
+        private static readonly MethodInfo RunActionMethod = typeof(BaseAction).GetMethod("RunAction");
+
+        /// <summary>
         /// The Roslyn regex expression. Used to check if dynamic schema values should be evaluated with Roslyn.
         /// Type can be added to indicate that Roslyn should evaluate the expression and return the specified type.
         /// If the property is a "KnownType", the KnownType is used even if a <type> is specified in the expression. ActionDefinition.InputType is an example of a KnownType.
@@ -156,7 +161,9 @@ namespace Microsoft.Forge.TreeWalker
             }
 
             // Initialize properties from required TreeWalkerParameters properties.
-            this.Schema = parameters.ForgeTree ?? JsonConvert.DeserializeObject<ForgeTree>(parameters.JsonSchema);
+            this.Schema = parameters.ForgeTree ?? JsonConvert.DeserializeObject<ForgeTree>(
+                parameters.JsonSchema,
+                new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.None });
             this.walkTreeCts = CancellationTokenSource.CreateLinkedTokenSource(parameters.Token);
 
             // Initialize properties from optional TreeWalkerParameters properties.
@@ -676,7 +683,7 @@ namespace Microsoft.Forge.TreeWalker
                 }
             }
 
-            // Wait for all parallel tasks to complete until the given timout.
+            // Wait for all parallel tasks to complete until the given timeout.
             // If any task hits a timeout, gets cancelled, or fails, an exception will be thrown.
             // Note: CancelWalkTree is called at the end of every session to ensure all Actions/Tasks see the triggered cancellation token.
             Task nodeTimeoutTask = Task.Delay((int)await this.EvaluateDynamicProperty(treeNode.Timeout ?? -1, typeof(int)).ConfigureAwait(false), this.walkTreeCts.Token);
@@ -740,7 +747,7 @@ namespace Microsoft.Forge.TreeWalker
             Task actionTimeoutTask = Task.Delay(actionTimeout, token);
             stopwatch.Start();
 
-            // Attmpt to ExecuteAction based on RetryPolicy and Timeout.
+            // Attempt to ExecuteAction based on RetryPolicy and Timeout.
             // Throw on non-retriable exceptions.
             while (    (retryPolicyType != RetryPolicyType.FixedCount || (retryPolicyType == RetryPolicyType.FixedCount && maxRetryCount > 0)) 
                     && (actionTimeout == -1 || stopwatch.ElapsedMilliseconds < actionTimeout))
@@ -892,7 +899,9 @@ namespace Microsoft.Forge.TreeWalker
         {
             // Set up a linked cancellation token to trigger on timeout if ContinuationOnTimeout is set.
             // This ensures the runActionTask gets canceled when Forge timeout is hit.
-            CancellationTokenSource actionCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+            using (CancellationTokenSource actionCts = CancellationTokenSource.CreateLinkedTokenSource(token))
+            {
+
             token = treeAction.ContinuationOnTimeout ? actionCts.Token : token;
 
             // Evaluate the dynamic properties that are used by the actionTask.
@@ -922,8 +931,7 @@ namespace Microsoft.Forge.TreeWalker
                 actionObject = Activator.CreateInstance(actionDefinition.ActionType);
             }
 
-            MethodInfo method = typeof(BaseAction).GetMethod("RunAction");
-            Task<ActionResponse> runActionTask = (Task<ActionResponse>) method.Invoke(actionObject, new object[] { actionContext });
+            Task<ActionResponse> runActionTask = (Task<ActionResponse>) RunActionMethod.Invoke(actionObject, new object[] { actionContext });
 
             // Await for the first completed task between our runActionTask and the timeout task.
             // This allows us to continue without awaiting the runActionTask upon timeout.
@@ -969,6 +977,7 @@ namespace Microsoft.Forge.TreeWalker
                 // Exceptions are thrown here if the action hit a timeout, was cancelled, or failed.
                 await runActionTask;
             }
+            } // end using actionCts
         }
 
         /// <summary>

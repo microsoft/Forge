@@ -100,14 +100,13 @@ namespace Microsoft.Forge.TreeWalker
             string treeName,
             Guid rootSessionId)
         {
-            if (sessionId == null) throw new ArgumentNullException("sessionId");
+            if (sessionId == Guid.Empty) throw new ArgumentException("sessionId cannot be empty.", "sessionId");
             if (string.IsNullOrWhiteSpace(treeNodeKey)) throw new ArgumentNullException("treeNodeKey");
             if (string.IsNullOrWhiteSpace(actionName)) throw new ArgumentNullException("actionName");
             if (userContext == null) throw new ArgumentNullException("userContext");
-            if (token == null) throw new ArgumentNullException("token");
             if (forgeState == null) throw new ArgumentNullException("forgeState");
             if (string.IsNullOrWhiteSpace(treeName)) throw new ArgumentNullException("treeName");
-            if (rootSessionId == null) throw new ArgumentNullException("rootSessionId");
+            if (rootSessionId == Guid.Empty) throw new ArgumentException("rootSessionId cannot be empty.", "rootSessionId");
 
             this.SessionId = sessionId;
             this.TreeNodeKey = treeNodeKey;

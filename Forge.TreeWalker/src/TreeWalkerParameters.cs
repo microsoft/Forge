@@ -162,7 +162,6 @@ namespace Microsoft.Forge.TreeWalker
             if (forgeTree == null) throw new ArgumentNullException("forgeTree");
             if (forgeState == null) throw new ArgumentNullException("forgeState");
             if (callbacks == null) throw new ArgumentNullException("callbacks");
-            if (token == null) throw new ArgumentNullException("token");
 
             this.SessionId = sessionId;
             this.ForgeTree = forgeTree;
@@ -192,7 +191,6 @@ namespace Microsoft.Forge.TreeWalker
             if (string.IsNullOrWhiteSpace(jsonSchema)) throw new ArgumentNullException("jsonSchema");
             if (forgeState == null) throw new ArgumentNullException("forgeState");
             if (callbacks == null) throw new ArgumentNullException("callbacks");
-            if (token == null) throw new ArgumentNullException("token");
 
             this.SessionId = sessionId;
             this.JsonSchema = jsonSchema;
@@ -230,7 +228,6 @@ namespace Microsoft.Forge.TreeWalker
             if (forgeTree == null) throw new ArgumentNullException("forgeTree");
             if (forgeState == null) throw new ArgumentNullException("forgeState");
             if (callbacksV2 == null) throw new ArgumentNullException("callbacksV2");
-            if (token == null) throw new ArgumentNullException("token");
 
             this.SessionId = sessionId;
             this.ForgeTree = forgeTree;

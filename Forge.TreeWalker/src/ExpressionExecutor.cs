@@ -243,12 +243,12 @@ namespace Microsoft.Forge.TreeWalker
         {
             public override bool Equals(object other)
             {
-                throw new NotImplementedException();
+                return other is MissingResolver;
             }
 
             public override int GetHashCode()
             {
-                throw new NotImplementedException();
+                return typeof(MissingResolver).GetHashCode();
             }
 
             public override bool ResolveMissingAssemblies => false;
