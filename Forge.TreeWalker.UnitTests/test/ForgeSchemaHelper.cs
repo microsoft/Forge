@@ -253,6 +253,69 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
             }
         ";
 
+        public const string ChildSelectorLiteralChild = @"
+            {
+                ""Tree"": {
+                    ""Root"": {
+                        ""Type"": ""Selection"",
+                        ""ChildSelector"": [
+                            {
+                                ""Label"": ""Literal child"",
+                                ""Child"": ""LiteralLeaf""
+                            }
+                        ]
+                    },
+                    ""LiteralLeaf"": {
+                        ""Type"": ""Leaf""
+                    }
+                }
+            }
+        ";
+
+        public const string ChildSelectorDynamicChild = @"
+            {
+                ""Tree"": {
+                    ""Root"": {
+                        ""Type"": ""Action"",
+                        ""Actions"": {
+                            ""Root_TardigradeAction"": {
+                                ""Action"": ""TardigradeAction""
+                            }
+                        },
+                        ""ChildSelector"": [
+                            {
+                                ""Label"": ""Dynamic child"",
+                                ""ShouldSelect"": ""C#|Session.GetLastActionResponse().Status == \""Success\"""",
+                                ""Child"": ""C#|UserContext.ResourceType == \""Container\"" ? \""DynamicLeaf\"" : \""UnexpectedLeaf\""""
+                            }
+                        ]
+                    },
+                    ""DynamicLeaf"": {
+                        ""Type"": ""Leaf""
+                    },
+                    ""UnexpectedLeaf"": {
+                        ""Type"": ""Leaf""
+                    }
+                }
+            }
+        ";
+
+        public const string ChildSelectorDynamicChildInvalidType = @"
+            {
+                ""Tree"": {
+                    ""Root"": {
+                        ""Type"": ""Selection"",
+                        ""ChildSelector"": [
+                            {
+                                ""Label"": ""Invalid dynamic child"",
+                                ""Child"": ""C#|1""
+                            }
+                        ]
+                    }
+                }
+            }
+        ";
+
         public const string TestEvaluateInputType_FailOnField_Action = @"
             {
                 ""Tree"": {

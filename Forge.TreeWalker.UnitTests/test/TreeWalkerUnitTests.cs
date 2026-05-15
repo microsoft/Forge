@@ -532,6 +532,41 @@ namespace Microsoft.Forge.TreeWalker.UnitTests
         }
 
         [TestMethod]
+        public void TestTreeWalkerSession_WalkTree_ChildSelectorLiteralChild_Success()
+        {
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.ChildSelectorLiteralChild);
+
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to run to completion with a literal child selector.");
+            Assert.AreEqual("LiteralLeaf", this.session.GetCurrentTreeNode().GetAwaiter().GetResult(), "Expected the literal child selector to visit LiteralLeaf.");
+        }
+
+        [TestMethod]
+        public void TestTreeWalkerSession_WalkTree_ChildSelectorDynamicChild_Success()
+        {
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.ChildSelectorDynamicChild);
+
+            string actualStatus = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            Assert.AreEqual("RanToCompletion", actualStatus, "Expected WalkTree to run to completion with a dynamic child selector.");
+            Assert.AreEqual("DynamicLeaf", this.session.GetCurrentTreeNode().GetAwaiter().GetResult(), "Expected the dynamic child selector to resolve to DynamicLeaf.");
+        }
+
+        [TestMethod]
+        public void TestTreeWalkerSession_WalkTree_ChildSelectorDynamicChildInvalidType_Failure()
+        {
+            this.TestInitialize(jsonSchema: ForgeSchemaHelper.ChildSelectorDynamicChildInvalidType);
+
+            string actual;
+            Assert.ThrowsException<EvaluateDynamicPropertyException>(() =>
+            {
+                actual = this.session.WalkTree("Root").GetAwaiter().GetResult();
+            }, "Expected WalkTree to fail because the dynamic child selector did not evaluate to a string child key.");
+
+            actual = this.session.Status;
+            Assert.AreEqual("Failed_EvaluateDynamicProperty", actual, "Expected WalkTree to fail with Failed_EvaluateDynamicProperty when ChildSelector.Child is an invalid dynamic type.");
+        }
+
+        [TestMethod]
         public void TestReexecutingNode_WithoutRetryCurrentTreeNodeActionsFlag_Success()
         {
             this.TestInitialize(jsonSchema: ForgeSchemaHelper.ReExecuteNodeSchema);

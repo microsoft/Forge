@@ -37,7 +37,7 @@ Key Differentiators:
 Forge has 3 major components: ForgeTree, TreeWalker, and ForgeEditor.
 * **ForgeTree** is the JSON data contract that defines the tree structure. It contains normal tree-concept objects such as TreeNodes and ChildSelectors, as well as TreeActions and other properties.
 
-  _In this example, the Container_TreeNode is an Action type node. It executes a CollectDiagnosticsAction with an Input object containing a Command property. The value of Command is set through a Roslyn expression that calls into the application to get the UserContext.GetCommand() result. In the child selector we see another Roslyn expression that gets the persisted action response, and visits the Tardigrade_TreeNode if the Status is successful._
+  _In this example, the Container_TreeNode is an Action type node. It executes a CollectDiagnosticsAction with an Input object containing a Command property. The value of Command is set through a Roslyn expression that calls into the application to get the UserContext.GetCommand() result. In the child selector we see a Roslyn expression that gets the persisted action response, and the Child value is also resolved dynamically from a Roslyn expression that returns the next child TreeNode key._
 
 ```yaml
 "Container_TreeNode": {
@@ -53,11 +53,13 @@ Forge has 3 major components: ForgeTree, TreeWalker, and ForgeEditor.
     "ChildSelector": [
         {
             "ShouldSelect": "C#|Session.GetLastActionResponse().Status == \"Success\"",
-            "Child": "Tardigrade_TreeNode"
+            "Child": "C#|UserContext.ResourceType == \"Container\" ? \"Tardigrade_TreeNode\" : \"ContainerFallback_TreeNode\""
         }
     ]
 }
 ```
+
+`ChildSelector.Child` can be either a literal child node key or a `C#|...` expression that evaluates to one.
 
 * **TreeWalker** takes in the ForgeTree and other parameters, and walks the tree to completion. It calls application-defined callbacks and actions, passing in dynamically evaluated properties from the ForgeTree. The TreeWalker makes decisions at runtime about the path it walks by utilizing Roslyn to evaluate C# code-snippets from the ForgeTree.
 
