@@ -17,7 +17,7 @@
     <PackageTags>Forge;TreeWalker;Roslyn;async;dynamic;generic;workflow engine;decision tree;config;stateful;low-code;tree visualization;workflow framework;JSON</PackageTags>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="GitVersionTask" Version="5.0.1">
+    <PackageReference Include="GitVersionTask" Version="5.2.4">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="3.8.0" />

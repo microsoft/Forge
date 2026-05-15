@@ -11,6 +11,9 @@ resources:
 variables:
 - name: WindowsContainerImage
   value: onebranch.azurecr.io/windows/ltsc2019/vse2022:latest
+- name: GDN_CODESIGN_TARGETDIRECTORY
+  value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
+
 
 extends:
   template: v2/OneBranch.Official.CrossPlat.yml@onebranchTemplates
@@ -21,6 +24,9 @@ extends:
     
     globalSdl:
       enabled: true
+      guardian:
+          version: 0.265.2
+
       
     stages:
     - stage: stage
@@ -168,6 +174,7 @@ extends:
             SessionTimeout: '60'
             MaxConcurrency: '50'
             MaxRetryAttempts: '5'
+       
         - task: NuGetCommand@2
           displayName: 'NuGet push AzureArtifacts'
           inputs:
