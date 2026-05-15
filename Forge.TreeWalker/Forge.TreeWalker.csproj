@@ -3,6 +3,11 @@
     <RootNamespace>Microsoft.Forge.TreeWalker</RootNamespace>
     <AssemblyName>Microsoft.Forge.TreeWalker</AssemblyName>
     <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
+    <DisableGitVersionTask Condition="'$(MSBuildRuntimeType)' == 'Core'">true</DisableGitVersionTask>
+    <WriteVersionInfoToBuildLog Condition="'$(MSBuildRuntimeType)' == 'Core'">false</WriteVersionInfoToBuildLog>
+    <UpdateAssemblyInfo Condition="'$(MSBuildRuntimeType)' == 'Core'">false</UpdateAssemblyInfo>
+    <GenerateGitVersionInformation Condition="'$(MSBuildRuntimeType)' == 'Core'">false</GenerateGitVersionInformation>
+    <GetVersion Condition="'$(MSBuildRuntimeType)' == 'Core'">false</GetVersion>
     <Deterministic>true</Deterministic>
     <IsPackable>true</IsPackable>
     <Authors>Microsoft</Authors>
