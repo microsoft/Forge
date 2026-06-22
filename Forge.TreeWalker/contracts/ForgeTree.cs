@@ -111,6 +111,8 @@ namespace Microsoft.Forge.DataContracts
 
         /// <summary>
         /// String key pointer to a child TreeNode.
+        /// This may be either a literal child TreeNode key or a string starting with
+        /// <see cref="TreeWalkerSession.RoslynLeadingText"/> that evaluates to a child TreeNode key.
         /// Visit this child if the attached ShouldSelect expression evaluates to true.
         /// </summary>
         [DataMember(IsRequired = true)]

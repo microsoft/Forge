@@ -557,14 +557,14 @@ namespace Microsoft.Forge.TreeWalker
                 // Empty expressions default to true. Otherwise, evaluate the expression.
                 if (string.IsNullOrWhiteSpace(cs.ShouldSelect) && !string.IsNullOrWhiteSpace(cs.Child))
                 {
-                    return cs.Child;
+                    return (string)await this.EvaluateDynamicProperty(cs.Child, typeof(string)).ConfigureAwait(false);
                 }
                 var evaluationResult = await this.EvaluateDynamicProperty(cs.ShouldSelect, typeof(bool)).ConfigureAwait(false);
                 try
                 {
                     if ((bool)evaluationResult)
                     {
-                        return cs.Child;
+                        return (string)await this.EvaluateDynamicProperty(cs.Child, typeof(string)).ConfigureAwait(false);
                     }
                 }
                 catch (Exception e)

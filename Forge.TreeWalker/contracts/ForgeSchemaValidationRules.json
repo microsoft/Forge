@@ -189,7 +189,8 @@
                     "type": "string"
                 },
                 "Child": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Literal child TreeNode key or a dynamic expression string (for example, C#|...) that resolves to a child TreeNode key."
                 }
             },
             "additionalProperties": false,
