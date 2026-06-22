@@ -10,7 +10,6 @@
 namespace Microsoft.Forge.TreeWalker
 {
     using System;
-    using System.Threading.Tasks;
 
     /// <summary>
     /// The ActionDefinition class holds definitions for the action.

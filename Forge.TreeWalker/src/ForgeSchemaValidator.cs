@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="ForgeSchemaValidator.cs" company="Microsoft">
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
@@ -165,15 +165,13 @@ namespace Microsoft.Forge.TreeWalker
 
         private static JObject SerializeToJObject(object forgeTree)
         {
-            string stringSchema = JsonConvert.SerializeObject(
-                forgeTree,
-                new JsonSerializerSettings
+            JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings
                 {
                     DefaultValueHandling = DefaultValueHandling.Ignore, // Prevent default values from getting added to serialized json schema.
                     Converters = new List<JsonConverter> { new Newtonsoft.Json.Converters.StringEnumConverter() } // Use string enum values instead of numerical.
                 });
 
-            return JObject.Parse(stringSchema);
+            return JObject.FromObject(forgeTree, serializer);
         }
 
         private static List<JObject> GetSchemaFromPath(string path, bool validateAsDictionary)
