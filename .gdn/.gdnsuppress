@@ -1,0 +1,23 @@
+{
+  "version": "1.0",
+  "suppressions": [
+    {
+      "tool": "CodeSign",
+      "rule": "CodeSign.NoMatchingPolicy",
+      "file": "*Newtonsoft.Json.dll*",
+      "justification": "Third-party dependency signed with non-Microsoft certificate"
+    },
+    {
+      "tool": "CodeSign",
+      "rule": "CodeSign.MissingSigningCert",
+      "file": "*Newtonsoft.Json.Schema.dll*",
+      "justification": "Third-party dependency not signed"
+    },
+    {
+      "tool": "CodeSign",
+      "rule": "CodeSign.MissingSigningCert",
+      "file": "*.symbols.nupkg*",
+      "justification": "Debug symbols packages are not required to be signed"
+    }
+  ]
+}
